@@ -1,0 +1,181 @@
+import React, { useState, useMemo } from 'react';
+import { useTheme } from '@react-navigation/native';
+import { View, Text, TouchableOpacity, FlatList } from "react-native";
+import { SH, SW, widthPercent } from '../../../utils';
+import { Spacing, RecentlyDataView } from '../../../components';
+import { HomeTabStyle, Style } from '../../../styles';
+import { PieChart, LineChart } from 'react-native-chart-kit';
+import images from '../../../index';
+import { RouteName } from "../../../routes";
+import { useTranslation } from "react-i18next";
+import { ScrollView } from 'react-native-virtualized-view';
+
+const HomeTab = (props) => {
+  const { navigation } = props;
+  const { t } = useTranslation();
+  const data = [
+    { name: t("Home_Title_1"), population: 21500000, color: '#f16c26' },
+    { name: t("Home_Title_2"), population: 12000000, color: 'green' },
+    { name: t("Home_Title_3"), population: 8538000, color: '#12205d' },
+  ];
+  const [tabshow, settabshow] = useState(1);
+  const LineChartData = {
+    labels: [t("Home_Title_22"), t("Home_Title_23"), t("Home_Title_24"), t("Home_Title_25"),],
+    datasets: [
+      {
+        data: [20, 45, 28, 80, 99, 43],
+        color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+        strokeWidth: 2 // optional
+      },
+    ],
+  };
+  const RecentlyData = [
+    {
+      text: 'Home_Title_45',
+      imageset: images.Recently_Image_1,
+      musicname: 'Home_Title_46',
+      TextTwo: 'Home_Title_47',
+      TextThree: '144k +',
+    },
+    {
+      text: 'Home_Title_6',
+      imageset: images.Recently_Image_2,
+      musicname: 'Home_Title_48',
+      TextTwo: 'Home_Title_49',
+      TextThree: '12M +',
+    },
+    {
+      text: 'Home_Title_8',
+      imageset: images.Recently_Image_3,
+      musicname: 'Home_Title_50',
+      TextTwo: 'Survey_Title_1',
+      TextThree: '599K +',
+    },
+    {
+      text: 'Home_Title_10',
+      imageset: images.Recently_Image_4,
+      musicname: 'Survey_Title_2',
+      TextTwo: 'Survey_Title_3',
+      TextThree: '300K +',
+    },
+    {
+      text: 'Home_Title_12',
+      imageset: images.Recently_Image_5,
+      musicname: 'Survey_Title_4',
+      TextTwo: 'Survey_Title_5',
+      TextThree: '98K +',
+    },
+    {
+      text: 'Home_Title_14',
+      imageset: images.Recently_Image_1,
+      musicname: 'Survey_Title_6',
+      TextTwo: 'Survey_Title_7',
+      TextThree: '234K +',
+    },
+  ];
+  const { Colors } = useTheme();
+  const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
+  return (
+    <View style={Style.BgColorWhiteAll}>
+      <Spacing space={SH(20)} />
+      <View style={HomeTabStyles.BackGroundLeft} />
+      <View style={HomeTabStyles.BackGroundRight} />
+      <Text style={HomeTabStyles.MyDashBoardText}>{t("Home_Title_16")}</Text>
+      <ScrollView>
+        <View style={Style.Container}>
+          <View style={Style.MinViewContent}>
+            <Spacing space={SH(40)} />
+            <View style={HomeTabStyles.FlexDirection}>
+              <TouchableOpacity onPress={() => settabshow('1')} style={tabshow == 1 ? HomeTabStyles.WhiteBackground : HomeTabStyles.WhiteBackgroundTwo}>
+                <Text style={tabshow == 1 ? HomeTabStyles.MenuTextStyle : HomeTabStyles.MenuTextStyleTwo}>{t("Home_Title_17")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => settabshow('2')} style={tabshow == 2 ? HomeTabStyles.WhiteBackground : HomeTabStyles.WhiteBackgroundTwo}>
+                <Text style={tabshow == 2 ? HomeTabStyles.MenuTextStyle : HomeTabStyles.MenuTextStyleTwo}>{t("Home_Title_18")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => settabshow('3')} style={tabshow == 3 ? HomeTabStyles.WhiteBackground : HomeTabStyles.WhiteBackgroundTwo}>
+                <Text style={tabshow == 3 ? HomeTabStyles.MenuTextStyle : HomeTabStyles.MenuTextStyleTwo}>{t("Home_Title_19")}</Text>
+              </TouchableOpacity>
+            </View>
+            <Spacing space={SH(30)} />
+            <View style={HomeTabStyles.PieChartView}>
+              <PieChart
+                data={data}
+                width={SW(320)}
+                height={SH(200)}
+                chartConfig={{
+                  backgroundColor: '#FFF',
+                  backgroundGradientFrom: '#FFF',
+                  backgroundGradientTo: '#FFF',
+                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  style: {
+                    borderRadius: 16,
+                    backgroundColor: 'red'
+                  },
+                  formatLabelText: (value, name) => `${name}: ${value}`, // Customize label text
+                }}
+                accessor="population"
+                backgroundColor="transparent"
+                paddingLeft="15"
+                valueAccessor={({ item }) => item.population}
+              />
+            </View>
+            <Spacing space={SH(20)} />
+            <LineChart
+              data={LineChartData}
+              width={widthPercent(100)} // from react-native
+              height={SH(290)}
+              yAxisSuffix="k"
+              yAxisInterval={1} // optional, defaults to 1
+              chartConfig={{
+                backgroundColor: '#FFF',
+                backgroundGradientFrom: '#FFF',
+                backgroundGradientTo: '#FFF',
+                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Text color for labels
+                style: {
+                  borderRadius: 16,
+                  backgroundColor: 'red',
+                },
+                propsForLabels: {
+                  fontSize: 16,
+                },
+                propsForDots: {
+                  r: "6",
+                  strokeWidth: "2",
+                },
+              }}
+              bezier
+              style={{
+                marginVertical: 8,
+                borderRadius: 16,
+              }}
+              paddingLeft="0"
+            />
+            <Spacing space={SH(40)} />
+            <View style={HomeTabStyles.FlexRow}>
+              <Text style={HomeTabStyles.RecentlyTextStyle}>{t("Home_Title_20")}</Text>
+              <TouchableOpacity onPress={() => navigation.navigate(RouteName.ALL_SERVEY_SCREEN)}>
+                <Text style={HomeTabStyles.ViewAllTextStyle}>{t("Home_Title_21")}</Text>
+              </TouchableOpacity>
+            </View>
+            <Spacing space={SH(10)} />
+            <View style={HomeTabStyles.BackGroundShape}>
+              <FlatList
+                data={RecentlyData}
+                numColumns={1}
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item, index }) => (<RecentlyDataView
+                  item={item}
+                  index={index}
+                  onPress={() => navigation.navigate(RouteName.VIEW_REPORT_SCREEN)}
+                />)}
+                keyExtractor={item => item.id}
+              />
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+};
+export default HomeTab;

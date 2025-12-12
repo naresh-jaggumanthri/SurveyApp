@@ -1,0 +1,10 @@
+export { default as FAQData } from './FAQData';
+export { default as MessageListData } from './MessageListData';
+export { default as PaymentListData } from './PaymentListData';
+export { default as ChangeLanguageView } from './ChangeLanguageView';
+export { default as ModalLanguage } from './ModalLanguage';
+export { default as ChatDataView } from './ChatDataView';
+export { default as PaymentModalData } from './PaymentModalData';
+export { default as ProfileAccountView } from './ProfileAccountView';
+export { default as NotificationView } from './NotificationView';
+export { default as RecentlyDataView } from './RecentlyDataView';
