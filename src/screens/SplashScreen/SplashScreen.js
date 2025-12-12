@@ -17,7 +17,8 @@ const SplashScreen = ({ navigation }) => {
     useEffect(() => {
         setTimeout(() => {
             AsyncStorage.getItem('user_id').then((value) =>
-                navigation.navigate(RouteName.SWIPER_SCREEN)
+                // navigation.navigate(RouteName.SWIPER_SCREEN)
+                navigation.navigate(RouteName.LOGIN_SCREEN)
             );
         }, 2500);
         {

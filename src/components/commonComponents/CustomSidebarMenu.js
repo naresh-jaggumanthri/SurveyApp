@@ -37,7 +37,7 @@ const CustomSidebarMenu = (props) => {
           />
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_1")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.SURVEY_TAB)
         }>
           <VectorIcon
@@ -47,6 +47,28 @@ const CustomSidebarMenu = (props) => {
             color={Colors.theme_background}
           />
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_2")}</Text>
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+          () => Onpressfunction(RouteName.SURVEY_TAB)
+        }>
+          <VectorIcon
+            icon="AntDesign"
+            size={SF(19)}
+            name="form"
+            color={Colors.theme_background}
+          />
+          <Text style={Sidemenu.hometextstyle}>{t("Side_Title_3")}</Text>
+        </TouchableOpacity> */}
+        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+          () => Onpressfunction(RouteName.SURVEY_TAB)
+        }>
+          <VectorIcon
+            icon="AntDesign"
+            size={SF(19)}
+            name="form"
+            color={Colors.theme_background}
+          />
+          <Text style={Sidemenu.hometextstyle}>{t("Side_Title_11")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.SURVEY_TAB)
@@ -57,9 +79,9 @@ const CustomSidebarMenu = (props) => {
             name="form"
             color={Colors.theme_background}
           />
-          <Text style={Sidemenu.hometextstyle}>{t("Side_Title_3")}</Text>
+          <Text style={Sidemenu.hometextstyle}>{t("Side_Title_12")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.VIEW_REPORT_SCREEN)
         }>
           <VectorIcon
@@ -69,8 +91,8 @@ const CustomSidebarMenu = (props) => {
             color={Colors.theme_background}
           />
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_4")}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.EDIT_LOCATION_SCREEN)
         }>
           <VectorIcon
@@ -80,8 +102,8 @@ const CustomSidebarMenu = (props) => {
             color={Colors.theme_background}
           />
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_5")}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.MAP_SCREEN)
         }>
           <VectorIcon
@@ -91,31 +113,31 @@ const CustomSidebarMenu = (props) => {
             color={Colors.theme_background}
           />
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_6")}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.SETTING_SCREEN)
         }>
           <VectorIcon icon="AntDesign" size={SF(19)} name="setting" style={Sidemenu.logoimage} color={Colors.theme_background} />
           <Text style={Sidemenu.hometextstyle}>{t("Setting_Text")}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.FAQ_SCREEN)
         }>
           <VectorIcon icon="Entypo" size={SF(19)} name="help" style={Sidemenu.logoimage} color={Colors.theme_background} />
           <Text style={Sidemenu.hometextstyle}>{t("FAQ_Text")}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.REVIEWS_SCREEN)
         }>
           <VectorIcon icon="Entypo" size={SF(19)} name="star" style={Sidemenu.logoimage} color={Colors.theme_background} />
           <Text style={Sidemenu.hometextstyle}>{t("Reviews_Screen")}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.NOTIFICTION_SCREEN)
         }>
           <VectorIcon icon="Ionicons" size={SF(19)} name="notifications" style={Sidemenu.logoimage} color={Colors.theme_background} />
           <Text style={Sidemenu.hometextstyle}>{t("Notification_Text")}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.PROFILE_TAB)
         }>
@@ -128,12 +150,12 @@ const CustomSidebarMenu = (props) => {
           <VectorIcon icon="AntDesign" size={SF(19)} name="edit" style={Sidemenu.logoimage} color={Colors.theme_background} />
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_8")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.HELP_SCREEN)
         }>
           <VectorIcon icon="FontAwesome5" size={SF(19)} name="hands-helping" style={Sidemenu.logoimage} color={Colors.theme_background} />
           <Text style={Sidemenu.hometextstyle}>{t("Help_Text")}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <View style={Sidemenu.settingandlogout}>
           <TouchableOpacity style={Sidemenu.flexrowset} onPress={() => {
             setAlertVisible(true);

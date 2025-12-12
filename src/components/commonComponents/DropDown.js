@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Colors, SF, SH, SW } from '../../utils';
 import { VectorIcon } from '../../components';
@@ -26,12 +26,12 @@ function DropdownComponent({
                 dropdownStyle: {
                     borderWidth: SH(1),
                     borderColor: Colors.gray_text_color,
-                    borderRadius: SH(8),
+                    borderRadius: SH(20),
                     fontSize: SF(14),
                     lineHeight: SF(17),
                     color: Colors.black_text_color,
                     fontWeight: '400',
-                    padding: SH(5),
+                    padding: SH(15),
                     height: SH(47),
                     ...dropdownStyle
                 },

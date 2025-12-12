@@ -35,8 +35,8 @@ const LoginScreen = (props) => {
                     </View>
                     <Spacing space={SH(20)} />
                     <View style={Logins.LogIntoAccount}>
-                        <Text style={Logins.LoginText}>{t("Survey_Title_57")}</Text>
-                        <Text style={Logins.LoginText}>{t("Survey_Title_58")}</Text>
+                        {/* <Text style={Logins.LoginText}>{t("Survey_Title_57")}</Text> */}
+                        {/* <Text style={Logins.LoginText}>{t("Survey_Title_58")}</Text> */}
                     </View>
                     <Spacing space={SH(30)} />
                     <View style={Logins.InputSpaceView}>
@@ -78,7 +78,7 @@ const LoginScreen = (props) => {
                         </View>
                     </View>
                     <Spacing space={SH(20)} />
-                    <Text style={Logins.OrTextStyle}>Or</Text>
+                    {/* <Text style={Logins.OrTextStyle}>Or</Text>
                     <Spacing space={SH(20)} />
                     <View style={Logins.FlexRowSignUp}>
                         <TouchableOpacity style={Logins.BackGroundColorSet}>
@@ -87,7 +87,7 @@ const LoginScreen = (props) => {
                         <TouchableOpacity style={Logins.BackGroundColorSet}>
                             <VectorIcon icon="Entypo" name="facebook-with-circle" size={SF(45)} color={Colors.theme_background} />
                         </TouchableOpacity>
-                    </View>
+                    </View> */}
                 </View>
             </ScrollView>
         </View>

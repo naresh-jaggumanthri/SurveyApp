@@ -18,7 +18,7 @@ function DatePicker(props) {
     };
     const handleDatePicked = (date) => {
         hideDateTimePicker(),
-            setdateselcet(moment(date, "YYYY-MM-DDTHH:mm:ss Z").local().format('DD-MM-YYYY'));
+            setdateselcet(moment(date, "YYYY-MM-DDTHH:mm:ss Z").local().format('DD-MM-YYYY HH:mm'));
     };
 
     return (

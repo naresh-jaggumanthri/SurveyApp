@@ -19,7 +19,7 @@ export default AnalyaticsStyle = (Colors) => StyleSheet.create({
     fontWeight: '700',
   },
   TitleStyle: {
-    fontSize: SF(18),
+    fontSize: SF(25),
     color: Colors.black_text_color,
     fontWeight: '700',
     paddingBottom: SH(5)
@@ -181,5 +181,10 @@ export default AnalyaticsStyle = (Colors) => StyleSheet.create({
     color: Colors.gray_text_color,
     fontFamily: Fonts.Poppins_Medium,
     fontSize: SF(18),
+  },
+  headerTitleStyle: {
+    color: Colors.white_text_color,
+    fontSize: SF(22),
+    fontWeight:'700'
   },
 });

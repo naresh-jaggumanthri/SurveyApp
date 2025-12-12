@@ -47,7 +47,7 @@ const images = {
    Food_4_Image: require('./hundred.png'),
    NO_Image_Camera: require('./CameraImage.png'),
    NO_Video_Camera: require('./hundred.png'),
-   Login_Logo: require('./hundred.png'),
+   Login_Logo: require('./Image.png'),
 
 }
 export default images;

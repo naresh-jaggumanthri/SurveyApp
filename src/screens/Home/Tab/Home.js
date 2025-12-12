@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTheme } from '@react-navigation/native';
-import { View, Text, TouchableOpacity, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, Alert } from "react-native";
 import { SH, SW, widthPercent } from '../../../utils';
 import { Spacing, RecentlyDataView } from '../../../components';
 import { HomeTabStyle, Style } from '../../../styles';
@@ -31,47 +31,47 @@ const HomeTab = (props) => {
   };
   const RecentlyData = [
     {
-      text: 'Home_Title_45',
+      text: 'Side_Title_11',
       imageset: images.Recently_Image_1,
       musicname: 'Home_Title_46',
       TextTwo: 'Home_Title_47',
       TextThree: '144k +',
     },
     {
-      text: 'Home_Title_6',
+      text: 'Side_Title_12',
       imageset: images.Recently_Image_2,
       musicname: 'Home_Title_48',
       TextTwo: 'Home_Title_49',
       TextThree: '12M +',
     },
-    {
-      text: 'Home_Title_8',
-      imageset: images.Recently_Image_3,
-      musicname: 'Home_Title_50',
-      TextTwo: 'Survey_Title_1',
-      TextThree: '599K +',
-    },
-    {
-      text: 'Home_Title_10',
-      imageset: images.Recently_Image_4,
-      musicname: 'Survey_Title_2',
-      TextTwo: 'Survey_Title_3',
-      TextThree: '300K +',
-    },
-    {
-      text: 'Home_Title_12',
-      imageset: images.Recently_Image_5,
-      musicname: 'Survey_Title_4',
-      TextTwo: 'Survey_Title_5',
-      TextThree: '98K +',
-    },
-    {
-      text: 'Home_Title_14',
-      imageset: images.Recently_Image_1,
-      musicname: 'Survey_Title_6',
-      TextTwo: 'Survey_Title_7',
-      TextThree: '234K +',
-    },
+    // {
+    //   text: 'Home_Title_8',
+    //   imageset: images.Recently_Image_3,
+    //   musicname: 'Home_Title_50',
+    //   TextTwo: 'Survey_Title_1',
+    //   TextThree: '599K +',
+    // },
+    // {
+    //   text: 'Home_Title_10',
+    //   imageset: images.Recently_Image_4,
+    //   musicname: 'Survey_Title_2',
+    //   TextTwo: 'Survey_Title_3',
+    //   TextThree: '300K +',
+    // },
+    // {
+    //   text: 'Home_Title_12',
+    //   imageset: images.Recently_Image_5,
+    //   musicname: 'Survey_Title_4',
+    //   TextTwo: 'Survey_Title_5',
+    //   TextThree: '98K +',
+    // },
+    // {
+    //   text: 'Home_Title_14',
+    //   imageset: images.Recently_Image_1,
+    //   musicname: 'Survey_Title_6',
+    //   TextTwo: 'Survey_Title_7',
+    //   TextThree: '234K +',
+    // },
   ];
   const { Colors } = useTheme();
   const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
@@ -80,11 +80,11 @@ const HomeTab = (props) => {
       <Spacing space={SH(20)} />
       <View style={HomeTabStyles.BackGroundLeft} />
       <View style={HomeTabStyles.BackGroundRight} />
-      <Text style={HomeTabStyles.MyDashBoardText}>{t("Home_Title_16")}</Text>
+      {/* <Text style={HomeTabStyles.MyDashBoardText}>{t("Home_Title_16")}</Text> */}
       <ScrollView>
         <View style={Style.Container}>
           <View style={Style.MinViewContent}>
-            <Spacing space={SH(40)} />
+            {/* <Spacing space={SH(40)} />
             <View style={HomeTabStyles.FlexDirection}>
               <TouchableOpacity onPress={() => settabshow('1')} style={tabshow == 1 ? HomeTabStyles.WhiteBackground : HomeTabStyles.WhiteBackgroundTwo}>
                 <Text style={tabshow == 1 ? HomeTabStyles.MenuTextStyle : HomeTabStyles.MenuTextStyleTwo}>{t("Home_Title_17")}</Text>
@@ -95,10 +95,10 @@ const HomeTab = (props) => {
               <TouchableOpacity onPress={() => settabshow('3')} style={tabshow == 3 ? HomeTabStyles.WhiteBackground : HomeTabStyles.WhiteBackgroundTwo}>
                 <Text style={tabshow == 3 ? HomeTabStyles.MenuTextStyle : HomeTabStyles.MenuTextStyleTwo}>{t("Home_Title_19")}</Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
             <Spacing space={SH(30)} />
             <View style={HomeTabStyles.PieChartView}>
-              <PieChart
+              {/* <PieChart
                 data={data}
                 width={SW(320)}
                 height={SH(200)}
@@ -117,10 +117,10 @@ const HomeTab = (props) => {
                 backgroundColor="transparent"
                 paddingLeft="15"
                 valueAccessor={({ item }) => item.population}
-              />
+              /> */}
             </View>
-            <Spacing space={SH(20)} />
-            <LineChart
+            {/* <Spacing space={SH(20)} /> */}
+            {/* <LineChart
               data={LineChartData}
               width={widthPercent(100)} // from react-native
               height={SH(290)}
@@ -150,13 +150,16 @@ const HomeTab = (props) => {
                 borderRadius: 16,
               }}
               paddingLeft="0"
-            />
-            <Spacing space={SH(40)} />
-            <View style={HomeTabStyles.FlexRow}>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>{t("Home_Title_20")}</Text>
-              <TouchableOpacity onPress={() => navigation.navigate(RouteName.ALL_SERVEY_SCREEN)}>
+            /> */}
+            <Spacing space={SH(10)} />
+            {/* <View style={HomeTabStyles.FlexRow}> */}
+            <View style={{flexDirection:"column"}}>
+              <Text style={HomeTabStyles.RecentlyTextStyle}>Name :{t("Agent One")}</Text>
+              <Text style={HomeTabStyles.RecentlyTextStyle}>District :{t("Bolangir")}</Text>
+              <Text style={HomeTabStyles.RecentlyTextStyle}>Block :{t("Titlagarh")}</Text>
+              {/* <TouchableOpacity onPress={() => navigation.navigate(RouteName.ALL_SERVEY_SCREEN)}>
                 <Text style={HomeTabStyles.ViewAllTextStyle}>{t("Home_Title_21")}</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
             <Spacing space={SH(10)} />
             <View style={HomeTabStyles.BackGroundShape}>
@@ -167,7 +170,15 @@ const HomeTab = (props) => {
                 renderItem={({ item, index }) => (<RecentlyDataView
                   item={item}
                   index={index}
-                  onPress={() => navigation.navigate(RouteName.VIEW_REPORT_SCREEN)}
+                  onPress={() =>{ 
+                    //Alert.alert("index",JSON.stringify(index));
+                    if(index==0){
+                      navigation.navigate(RouteName.FAMILY_SURVEY_TAB)
+                    }else if(index==1){
+                      navigation.navigate(RouteName.VILLAGE_SURVEY_TAB)
+                    }
+                    // navigation.navigate(RouteName.VIEW_REPORT_SCREEN)
+                  }}
                 />)}
                 keyExtractor={item => item.id}
               />

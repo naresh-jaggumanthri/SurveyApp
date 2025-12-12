@@ -9,6 +9,8 @@ const RouteName = {
     REGIATRAION_SUCCESSFULL: "RegistrationSuccessful",
     HOME_TAB: 'Home',
     SURVEY_TAB: 'Survey',
+    FAMILY_SURVEY_TAB: 'FamilySurvey',
+    VILLAGE_SURVEY_TAB: 'VillageSurvey',
     CHECKOUT_TAB: 'Checkout',
     WALLETS_TAB: 'Wallets',
     PROFILE_TAB: 'Profile',

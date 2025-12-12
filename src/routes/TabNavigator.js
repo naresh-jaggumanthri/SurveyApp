@@ -8,6 +8,8 @@ import { ColorPicker, CustomSidebarMenu, HeaderLeftMenuIcon, VectorIcon, AppHead
 import RouteName from '../routes/RouteName';
 import { Colors, SH, SF } from '../utils';
 import { useTranslation } from "react-i18next";
+import FamilyFormSurveyTab from '../screens/Home/Tab/FamilyFormSurveyTab';
+import VillageFormSurveyTab from '../screens/Home/Tab/VillageFormSurveyTab';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -104,6 +106,52 @@ function SurveyFormScreenStack(props) {
   );
 }
 
+function FamilySurveyFormScreenStack(props) {
+  const { t } = useTranslation();
+  return (
+    <Stack.Navigator initialRouteName="Offers">
+      <Stack.Screen
+        name={t("Side_Title_11")}
+        component={FamilyFormSurveyTab}
+        options={{
+          ...HeaderArray,
+          headerStyle: {
+            backgroundColor: Colors.theme_background,
+          },
+          headerLeft: () => (
+            <HeaderLeftMenuIcon {...props} />
+          ),
+          headerRight: () => (
+            <ColorPicker />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+function VillageSurveyFormScreenStack(props) {
+  const { t } = useTranslation();
+  return (
+    <Stack.Navigator initialRouteName="Offers">
+      <Stack.Screen
+        name={t("Side_Title_12")}
+        component={VillageFormSurveyTab}
+        options={{
+          ...HeaderArray,
+          headerStyle: {
+            backgroundColor: Colors.theme_background,
+          },
+          headerLeft: () => (
+            <HeaderLeftMenuIcon {...props} />
+          ),
+          headerRight: () => (
+            <ColorPicker />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
 function ProfileScreenStack(props) {
   const { t } = useTranslation();
   return (
@@ -157,10 +205,25 @@ export function HomeScsreenTabAll() {
         }}
       />
       <Tab.Screen
-        name={RouteName.SURVEY_TAB}
-        component={SurveyFormScreenStack}
+        name={RouteName.FAMILY_SURVEY_TAB}
+        component={FamilySurveyFormScreenStack}
         options={{
-          tabBarLabel: t("Side_Title_3"),
+          tabBarLabel: t("Side_Title_11"),
+          tabBarIcon: ({ focused }) => (
+            <VectorIcon
+              color={focused ? Colors.theme_background : Colors.gray_text_color}
+              name="form"
+              icon="AntDesign"
+              size={SF(25)}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name={RouteName.VILLAGE_SURVEY_TAB}
+        component={VillageSurveyFormScreenStack}
+        options={{
+          tabBarLabel: t("Side_Title_12"),
           tabBarIcon: ({ focused }) => (
             <VectorIcon
               color={focused ? Colors.theme_background : Colors.gray_text_color}

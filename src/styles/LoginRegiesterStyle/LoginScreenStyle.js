@@ -337,14 +337,16 @@ export default Login = (Colors) => StyleSheet.create({
     
   },
   LogoImageStyle: {
-    width:SW(150),
-    height:SH(150)
+    width:SW(120),
+    height:SH(180)
   },
   CenterImage:{
     flexDirection:'row',
     alignItems:'center',
     justifyContent:'center',
-    width:'100%'
+    width:'100%',
+    height:SH(180)
+
   },
   SetPadding: {
     paddingHorizontal: SH(10)
