@@ -13,7 +13,7 @@ import FamilyalertModal from '../../../components/commonComponents/FamilyMemberA
 import api from '../../../api';
 import { useSelector } from 'react-redux';
 import { Formik } from 'formik';
-import { HouseHoldFormInitialValues, HouseHoldValidationSchema } from './FamilyFormHelper';
+import { HouseHoldFormInitialValues, HouseHoldFormValidationSchema, HouseHoldValidationSchema } from './FamilyFormHelper';
 
 
 const FamilyFormSurveyTab = (props) => {
@@ -31,6 +31,7 @@ const FamilyFormSurveyTab = (props) => {
   const [blocks,setBlocks]=useState([]);
   const [districts,setDistrict]=useState([]);
   const [panchayats,setPanchayats]=useState([]);
+  const [villages,setVillages]=useState([]);  
   const dropDownData = [
     { label: 'Item 1', value: '1' },
     { label: 'Item 2', value: '2' },
@@ -75,6 +76,10 @@ const FamilyFormSurveyTab = (props) => {
   const selfHelpData = [
     { label: t("Yes"), value: true },
     { label: t("No"), value: false },
+  ];
+  const fraHelpData = [
+    { label: t("FRA Claimant"), value: t("FRA Claimant") },
+    { label: t("Not a FRA Claimant"), value: t("Not a FRA Claimant") },
   ];
   const privateLandData = [
     { label: t("Landless"), value: 'Landless' },
@@ -141,6 +146,7 @@ const respondantData=[
   const { loginData } = useSelector(state => state.DataReducer) || {};
   useEffect(()=>{
     getMasterState();
+    getBankList();
     // Alert.alert("loginData",JSON.stringify(loginData));
   },[]);
   const handleCheckboxChange = (index) => {
@@ -164,7 +170,7 @@ const respondantData=[
    
     let result = updatedCheckboxes.filter(checkbox => checkbox.checked).map(checkbox => checkbox.label);
     setInvolvedInLivestockActivity(result);
-     Alert.alert("updatedCheckboxes",JSON.stringify(result));
+    //  Alert.alert("updatedCheckboxes",JSON.stringify(result));
     setCheckboxes3(updatedCheckboxes);
   };
   const renderCheckboxes = () => {
@@ -229,6 +235,7 @@ const respondantData=[
  const [familyAlertVisible, setFamilyAlertVisible] = useState(false);
  const [familyMembers, setFamilyMembers] = useState([]);
  const [familyMemberCount, setFamilyMemberCount] = useState(0);
+  
  
   const handleAddFamilyMember=()=>{
   // Alert.alert("inn"); 
@@ -236,8 +243,10 @@ const respondantData=[
   }
 
   const getMasterState=async()=>{
-    const res=await api.master.getDistricts();
-    // Alert.alert("res",JSON.stringify(res)); 
+    let token=loginData?.token;
+  
+    const res=await api.master.getDistricts(token);
+    
   const result=res.map((m)=>{
     return{
       label:m.districtName,
@@ -249,7 +258,8 @@ const respondantData=[
   }
 
   const getBlocks=async(districtId)=>{
-    const res=await api.master.getBlocksByDistrictId(districtId);
+     let token=loginData?.token;
+    const res=await api.master.getBlocksByDistrictId(districtId,token);
     const result=res.map((m)=>{
       return{
         label:m.blockName,
@@ -260,7 +270,8 @@ const respondantData=[
     setBlocks(result);
   };
   const getPanchayats=async(blockId)=>{
-    const res=await api.master.getGramPanchayats(blockId);
+     let token=loginData?.token;
+    const res=await api.master.getGramPanchayats(blockId,token);
       
     const result=res.map((m)=>{
       return{
@@ -272,6 +283,20 @@ const respondantData=[
     });
   
     setPanchayats(result);
+  };
+  const getVillages=async(panchayatId)=>{
+     let token=loginData?.token;
+    const res=await api.master.getVillagesByPanchayatId(panchayatId,token);
+    const result=res.map((m)=>{
+      return{
+        label:m.villageName,
+        value:m.id,
+        panchayatId:m.panchayatId
+
+      }
+    });
+    //Alert.alert("Villages",JSON.stringify(result));
+    setVillages(result);
   };
   const handleNext = () => {
     if (currentQuestion < 5) {
@@ -329,11 +354,25 @@ const respondantData=[
   const [minorChildrenAccompaniedMigration, setMinorChildrenAccompaniedMigration] = useState(false);
   const [womenMembersMigrated, setWomenMembersMigrated] = useState(false);
   const [respondentIdentity, setRespondentIdentity] = useState('');
+  const [bankList,setBankList]=useState([]);
+  
+  const getBankList=async()=>{
+      let token=loginData?.token;
+      const res=await api.master.getBanks(token);
+      const result=res.map((m)=>{
+        return{
+          label:m.bankName,
+          value:m.id
+        }
+      });
+      setBankList(result);
+  };
   var alertdata = {
     'logout': t("Survey_Title_33"),
   }
   const onoknutton = () => {
-    navigation.navigate(RouteName.ANALYTICS_SCREEN);
+    // Alert.alert("Analytics Screen",JSON.stringify(familyMembers));
+    // navigation.navigate(RouteName.ANALYTICS_SCREEN);
   }
   const Onpressfunction = (e) => {
     navigation.toggleDrawer();
@@ -344,8 +383,18 @@ const respondantData=[
   const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
   const [backgroundColors, setBackgroundColors] = useState(Array(5).fill(Colors.light_gray_text_color)); // Initial background colors for 4 views
   const onSavePress = async(values) => {
-Alert.alert("values",JSON.stringify(values)); 
+  const token=loginData?.token;
+  const response=await api.user.saveHouseholdSurveyData(null,values,token);
+  //  Alert.alert("response",JSON.stringify(response));
+    // return
+  if(response.uniqueId!=null&&response.uniqueId!=undefined){
+    setAlertVisible(true);
+    setAlertMessage(t("Survey_Submit_Successfully")+" with ID: "+response.uniqueId);
+  }else{
+    setAlertVisible(true);
+    setAlertMessage(t("Something_Went_Wrong_Please_Try_Again_Later"));  
   }
+};
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(40)} />
@@ -365,10 +414,23 @@ Alert.alert("values",JSON.stringify(values));
             {/* <Text style={AnalyaticsStyles.TitleStyle}>{t("Basic Details")}</Text> */}
             <Formik
             initialValues={HouseHoldFormInitialValues(props)}
-            // validationSchema={HouseHoldValidationSchema(props)}
+            validationSchema={HouseHoldFormValidationSchema(props)}
             onSubmit={(values)=>{
-                onSavePress(values)
-            
+              let finalFamilyMembers=familyMembers.map((m)=>{
+                return{
+                  ...m,
+                  age:parseInt(m.age),
+              }
+              });
+
+              const finalValues={
+                ...values,
+                householdFamilyMember:finalFamilyMembers, 
+              }
+              Alert.alert("Final Values",JSON.stringify(finalValues));
+
+              //  onSavePress(finalValues)
+
             }}>
             {({
             handleChange,
@@ -434,29 +496,29 @@ Alert.alert("values",JSON.stringify(values));
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  value={values?.householdBasicProfile?.panchayat}
-                  placeholder={values?.householdBasicProfile?.panchayat || t("Select Gram Panchayat")}
+                  value={values?.householdBasicProfile?.gramPanchayat}
+                  placeholder={values?.householdBasicProfile?.gramPanchayat || t("Select Gram Panchayat")}
                   onChange={(obj)=>{
-                    getVillages(obj.value);
-                    setFieldValue('householdBasicProfile.panchayat',obj.label);
+                    getVillages(4);
+                    setFieldValue('householdBasicProfile.gramPanchayat',obj.label);
                   }}/>
-                   <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.panchayat}</Text>
+                   <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.gramPanchayat}</Text>
                   <Spacing space={SH(15)} />
                   {/* Revenue Village */}
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Revenue Village")}</Text>
                 <Spacing space={SH(5)} />
                 <DropDown
-                  data={panchayats}
+                  data={villages}
                   dropdownStyle={{marginLeft:SH(10)}}
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  value={values?.householdBasicProfile?.village}
-                  placeholder={values?.householdBasicProfile?.village || t("Select Revenue Village")}
+                  value={values?.householdBasicProfile?.revenueVillage}
+                  placeholder={values?.householdBasicProfile?.revenueVillage || t("Select Revenue Village")}
                   onChange={(obj)=>{
-                      setFieldValue('householdBasicProfile.village',obj.label);
+                      setFieldValue('householdBasicProfile.revenueVillage',obj.label);
                   }}/>
-                   <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.village}</Text>
+                   <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.revenueVillage}</Text>
                   <Spacing space={SH(15)} />
                 <Input
                   title={t("Hamlet")}
@@ -471,12 +533,12 @@ Alert.alert("values",JSON.stringify(values));
                 <Input
                   title={t("Name of Head of the Household as per Aadhar Card ?")}
                   placeholder={t("Name of Head of the Household as per Aadhar Card ?")}
-                  onChangeText={(text) => setFieldValue('householdBasicProfile.headOfHouseholdName', text)}
-                  value={values?.householdBasicProfile?.headOfHouseholdName}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.headOfTheHouseholdNameAsPerAadhar', text)}
+                  value={values?.householdBasicProfile?.headOfTheHouseholdNameAsPerAadhar}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                   maxLength={20}
                 />
-                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.headOfHouseholdName}</Text>
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.headOfTheHouseholdNameAsPerAadhar}</Text>
                 {/* <Spacing space={SH(15)} />
                 <Input
                   title={t("Gender (Head of the Household)")}
@@ -494,7 +556,7 @@ Alert.alert("values",JSON.stringify(values));
                   onChangeText={(text) => 
                     {
                       // Alert.alert("text",JSON.stringify(text));
-                      setFieldValue('householdBasicProfile.headOfHouseholdGender', text);
+                      setFieldValue('householdBasicProfile.headOfTheHouseholdGender', text);
                       setHeadOfTheHouseholdGender(text);
 
                     }}
@@ -507,13 +569,13 @@ Alert.alert("values",JSON.stringify(values));
                 <Input
                   title={t("AADHAR No.")}
                   placeholder={t("AADHAR No.")}
-                  onChangeText={(text) => setFieldValue('householdBasicProfile.aadharNumber', text)}
-                  value={values?.householdBasicProfile?.aadharNumber}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.aadharNo', text)}
+                  value={values?.householdBasicProfile?.aadharNo}
                   inputType="numeric"
-                  maxLength={10}
+                  maxLength={12}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
-                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.aadharNumber}</Text>
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.aadharNo}</Text>
                 <Spacing space={SH(5)} />
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Social Category")}</Text>
                 <Spacing space={SH(5)} />
@@ -544,7 +606,7 @@ Alert.alert("values",JSON.stringify(values));
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Bank Name")}</Text>
                 <Spacing space={SH(5)} />
                 <DropDown
-                  data={dropDownData}
+                  data={bankList}
                   dropdownStyle={{marginLeft:SH(10)}}
                   width={SW(345)}
                   labelField="label"
@@ -560,20 +622,20 @@ Alert.alert("values",JSON.stringify(values));
                 <Input
                   title={t("IFSC code / Branch")}
                   placeholder={t("IFSC code / Branch")}
-                  onChangeText={(text) => setFieldValue('householdBasicProfile.ifscCode', text)}
-                  value={values?.householdBasicProfile?.ifscCode}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.ifscCodeOrBranch', text)}
+                  value={values?.householdBasicProfile?.ifscCodeOrBranch}
                   inputType="numeric"
                   maxLength={10}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
-                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.ifscCode}</Text>
+                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.ifscCodeOrBranch}</Text>
                 <Spacing space={SH(5)} />
                 <Input
                   title={t("Name of the women member of the Household?")}
                   placeholder={t("Name of the women member of the Household?")}
                   onChangeText={(text) => setFieldValue('householdBasicProfile.womenMemberName', text)}
                   value={values?.householdBasicProfile?.womenMemberName}
-                  inputType="numeric"
+                  // inputType="numeric"
                   maxLength={10}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
@@ -626,21 +688,21 @@ Alert.alert("values",JSON.stringify(values));
                   onChangeText={(obj) => {
                     // Alert.alert("obj",JSON.stringify(obj));
                     setIsWomenInSHG(obj);
-                    setFieldValue('householdBasicProfile.isWomenInSHG', obj)}}
+                    setFieldValue('householdBasicProfile.isWomenCoveredUnderSHG', obj)}}
                   value={isWomenInSHG}
                 />
-                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.isWomenInSHG}</Text>
+                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.isWomenCoveredUnderSHG}</Text>
                 <Spacing space={SH(5)} />
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether the women  member of the family covered under Subhadra Yojana")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
                   onChangeText={(text) => {
-                    setFieldValue('householdBasicProfile.isWomenInSubhadraYojana', text);
+                    setFieldValue('householdBasicProfile.isWomenCoveredUnderSubhadraYojana', text);
                     setIsWomenInSubhadraYojana(text)
                   }}
                   value={isWomenInSubhadraYojana}
                 />
-                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.isWomenInSubhadraYojana}</Text>
+                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.isWomenCoveredUnderSubhadraYojana}</Text>
                 <Spacing space={SH(5)} />
                 <Spacing space={SH(5)} />
                 <Input
@@ -674,9 +736,9 @@ Alert.alert("values",JSON.stringify(values));
                     </TouchableOpacity>
                   </View>
                 </View> */}
-                <TouchableOpacity style={AnalyaticsStyles.addButton} onPress={handleAddFamilyMember}>
+                {familyMemberCount>0 && <TouchableOpacity style={AnalyaticsStyles.addButton} onPress={handleAddFamilyMember}>
           <Text style={AnalyaticsStyles.PreviousTextStyle}>{t("Add Member")}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>}
               </View>
             )}
             {/* Two question start */}
@@ -718,22 +780,22 @@ Alert.alert("values",JSON.stringify(values));
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether provided LPG connection under Ujjwala?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => {setFieldValue('householdBasicProfile.isLpgConnectionUnderUjjwala', text);
+                  onChangeText={(text) => {setFieldValue('householdBasicProfile.hasUjjwalaLPGConnection', text);
                   setIsLpgConnectionUnderUjjwala(text);
                   }}
                   value={isLpgConnectionUnderUjjwala}
                 />
-                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.isLpgConnectionUnderUjjwala}</Text>
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.hasUjjwalaLPGConnection}</Text>
                  <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether the  family having Labour Cards?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => {setFieldValue('householdBasicProfile.havingLabourCards', text);
+                  onChangeText={(text) => {setFieldValue('householdBasicProfile.hasLabourCard', text);
                   setHavingLabourCards(text);
                   }}
                   value={havingLabourCards}
                 />
-                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.havingLabourCards}</Text>
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.hasLabourCard}</Text>
                  <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether the  family covered under Nirman Shramik Kalyan Yojana (NSKY)?")}</Text>
                 <RadioButton
@@ -774,7 +836,7 @@ Alert.alert("values",JSON.stringify(values));
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                   maxLength={20}
                 /></>}
-                  <Text style={{color: 'red'}}>{errors?.householdOccupationAndLand?.otherPrimaryOccupationDetails}</Text>
+                  {/* <Text style={{color: 'red'}}>{errors?.householdOccupationAndLand?.otherPrimaryOccupationDetails}</Text> */}
 
                 <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Is any family member involved in weaving or handloom work?")}</Text>
@@ -800,14 +862,14 @@ Alert.alert("values",JSON.stringify(values));
                 <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Amount of Land holding under FRA- In Acres ? (If Not a FRA claimant.. Go to next Qn or else go to next to next Qn.)")}</Text>
                 <RadioButton
-                  arrayData={selfHelpData}
+                  arrayData={fraHelpData}
                   onChangeText={(text) => {
                   setFieldValue('householdOccupationAndLand.fraClaimantStatus', text);
                   setFraClaimantStatus(text);
                   }}
                   value={fraClaimantStatus}
                 />
-                 {values?.householdOccupationAndLand?.fraClaimantStatus===true && <><Spacing space={SH(15)} />
+                 {values?.householdOccupationAndLand?.fraClaimantStatus==='FRA Claimant' && <><Spacing space={SH(15)} />
                 <Input
                   title={t("Amount of Land holding under FRA- In Acres")}
                   placeholder={t("Amount of Land holding under FRA- In Acres")}
@@ -935,7 +997,10 @@ Alert.alert("values",JSON.stringify(values));
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Does your family have a Job Card under MGNREGS?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setHasMGNREGSJobCard(text)}
+                  onChangeText={(text) => {
+                    setHasMGNREGSJobCard(text);
+                    setFieldValue('householdEntitlement.hasMGNREGSJobCard', text);
+                  }}
                   value={hasMGNREGSJobCard}
                 />
                 <Spacing space={SH(5)} />
@@ -1206,7 +1271,19 @@ Alert.alert("values",JSON.stringify(values));
           </TouchableOpacity>
         )}
          {currentQuestion == 5 && (
-          <TouchableOpacity style={AnalyaticsStyles.SubmitButton} onPress={handleSubmit}>
+          <TouchableOpacity style={AnalyaticsStyles.SubmitButton} onPress={()=>{
+            if(involvedInLivestockActivity?.length>0){
+            let livestockArray = '';
+            involvedInLivestockActivity?.forEach(item => {
+              livestockArray=involvedInLivestockActivity.length>1?livestockArray.concat(item + ', '):livestockArray.concat(item);
+            });
+              //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
+              setFieldValue('householdOccupationAndLand.involvedInLivestockActivity', livestockArray);
+          }
+              // Alert.alert("errors",JSON.stringify(errors));
+            //  return;
+             handleSubmit();
+            }}>
             <Text style={AnalyaticsStyles.PreviousTextStyle}>{t("Submit")}</Text>
           </TouchableOpacity>
         )}
@@ -1241,6 +1318,7 @@ Alert.alert("values",JSON.stringify(values));
                       count={familyMemberCount}
                       familyMembers={familyMembers}
                       setFamilyMembers={setFamilyMembers}
+                      onPressCancel={() => setFamilyAlertVisible(!familyAlertVisible)}
                   />
     </View>
   );

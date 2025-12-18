@@ -4,12 +4,13 @@ export default class UserAPI extends Base {
   captchaImg() {
     return this.apiClient.get(null, "sahiya-login/captcha/captchaImg");
   }
-  signIn(intl, params, data) {
+  signIn(intl, params, data, token) {
     return this.apiClient.postParamsPayload(
       intl,
       "api/auth/login",
       params,
-      data
+      data,
+      token
     );
   }
 
@@ -2037,6 +2038,16 @@ export default class UserAPI extends Base {
       "sahiya-aadharauth/api/vault/getaadhar",
       param,
       data
+    );
+  }
+
+  saveHouseholdSurveyData(params, payload,token) {
+    return this.apiClient.postParamsPayload(
+      {},
+      "api/Household",
+      params,
+      payload,
+      token
     );
   }
 

@@ -5,6 +5,7 @@ import queryString from "query-string";
 //import { getApiKey, getJwtToken } from "../Utils/AsyncStorageHelper";
 //import sslPinning from 'react-native-ssl-pinning';
 import { Alert } from "react-native";
+import { useSelector } from "react-redux";
 // import { saveApiHistoryInDb } from "./ApiHelper";
 
 //import { fetch } from "react-native-ssl-pinning";
@@ -44,13 +45,14 @@ export default class ApiClient {
     this.prefix = API_BASE_URL;
   }
 
-  get(intl, requestUrl, params = {}) {
+  get(intl, requestUrl, params = {}, token) {
     
     return this.request({
       intl: intl,
       url: requestUrl,
       method: 'get',
       params,
+      token:token,
     });
   }
 
@@ -98,12 +100,13 @@ export default class ApiClient {
     });
   }
 
-  postParamsPayload(intl, requestUrl, params = {}, payload = {}) {
+  postParamsPayload(intl, requestUrl, params = {}, payload = {},token) {
     return this.request({
       intl: intl,
       url: requestUrl,
       method: 'post',
       body: payload,
+      token: token,
       params,
     });
   }
@@ -285,13 +288,14 @@ export default class ApiClient {
     intl,
     url,
     method,
-    // params = {
-    //   TENANT_ID: Config.TENANT_ID,
-    // },
     params,
+    token,
     body,
     isFormData,
+   
   }) => {
+    //  Alert.alert("url", `${token}`);
+    //  Alert.alert("body", JSON.stringify(token));
 
     // let isConnected = await DeviceHelper.isConnectedToInternet();
     // if (!isConnected) {
@@ -304,15 +308,20 @@ export default class ApiClient {
     //   return res;
     // }
 
+    //  const { loginData } = useSelector(state => state.DataReducer) || {};
+
     const urlWithQuery = `${this.prefix}/${url}?${queryString.stringify(
       params,
     )}`;
-    console.log('urlWithQuery=======> ', urlWithQuery);
-
+   
   
 
     // const jwtToken = await getJwtToken();
-    const jwtToken=undefined;
+     const jwtToken=token;
+
+     
+    // Alert.alert("token",JSON.stringify(jwtToken));
+
 
     // console.log('jwt token===========>', JSON.parse(jwtToken));
 
@@ -328,20 +337,22 @@ export default class ApiClient {
       //added by naresh
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
-      'Expires': 0
+      'Expires': 0,
+      'Authorization': token ? `Bearer ${token}` : undefined,
     };
-    if (jwtToken) {
-      headers = {
-        ...headers,
-        Authorization: JSON.parse(jwtToken),
-        //'x-api-key': apiKey,
+    // if (token!=undefined && token!=null) {
+    //   headers = {
+    //     ...headers,
+    //     Authorization:token,
+    //     //'x-api-key': apiKey,
 
-      };
-    }
+    //   };
+    // }
     let init = {
       method,
       headers: headers,
     };
+  
 
     if (method !== 'get' && method !== 'head') {
       if (isFormData) {
@@ -365,7 +376,7 @@ export default class ApiClient {
       //init.data = body;
     }
     console.log('headers : ', headers);
-
+ 
     console.log(init);
     try {
       //  sslPinning.pin({domain,certs}).then(()=>{
@@ -572,7 +583,7 @@ export default class ApiClient {
     )}`;
     console.log('urlWithQuery=======> ', urlWithQuery);
 
-    const jwtToken = await getJwtToken();
+    // const jwtToken = await getJwtToken();
     //const jwtToken=undefined;
 
     //console.log('jwt token===========>', JSON.parse(jwtToken));

@@ -1,7 +1,8 @@
+import { Alert } from "react-native";
 import Base from "./BaseApi";
 export default class MasterAPI extends Base {
-  getStates() {
-    return this.apiClient.get(null, "api/stateList");
+  getStates(token) {
+    return this.apiClient.get(null, "api/stateList", {}, token);
   }
 
   //Religions
@@ -10,13 +11,14 @@ export default class MasterAPI extends Base {
   }
 
   //2.get all districts
-  getDistricts() {
-    return this.apiClient.get(null, "api/districtList");
+  getDistricts(token) {
+    
+    return this.apiClient.get(null, "api/districtList", {}, token);
   }
 
   //3.get all blocks
-  getBlocksByDistrictId(districtId) {
-    return this.apiClient.get(null, `api/blockList/${districtId}/`);
+  getBlocksByDistrictId(districtId, token) {
+    return this.apiClient.get(null, `api/blockList/${districtId}/`, {}, token);
   }
 
   //3.a get all clusters
@@ -30,13 +32,18 @@ export default class MasterAPI extends Base {
   }
 
   //3.c get all gram-panchayats
-  getGramPanchayats(blockId) {
-    return this.apiClient.get(null, `api/panchayatList/${blockId}/`);
+  getGramPanchayats(blockId, token) {
+    return this.apiClient.get(null, `api/panchayatList/${blockId}/`, {}, token);
   }
 
   //4. get all villages
-  getVillages(blockId) {
-    return this.apiClient.get(null, `api/villageList/${blockId}/`);
+  getVillagesByPanchayatId(panchayatId, token) {
+    return this.apiClient.get(null, `api/villageList/${panchayatId}/`, {}, token);
+  }
+
+  //banks list
+  getBanks(token) {
+    return this.apiClient.get(null, "api/bankList", {}, token);
   }
 
   //Disabilities

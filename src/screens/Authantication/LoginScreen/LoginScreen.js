@@ -33,16 +33,22 @@ const LoginScreen = (props) => {
         navigation.navigate(RouteName.REGISTER_SCREEN);
     }
     const onLoginPress = async (values) => {
-        dispatch(login_data_action(values));
+       
         const res=await api.user.signIn(null,null,{
             username:values.username,
             password:values.password
-        });
+        },undefined);
         if(res.status=='CODE_ERROR'){
             AppOkAlert("Login Failed",()=>{},"OK",APP_NAME);
             return;
         }
       if(res.status=='OK'){
+        let finalValues={
+            username:values.username,
+            password:values.password,
+            token:res.token
+        }
+         dispatch(login_data_action(finalValues));
             navigation.navigate(RouteName.OTP_VERYFY_SCREEN) 
             return;
         }

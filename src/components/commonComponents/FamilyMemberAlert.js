@@ -72,10 +72,10 @@ function FamilyalertModal(props) {
     {label: t('7-12months'), value: '7-12months'},
   ];
   const [checkboxes, setCheckboxes] = useState([
-    {label: t('Poultry'), checked: false},
-    {label: t('Goatery'), checked: false},
-    {label: t('Dairy'), checked: false},
-    {label: t('Others'), checked: false},
+    {label: t('Poultry'), checked: false, mainIndex: 0},
+    {label: t('Goatery'), checked: false, mainIndex: 0},
+    {label: t('Dairy'), checked: false, mainIndex: 0},
+    {label: t('Others'), checked: false, mainIndex: 0},
 
     // Add more options as needed
   ]);
@@ -84,24 +84,24 @@ function FamilyalertModal(props) {
       setFamilyMembers(
         Array.from({length: count}, () => ({
           name: '',
-          age: '',
+          age: 0,
           gender: '',
-          education: '',
-          migrated: '',
-          destination: '',
-          sector: '',
-          migrationPeriod: '',
-          remittance: '',
-          skills: [],
+          educationalQualification: '',
+          migratedInLast3Years: false,
+          destinationState: '',
+          sectorOfEngagementDuringMigration: '',
+          periodOfMigration: '',
+          monthlyRemittanceDuringMigration: '',
+          interestInSkillDevelopment: '',
         })),
       );
     }
   }, [count]);
   const FamilyMemberForm = ({index, data, onChange}) => (
     <View>
-        <Text style={AnalyaticsStyles.PleaseEnterDate}>
-      {t("Family Member")} {index + 1}
-    </Text>
+      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+        {t('Family Member')} {index + 1}
+      </Text>
       <Spacing space={SH(5)} />
       <Input
         title={t('Name of the Family Member')}
@@ -134,8 +134,8 @@ function FamilyalertModal(props) {
       <Input
         title={t('Education Qualification')}
         placeholder={t('Education Qualification')}
-        onChangeText={text => onChange(index, 'education', text)}
-        value={data.education}
+        onChangeText={text => onChange(index, 'educationalQualification', text)}
+        value={data.educationalQualification}
         inputType="text"
         maxLength={10}
         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -146,8 +146,8 @@ function FamilyalertModal(props) {
       </Text>
       <RadioButton
         arrayData={selfHelpData}
-        onChangeText={text => onChange(index, 'migrated', text)}
-        value={data.migrated}
+        onChangeText={text => onChange(index, 'migratedInLast3Years', text)}
+        value={data.migratedInLast3Years}
       />
       <Spacing space={SH(5)} />
       <Input
@@ -165,8 +165,8 @@ function FamilyalertModal(props) {
       </Text>
       <RadioButton
         arrayData={sectorData}
-        onChangeText={text => onChange(index, 'sector', text)}
-        value={data.sector}
+        onChangeText={text => onChange(index, 'sectorOfEngagementDuringMigration', text)}
+        value={data.sectorOfEngagementDuringMigration}
       />
       <Spacing space={SH(15)} />
       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -174,8 +174,8 @@ function FamilyalertModal(props) {
       </Text>
       <RadioButton
         arrayData={migrationData}
-        onChangeText={text => onChange(index, 'migrationPeriod', text)}
-        value={data.migrationPeriod}
+        onChangeText={text => onChange(index, 'periodOfMigration', text)}
+        value={data.periodOfMigration}
       />
       <Spacing space={SH(5)} />
       <Input
@@ -183,8 +183,8 @@ function FamilyalertModal(props) {
         placeholder={t(
           'What was the monthly remittance during migration(in Rs.)',
         )}
-        onChangeText={text => onChange(index, 'monthlyRemittance', text)}
-        value={data.monthlyRemittance}
+        onChangeText={text => onChange(index, 'monthlyRemittanceDuringMigration', text)}
+        value={data.monthlyRemittanceDuringMigration}
         inputType="text"
         maxLength={10}
         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -193,25 +193,26 @@ function FamilyalertModal(props) {
       <Text style={AnalyaticsStyles.PleaseEnterDate}>
         {t('Whether interested for skill development under')}
       </Text>
-      {renderCheckboxes(index,)}
+      {renderCheckboxes(index)}
     </View>
   );
   const handleMemberChange = (index, key, value) => {
-  const updatedMembers = [...familyMembers];
-  updatedMembers[index][key] = value;
-  setFamilyMembers(updatedMembers);
-};
-  const renderForm = () => {
-    return familyMembers.map((member, index) => (
-    <FamilyMemberForm
-      key={index}
-      index={index}
-      data={member}
-      onChange={handleMemberChange}
-    />
-  ));
+    const updatedMembers = [...familyMembers];
+    updatedMembers[index][key] = value;
+    setFamilyMembers(updatedMembers);
   };
-  const renderCheckboxes = (ind) => {
+  const renderForm = () => {
+    return familyMembers?.map((member, index) => (
+      <FamilyMemberForm
+        key={index}
+        index={index}
+        data={member}
+        onChange={handleMemberChange}
+      />
+    ));
+  };
+  const renderCheckboxes = ind => {
+    
     return checkboxes.map((checkbox, index) => (
       <CheckBox
         key={index}
@@ -219,17 +220,39 @@ function FamilyalertModal(props) {
         iconType="material-community"
         checkedIcon="checkbox-marked"
         uncheckedIcon="checkbox-blank-outline"
-        checked={checkbox.checked}
-        onPress={() => handleCheckboxChange(index)}
+        // checked={checkbox.checked}
+        checked={familyMembers[ind]?.interestInSkillDevelopment.includes(checkbox.label)}
+        onPress={() => {
+            handleCheckboxChange(index,ind);
+            // Alert.alert('Checkbox Pressed', `Checkbox ${ind} pressed`);
+        }}
       />
     ));
   };
-  const handleCheckboxChange = index => {
-    const updatedCheckboxes = [...checkboxes];
-    updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
-    setCheckboxes(updatedCheckboxes);
-  };
-  Alert.alert('' + count);
+//   const handleCheckboxChange = (index, ind) => {
+//     const updatedCheckboxes = [...checkboxes];
+//         updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+//         updatedCheckboxes[index].mainIndex = ind;
+//     setCheckboxes(updatedCheckboxes);
+//   };
+
+  const handleCheckboxChange = (checkboxIndex, memberIndex) => {
+  setFamilyMembers(prev => {
+    const updated = [...prev];
+    const skill = checkboxes[checkboxIndex].label;
+
+    if (updated[memberIndex].interestInSkillDevelopment.includes(skill)) {
+      updated[memberIndex].interestInSkillDevelopment = updated[memberIndex].interestInSkillDevelopment.filter(
+        s => s !== skill
+      );
+    } else {
+      updated[memberIndex].interestInSkillDevelopment = skill;
+    }
+
+    return updated;
+  });
+};
+  //Alert.alert('' + count);
   return (
     <Modal
       animationType="slide"
@@ -277,10 +300,10 @@ function FamilyalertModal(props) {
                     }}
                   />
                 </View>
-                {cancelButtonText ? (
+                {true ? (
                   <View style={Style.setokbutton}>
                     <Button
-                      title={cancelButtonText}
+                      title={"Cancel"}
                       onPress={() => {
                         onPressCancel();
                       }}
