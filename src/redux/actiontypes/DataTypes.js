@@ -1,1 +1,2 @@
 export const DATA_DETAILES_TYPE = "DATA_DETAILES_TYPE";
+export const LOGIN_DATA_TYPE = "LOGIN_DATA_TYPE";

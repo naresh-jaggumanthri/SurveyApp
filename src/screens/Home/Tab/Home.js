@@ -9,10 +9,12 @@ import images from '../../../index';
 import { RouteName } from "../../../routes";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from 'react-native-virtualized-view';
+import { useSelector } from 'react-redux';
 
 const HomeTab = (props) => {
   const { navigation } = props;
   const { t } = useTranslation();
+  const { loginData } = useSelector(state => state.DataReducer) || {};
   const data = [
     { name: t("Home_Title_1"), population: 21500000, color: '#f16c26' },
     { name: t("Home_Title_2"), population: 12000000, color: 'green' },
@@ -154,7 +156,7 @@ const HomeTab = (props) => {
             <Spacing space={SH(10)} />
             {/* <View style={HomeTabStyles.FlexRow}> */}
             <View style={{flexDirection:"column"}}>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>Name :{t("Agent One")}</Text>
+              <Text style={HomeTabStyles.RecentlyTextStyle}>Name :{loginData.username}</Text>
               <Text style={HomeTabStyles.RecentlyTextStyle}>District :{t("Bolangir")}</Text>
               <Text style={HomeTabStyles.RecentlyTextStyle}>Block :{t("Titlagarh")}</Text>
               {/* <TouchableOpacity onPress={() => navigation.navigate(RouteName.ALL_SERVEY_SCREEN)}>

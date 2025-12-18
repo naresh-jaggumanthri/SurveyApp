@@ -24,3 +24,4 @@ export { default as PasswordInput } from './PasswordInput';
 export { default as Search } from './Search';
 export { default as DatePicker } from './DatePicker';
 export { default as ImagePicker } from './ImagePicker';
+export { default as FamilyMemberAlert} from './FamilyMemberAlert'

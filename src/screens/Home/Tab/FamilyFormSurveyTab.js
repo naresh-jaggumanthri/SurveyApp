@@ -1,14 +1,20 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTheme } from '@react-navigation/native';
 import { View, ScrollView, KeyboardAvoidingView, Text, TouchableOpacity, FlatList, Alert } from "react-native";
 import { Style, AnalyaticsStyle, HomeTabStyle } from '../../../styles';
 import { useTranslation } from "react-i18next";
 import images from '../../../index';
-import { Spacing, Input, DatePicker, VectorIcon, RadioButton, CheckBox, ImagePicker, ConfirmationAlert,DropDown } from '../../../components';
+import { Spacing, Input, DatePicker, VectorIcon, RadioButton, CheckBox, ImagePicker, ConfirmationAlert,DropDown, FamilyMemberAlert } from '../../../components';
 import { Colors, SH, SF } from '../../../utils';
 import { Image } from "react-native-elements";
 import { RouteName } from "../../../routes";
 import { SW } from '../../../utils/dimensions';
+import FamilyalertModal from '../../../components/commonComponents/FamilyMemberAlert';
+import api from '../../../api';
+import { useSelector } from 'react-redux';
+import { Formik } from 'formik';
+import { HouseHoldFormInitialValues, HouseHoldValidationSchema } from './FamilyFormHelper';
+
 
 const FamilyFormSurveyTab = (props) => {
   const { t } = useTranslation();
@@ -22,6 +28,9 @@ const FamilyFormSurveyTab = (props) => {
     about: ""
   };
   const [state, setState] = useState(stateArray);
+  const [blocks,setBlocks]=useState([]);
+  const [districts,setDistrict]=useState([]);
+  const [panchayats,setPanchayats]=useState([]);
   const dropDownData = [
     { label: 'Item 1', value: '1' },
     { label: 'Item 2', value: '2' },
@@ -64,8 +73,8 @@ const FamilyFormSurveyTab = (props) => {
     { label: t("Survey_Title_23"), value: 'option3' },
   ];
   const selfHelpData = [
-    { label: t("Yes"), value: 'true' },
-    { label: t("No"), value: 'false' },
+    { label: t("Yes"), value: true },
+    { label: t("No"), value: false },
   ];
   const privateLandData = [
     { label: t("Landless"), value: 'Landless' },
@@ -129,10 +138,34 @@ const respondantData=[
 
     // Add more options as needed
   ]);
+  const { loginData } = useSelector(state => state.DataReducer) || {};
+  useEffect(()=>{
+    getMasterState();
+    // Alert.alert("loginData",JSON.stringify(loginData));
+  },[]);
   const handleCheckboxChange = (index) => {
     const updatedCheckboxes = [...checkboxes];
     updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+   
     setCheckboxes(updatedCheckboxes);
+  };
+   const handleCheckboxChange2 = (index) => {
+    const updatedCheckboxes = [...checkboxes2];
+    updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+   
+    let result = updatedCheckboxes.filter(checkbox => checkbox.checked).map(checkbox => checkbox.label);
+    setSourcesOfIrrigation(result);
+     //Alert.alert("updatedCheckboxes",JSON.stringify(result));
+    setCheckboxes2(updatedCheckboxes);
+  };
+   const handleCheckboxChange3 = (index) => {
+    const updatedCheckboxes = [...checkboxes3];
+    updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+   
+    let result = updatedCheckboxes.filter(checkbox => checkbox.checked).map(checkbox => checkbox.label);
+    setInvolvedInLivestockActivity(result);
+     Alert.alert("updatedCheckboxes",JSON.stringify(result));
+    setCheckboxes3(updatedCheckboxes);
   };
   const renderCheckboxes = () => {
     return checkboxes.map((checkbox, index) => (
@@ -156,7 +189,7 @@ const respondantData=[
         checkedIcon="checkbox-marked"
         uncheckedIcon="checkbox-blank-outline"
         checked={checkbox.checked}
-        onPress={() => handleCheckboxChange(index)}
+        onPress={() => handleCheckboxChange2(index)}
       />
     ));
   };
@@ -169,7 +202,7 @@ const respondantData=[
         checkedIcon="checkbox-marked"
         uncheckedIcon="checkbox-blank-outline"
         checked={checkbox.checked}
-        onPress={() => handleCheckboxChange(index)}
+        onPress={() => handleCheckboxChange3(index)}
       />
     ));
   };
@@ -193,7 +226,53 @@ const respondantData=[
   const [currentQuestion, setCurrentQuestion] = useState(1); // Track the current question number
 
   // Your state and other variables...
+ const [familyAlertVisible, setFamilyAlertVisible] = useState(false);
+ const [familyMembers, setFamilyMembers] = useState([]);
+ const [familyMemberCount, setFamilyMemberCount] = useState(0);
+ 
+  const handleAddFamilyMember=()=>{
+  // Alert.alert("inn"); 
+  setFamilyAlertVisible(true);
+  }
 
+  const getMasterState=async()=>{
+    const res=await api.master.getDistricts();
+    // Alert.alert("res",JSON.stringify(res)); 
+  const result=res.map((m)=>{
+    return{
+      label:m.districtName,
+    value:m.id
+    }
+
+  });
+  setDistrict(result);
+  }
+
+  const getBlocks=async(districtId)=>{
+    const res=await api.master.getBlocksByDistrictId(districtId);
+    const result=res.map((m)=>{
+      return{
+        label:m.blockName,
+        value:m.id
+      }
+    });
+    // Alert.alert("Blocks",JSON.stringify(result));
+    setBlocks(result);
+  };
+  const getPanchayats=async(blockId)=>{
+    const res=await api.master.getGramPanchayats(blockId);
+      
+    const result=res.map((m)=>{
+      return{
+        label:m.panchayatName,
+        value:m.id,
+        blockId:m.blockId
+
+      }
+    });
+  
+    setPanchayats(result);
+  };
   const handleNext = () => {
     if (currentQuestion < 5) {
       const updatedColors = [...backgroundColors];
@@ -216,8 +295,40 @@ const respondantData=[
     }
   };
   const [alertVisible, setAlertVisible] = useState(false);
+ 
   const [alertMessage, setAlertMessage] = useState('');
+  const [headOfTheHouseholdGender, setHeadOfTheHouseholdGender] = useState('');
+  const [isWomenInSHG, setIsWomenInSHG] = useState(false);
+  const [isWomenInSubhadraYojana, setIsWomenInSubhadraYojana] = useState(false);
 
+  const [hasRationCard, setHasRationCard] = useState(false);
+  const [drinkingWaterSource, setDrinkingWaterSource] = useState('');
+  const [isLpgConnectionUnderUjjwala, setIsLpgConnectionUnderUjjwala] = useState(false);
+  const [havingLabourCards, setHavingLabourCards] = useState(false);
+  const [isCoveredUnderNSKY, setIsCoveredUnderNSKY] = useState(false);
+  const [isFamilyInvolvedInWeavingOrHandloom, setIsFamilyInvolvedInWeavingOrHandloom] = useState(false);
+  const [isFamilyCoveredUnderPOHI_LoomsScheme, setIsFamilyCoveredUnderPOHI_LoomsScheme] = useState(false);
+  const [fraClaimantStatus, setFraClaimantStatus] = useState('');
+  const [ownsHomesteadPattaLand, setOwnsHomesteadPattaLand] = useState('');
+  const [approximatePrivateLandHolding, setApproximatePrivateLandHolding] = useState('');
+  const [isIrrigationFacilityAvailable, setIsIrrigationFacilityAvailable] = useState(false);
+  const [sourcesOfIrrigation, setSourcesOfIrrigation] = useState([]);
+  const [involvedInLivestockActivity, setInvolvedInLivestockActivity] = useState(false);
+  const [kishanSchemeCoverage, setKishanSchemeCoverage] = useState('');
+  const [isCoveredUnderPMSBY, setIsCoveredUnderPMSBY] = useState(false);
+  const [isCoveredUnderPMJJBY, setIsCoveredUnderPMJJBY] = useState(false);
+  const [hasJanDhanYojanaAccount, setHasJanDhanYojanaAccount] = useState(false);
+  const [isEnrolledUnderShramYogiMaandhan, setIsEnrolledUnderShramYogiMaandhan] = useState(false);
+  const [isCoveredUnderAyushmanBharat, setIsCoveredUnderAyushmanBharat] = useState(false);
+  const [hasElectricityConnection, setHasElectricityConnection] = useState(false);
+  const [hasIndividualHouseholdLatrine, setHasIndividualHouseholdLatrine] = useState(false);
+  const [hasMGNREGSJobCard, setHasMGNREGSJobCard] = useState(false);
+  const [hasRuralHousingSchemeHouse, setHasRuralHousingSchemeHouse] = useState(false);
+  const [hasFamilyMemberMigratedLast3Years, setHasFamilyMemberMigratedLast3Years] = useState(false);
+  const [takenAdvanceForMigrationFromMiddleman, setTakenAdvanceForMigrationFromMiddleman] = useState(false);
+  const [minorChildrenAccompaniedMigration, setMinorChildrenAccompaniedMigration] = useState(false);
+  const [womenMembersMigrated, setWomenMembersMigrated] = useState(false);
+  const [respondentIdentity, setRespondentIdentity] = useState('');
   var alertdata = {
     'logout': t("Survey_Title_33"),
   }
@@ -232,7 +343,9 @@ const respondantData=[
   const AnalyaticsStyles = useMemo(() => AnalyaticsStyle(Colors), [Colors]);
   const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
   const [backgroundColors, setBackgroundColors] = useState(Array(5).fill(Colors.light_gray_text_color)); // Initial background colors for 4 views
-  
+  const onSavePress = async(values) => {
+Alert.alert("values",JSON.stringify(values)); 
+  }
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(40)} />
@@ -247,14 +360,31 @@ const respondantData=[
           />
         ))}
       </View>
-      <ScrollView
+     
+            {/* First question start */}
+            {/* <Text style={AnalyaticsStyles.TitleStyle}>{t("Basic Details")}</Text> */}
+            <Formik
+            initialValues={HouseHoldFormInitialValues(props)}
+            // validationSchema={HouseHoldValidationSchema(props)}
+            onSubmit={(values)=>{
+                onSavePress(values)
+            
+            }}>
+            {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            setFieldValue,
+            values,
+            errors,
+            touched,
+            })=>(<>
+             <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={Style.ScrollViewStyles}>
         <KeyboardAvoidingView enabled>
           <Spacing space={SH(40)} />
           <View style={AnalyaticsStyles.MainView}>
-            {/* First question start */}
-            {/* <Text style={AnalyaticsStyles.TitleStyle}>{t("Basic Details")}</Text> */}
             {currentQuestion === 1 && (
               <View>
                   {/* District */}
@@ -262,69 +392,91 @@ const respondantData=[
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("District")}</Text>
                 <Spacing space={SH(5)} />
                   <DropDown
-                  data={dropDownData}
+                  data={districts}
                   dropdownStyle={{marginLeft:SH(10)}}
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  onChange={()=>{
-                      Alert.alert("hellll");
+                  value={values?.householdBasicProfile?.district}
+                  placeholder={values?.householdBasicProfile?.district || t("Select District")}
+                  onChange={(obj)=>{
+                      // Alert.alert("hellll",JSON.stringify(label));
+                      getBlocks(obj.value);
+                      setFieldValue('householdBasicProfile.district',obj.label);
                   }}/>
+                  <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.district}</Text>
                   <Spacing space={SH(15)} />
                   {/* Block */}
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Block")}</Text>
                 <Spacing space={SH(5)} />
                 <DropDown
-                  data={dropDownData}
+                  data={blocks}
                   dropdownStyle={{marginLeft:SH(10)}}
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  onChange={()=>{
-                      Alert.alert("hellll");
+                  value={values?.householdBasicProfile?.block}
+                  placeholder={values?.householdBasicProfile?.block || t("Select Block")}
+                  onChange={(obj)=>{
+                    getPanchayats(obj.value);
+                      setFieldValue('householdBasicProfile.block',obj.label);
+                  
+                      
                   }}/>
+                   <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.block}</Text>
                   <Spacing space={SH(15)} />
                   {/* Gram Panchayat */}
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Gram Panchayat")}</Text>
                 <Spacing space={SH(5)} />
                 <DropDown
-                  data={dropDownData}
+                  data={panchayats}
                   dropdownStyle={{marginLeft:SH(10)}}
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  onChange={()=>{
-                      Alert.alert("hellll");
+                  value={values?.householdBasicProfile?.panchayat}
+                  placeholder={values?.householdBasicProfile?.panchayat || t("Select Gram Panchayat")}
+                  onChange={(obj)=>{
+                    getVillages(obj.value);
+                    setFieldValue('householdBasicProfile.panchayat',obj.label);
                   }}/>
+                   <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.panchayat}</Text>
                   <Spacing space={SH(15)} />
                   {/* Revenue Village */}
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Revenue Village")}</Text>
                 <Spacing space={SH(5)} />
                 <DropDown
-                  data={dropDownData}
+                  data={panchayats}
                   dropdownStyle={{marginLeft:SH(10)}}
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  onChange={()=>{
-                      Alert.alert("hellll");
+                  value={values?.householdBasicProfile?.village}
+                  placeholder={values?.householdBasicProfile?.village || t("Select Revenue Village")}
+                  onChange={(obj)=>{
+                      setFieldValue('householdBasicProfile.village',obj.label);
                   }}/>
+                   <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.village}</Text>
                   <Spacing space={SH(15)} />
                 <Input
                   title={t("Hamlet")}
                   placeholder={t("Hamlet")}
-                  onChangeText={(text) => setState({ ...state, username: text })}
-                  value={state.username}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.hamlet', text)}
+                  value={values?.householdBasicProfile?.hamlet}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                  maxLength={20}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.hamlet}</Text>
                 <Spacing space={SH(15)} />
                 <Input
                   title={t("Name of Head of the Household as per Aadhar Card ?")}
                   placeholder={t("Name of Head of the Household as per Aadhar Card ?")}
-                  onChangeText={(text) => setState({ ...state, emailId: text })}
-                  value={state.emailId}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.headOfHouseholdName', text)}
+                  value={values?.householdBasicProfile?.headOfHouseholdName}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                  maxLength={20}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.headOfHouseholdName}</Text>
                 {/* <Spacing space={SH(15)} />
                 <Input
                   title={t("Gender (Head of the Household)")}
@@ -339,19 +491,29 @@ const respondantData=[
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Gender (Head of the Household)")}</Text>
                 <RadioButton
                   arrayData={genderData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => 
+                    {
+                      // Alert.alert("text",JSON.stringify(text));
+                      setFieldValue('householdBasicProfile.headOfHouseholdGender', text);
+                      setHeadOfTheHouseholdGender(text);
+
+                    }}
+                   value={headOfTheHouseholdGender}
+                  //value={"Male"}
+
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.headOfTheHouseholdGender}</Text>
                 <Spacing space={SH(15)} />
                 <Input
                   title={t("AADHAR No.")}
                   placeholder={t("AADHAR No.")}
-                  onChangeText={(text) => setState({ ...state, mobileNumber: text })}
-                  value={state.mobileNumber}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.aadharNumber', text)}
+                  value={values?.householdBasicProfile?.aadharNumber}
                   inputType="numeric"
                   maxLength={10}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.aadharNumber}</Text>
                 <Spacing space={SH(5)} />
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Social Category")}</Text>
                 <Spacing space={SH(5)} />
@@ -361,20 +523,23 @@ const respondantData=[
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  onChange={()=>{
-                      Alert.alert("hellll");
+                  value={values?.householdBasicProfile?.socialCategory}
+                  placeholder={values?.householdBasicProfile?.socialCategory || t("Select Social Category")}
+                  onChange={(obj)=>{
+                      setFieldValue('householdBasicProfile.socialCategory', obj.label);
                   }}/>
+                  <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.socialCategory}</Text>
                 <Spacing space={SH(15)} />
                 <Input
                   title={t("Bank Account No")}
                   placeholder={t("Bank Account No")}
-                  onChangeText={(text) => setState({ ...state, mobileNumber: text })}
-                  value={state.mobileNumber}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.bankAccountNumber', text)}
+                  value={values?.householdBasicProfile?.bankAccountNumber}
                   inputType="numeric"
                   maxLength={10}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
-                
+                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.bankAccountNumber}</Text>
                 <Spacing space={SH(5)} />
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Bank Name")}</Text>
                 <Spacing space={SH(5)} />
@@ -384,39 +549,46 @@ const respondantData=[
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  onChange={()=>{
-                      Alert.alert("hellll");
+                  value={values?.householdBasicProfile?.bankName}
+                  placeholder={values?.householdBasicProfile?.bankName || t("Select Bank Name")}  
+                  onChange={(obj)=>{
+                    setFieldValue('householdBasicProfile.bankName', obj.label);
                   }}/>
+                
+                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.bankName}</Text>
                   <Spacing space={SH(5)} />
                 <Input
                   title={t("IFSC code / Branch")}
                   placeholder={t("IFSC code / Branch")}
-                  onChangeText={(text) => setState({ ...state, mobileNumber: text })}
-                  value={state.mobileNumber}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.ifscCode', text)}
+                  value={values?.householdBasicProfile?.ifscCode}
                   inputType="numeric"
                   maxLength={10}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
+                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.ifscCode}</Text>
                 <Spacing space={SH(5)} />
                 <Input
                   title={t("Name of the women member of the Household?")}
                   placeholder={t("Name of the women member of the Household?")}
-                  onChangeText={(text) => setState({ ...state, mobileNumber: text })}
-                  value={state.mobileNumber}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.womenMemberName', text)}
+                  value={values?.householdBasicProfile?.womenMemberName}
                   inputType="numeric"
                   maxLength={10}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.womenMemberName}</Text>
                 <Spacing space={SH(5)} />
                 <Input
                   title={t("Age of Women Member as per AADHAR?")}
                   placeholder={t("Age of Women Member as per AADHAR?")}
-                  onChangeText={(text) => setState({ ...state, mobileNumber: text })}
-                  value={state.mobileNumber}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.womenMemberAge', text)}
+                  value={values?.householdBasicProfile?.womenMemberAge}
                   inputType="numeric"
                   maxLength={10}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.womenMemberAge}</Text>
                  <Spacing space={SH(5)} />
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Marital Status of the Women Member ?")}</Text>
                 <Spacing space={SH(5)} />
@@ -426,9 +598,12 @@ const respondantData=[
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  onChange={()=>{
-                      Alert.alert("hellll");
+                  value={values?.householdBasicProfile?.womenMemberMaritalStatus}
+                  placeholder={values?.householdBasicProfile?.womenMemberMaritalStatus || t("Select Marital Status")}
+                  onChange={(obj)=>{
+                      setFieldValue('householdBasicProfile.womenMemberMaritalStatus', obj.value);
                   }}/>
+                   <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.womenMemberMaritalStatus}</Text>
                   <Spacing space={SH(5)} />
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Relationship with the Head of the Household")}</Text>
                 <Spacing space={SH(5)} />
@@ -438,32 +613,49 @@ const respondantData=[
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  onChange={()=>{
-                      Alert.alert("hellll");
+                  value={values?.householdBasicProfile?.womenMemberRelationshipWithHead}
+                  placeholder={values?.householdBasicProfile?.womenMemberRelationshipWithHead || t("Select Relationship")}
+                  onChange={(obj)=>{
+                      setFieldValue('householdBasicProfile.womenMemberRelationshipWithHead', obj.value);
                   }}/>
+                   <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.womenMemberRelationshipWithHead}</Text>
                   <Spacing space={SH(5)} />
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Is any Women of the Family covered under Self Help Group(SHG)")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(obj) => {
+                    // Alert.alert("obj",JSON.stringify(obj));
+                    setIsWomenInSHG(obj);
+                    setFieldValue('householdBasicProfile.isWomenInSHG', obj)}}
+                  value={isWomenInSHG}
                 />
+                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.isWomenInSHG}</Text>
                 <Spacing space={SH(5)} />
                   <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether the women  member of the family covered under Subhadra Yojana")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setFieldValue('householdBasicProfile.isWomenInSubhadraYojana', text);
+                    setIsWomenInSubhadraYojana(text)
+                  }}
+                  value={isWomenInSubhadraYojana}
                 />
+                <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.isWomenInSubhadraYojana}</Text>
                 <Spacing space={SH(5)} />
                 <Spacing space={SH(5)} />
                 <Input
                   title={t("Total Number of Family Members")}
                   placeholder={t("Total Number of Family Members")}
-                  onChangeText={(text) => setState({ ...state, mobileNumber: text })}
-                  value={state.mobileNumber}
+                  onChangeText={(text) => {
+                    try{
+                      setFamilyMemberCount(parseInt(text));
+                    }catch(e){}
+                    setFieldValue('householdBasicProfile.totalFamilyMembers', text);
+                   
+                  }}
+                  value={values?.householdBasicProfile?.totalFamilyMembers}
                   inputType="numeric"
-                  maxLength={10}
+                  maxLength={3}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
                 {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_36")}</Text>
@@ -482,6 +674,9 @@ const respondantData=[
                     </TouchableOpacity>
                   </View>
                 </View> */}
+                <TouchableOpacity style={AnalyaticsStyles.addButton} onPress={handleAddFamilyMember}>
+          <Text style={AnalyaticsStyles.PreviousTextStyle}>{t("Add Member")}</Text>
+        </TouchableOpacity>
               </View>
             )}
             {/* Two question start */}
@@ -490,47 +685,65 @@ const respondantData=[
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether the household have Ration Card?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setFieldValue('householdBasicProfile.hasRationCard', text);
+                    setHasRationCard(text);
+                  }}
+                  value={hasRationCard}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.hasRationCard}</Text>
                 {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_39")}</Text>
                 {renderCheckboxes()} */}
                 {/* <Spacing space={SH(5)} /> */}
                 <Input
                   title={t("Ration Card number?")}
                   placeholder={t("Ration Card number?")}
-                  onChangeText={(text) => setState({ ...state, about: text })}
-                  value={state.about}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.rationCardNumber', text)}
+                  value={values?.householdBasicProfile?.rationCardNumber}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.rationCardNumber}</Text>
+                
                  <Spacing space={SH(30)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("What is the source of drinking water for the family?")}</Text>
                 <RadioButton
                   arrayData={waterSourceData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {setFieldValue('householdBasicProfile.drinkingWaterSource', text);
+                  setDrinkingWaterSource(text);
+                  }}
+                  value={drinkingWaterSource}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.drinkingWaterSource}</Text>
                  <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether provided LPG connection under Ujjwala?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {setFieldValue('householdBasicProfile.isLpgConnectionUnderUjjwala', text);
+                  setIsLpgConnectionUnderUjjwala(text);
+                  }}
+                  value={isLpgConnectionUnderUjjwala}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.isLpgConnectionUnderUjjwala}</Text>
                  <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether the  family having Labour Cards?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {setFieldValue('householdBasicProfile.havingLabourCards', text);
+                  setHavingLabourCards(text);
+                  }}
+                  value={havingLabourCards}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.havingLabourCards}</Text>
                  <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether the  family covered under Nirman Shramik Kalyan Yojana (NSKY)?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {setFieldValue('householdBasicProfile.isCoveredUnderNSKY', text);
+                  setIsCoveredUnderNSKY(text);
+                  }}
+                  value={isCoveredUnderNSKY}
                 />
+                 <Text style={{color: 'red'}}>{errors?.householdBasicProfile?.isCoveredUnderNSKY}</Text>
               </View>
             )}
             {/* Three question start */}
@@ -546,62 +759,101 @@ const respondantData=[
                   width={SW(345)}
                   labelField="label"
                   valueField="value"
-                  onChange={()=>{
-                      Alert.alert("hellll");
+                  value={values?.householdOccupationAndLand?.primaryOccupationOfTheFamily}
+                  placeholder={values?.householdOccupationAndLand?.primaryOccupationOfTheFamily || t("Select Occupation")}
+                  onChange={(obj)=>{
+                      //  Alert.alert("hellll",JSON.stringify(obj));
+                      setFieldValue('householdOccupationAndLand.primaryOccupationOfTheFamily', obj.label);
                   }}/>
+                  {values?.householdOccupationAndLand?.primaryOccupationOfTheFamily==='Other User entry' && <><Spacing space={SH(15)} />
+                <Input
+                  title={t("Others")}
+                  placeholder={t("Others")}
+                  onChangeText={(text) => setFieldValue('householdOccupationAndLand.otherPrimaryOccupationDetails', text)}
+                  value={values?.householdOccupationAndLand?.otherPrimaryOccupationDetails}
+                  titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                  maxLength={20}
+                /></>}
+                  <Text style={{color: 'red'}}>{errors?.householdOccupationAndLand?.otherPrimaryOccupationDetails}</Text>
 
                 <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Is any family member involved in weaving or handloom work?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setFieldValue('householdOccupationAndLand.isFamilyInvolvedInWeavingOrHandloom', text);
+                    setIsFamilyInvolvedInWeavingOrHandloom(text);
+                  }}
+                  value={isFamilyInvolvedInWeavingOrHandloom}
                 />
 
                 <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Does the family covered under POHI_Looms and Accessories Scheme?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {setFieldValue('householdOccupationAndLand.isFamilyCoveredUnderPOHI_LoomsScheme', text);
+                  setIsFamilyCoveredUnderPOHI_LoomsScheme(text);
+                  }}
+                  value={isFamilyCoveredUnderPOHI_LoomsScheme}
                 />
 
                 <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Amount of Land holding under FRA- In Acres ? (If Not a FRA claimant.. Go to next Qn or else go to next to next Qn.)")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                  setFieldValue('householdOccupationAndLand.fraClaimantStatus', text);
+                  setFraClaimantStatus(text);
+                  }}
+                  value={fraClaimantStatus}
                 />
+                 {values?.householdOccupationAndLand?.fraClaimantStatus===true && <><Spacing space={SH(15)} />
+                <Input
+                  title={t("Amount of Land holding under FRA- In Acres")}
+                  placeholder={t("Amount of Land holding under FRA- In Acres")}
+                  onChangeText={(text) => setFieldValue('householdOccupationAndLand.fra_LandAmountInAcres', text)}
+                  value={values?.householdOccupationAndLand?.fra_LandAmountInAcres}
+                  titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                  maxLength={20}
+                /></>}
 
 <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether your family owns Homestead Patta land?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setFieldValue('householdOccupationAndLand.ownsHomesteadPattaLand', text);
+                    setOwnsHomesteadPattaLand(text);
+                  }}
+                  value={ownsHomesteadPattaLand}
                 />
+                
 
 <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Approximate private land holding of the Household?")}</Text>
                 <RadioButton
                   arrayData={privateLandData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setFieldValue('householdOccupationAndLand.approximatePrivateLandHolding', text);
+                    setApproximatePrivateLandHolding(text);
+                  }}
+                  value={approximatePrivateLandHolding}
                 />
 
 <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether irrigation facility available?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {setFieldValue('householdOccupationAndLand.isIrrigationFacilityAvailable', text);
+                  setIsIrrigationFacilityAvailable(text);
+                  }}
+                  value={isIrrigationFacilityAvailable}
                 />
 
 
-                <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("What are the sources of Irrigation?")}</Text>
-                {renderCheckboxes2()}
-                {<Spacing space={SH(5)}/>}
+                {values?.householdOccupationAndLand?.isIrrigationFacilityAvailable===true && <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("What are the sources of Irrigation?")}</Text>}
+                {values?.householdOccupationAndLand?.isIrrigationFacilityAvailable===true && renderCheckboxes2()}
+                {values?.householdOccupationAndLand?.isIrrigationFacilityAvailable===true &&<Spacing space={SH(5)}/>}
 
 
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether involved in livestock activity?")}</Text>
@@ -664,29 +916,36 @@ const respondantData=[
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether covered  under PM Kishan / CM Kishan Scheme?")}</Text>
                 <RadioButton
                   arrayData={schemeData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setFieldValue('householdEntitlement.kishanSchemeCoverage', text);
+                    setKishanSchemeCoverage(text);}}
+                  value={kishanSchemeCoverage}
                 />
                 <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Has the family provided house under the Rural Housing Scheme?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                  setHasRuralHousingSchemeHouse(text);
+                  setFieldValue('householdEntitlement.hasRuralHousingSchemeHouse', text);
+                  }}
+                  value={hasRuralHousingSchemeHouse}
                 />
                 <Spacing space={SH(5)} />
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Does your family have a Job Card under MGNREGS?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => setHasMGNREGSJobCard(text)}
+                  value={hasMGNREGSJobCard}
                 />
                 <Spacing space={SH(5)} />
                 <Input
                   title={t("Mention the Full Job card No (after Revenue Village code)")}
                   placeholder={t("Mention the Full Job card No (after Revenue Village code)")}
-                  onChangeText={(text) => setState({ ...state, mobileNumber: text })}
-                  value={state.mobileNumber}
+                  onChangeText={(text) => 
+                  setFieldValue('householdEntitlement.fullJobCardNumber', text)
+                  }
+                  value={values?.householdEntitlement?.fullJobCardNumber}
                   inputType="numeric"
                   maxLength={10}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -695,50 +954,69 @@ const respondantData=[
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether the Household provided with Individual Household Latrine in past?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) =>{ 
+                  setHasIndividualHouseholdLatrine(text);
+                  setFieldValue('householdEntitlement.hasIndividualHouseholdLatrine', text);
+                  }}
+                  value={hasIndividualHouseholdLatrine}
                 />
                 <Spacing space={SH(5)}/>
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether the household has electricity connection?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setHasElectricityConnection(text);
+                    setFieldValue('householdEntitlement.hasElectricityConnection', text);
+                  }}
+                  value={hasElectricityConnection}
                 />
                 <Spacing space={SH(5)}/>
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether Covered under Pradhan Mantri Ayushman  Jan Arogya Yojana?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {setIsCoveredUnderAyushmanBharat(text);
+                  setFieldValue('householdEntitlement.isCoveredUnderAyushmanBharat', text);
+                  }}
+                  value={isCoveredUnderAyushmanBharat}
                 />
                 <Spacing space={SH(5)}/>
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Is any household member enrolled under Pradhan Mantri Shram Yogi Maandhan pension scheme?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                  setIsEnrolledUnderShramYogiMaandhan(text);
+                  setFieldValue('householdEntitlement.isEnrolledUnderShramYogiMaandhan', text);
+                  }}
+                  value={isEnrolledUnderShramYogiMaandhan}
                 />
                 <Spacing space={SH(5)}/>
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Does the household have Pradhan Mantri Jan Dhan Yojana bank account?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {setHasJanDhanYojanaAccount(text);
+                  setFieldValue('householdEntitlement.hasJanDhanYojanaAccount', text);
+                  }}
+                  value={hasJanDhanYojanaAccount}
                 />
                 <Spacing space={SH(5)}/>
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether the family members between 18 to 50 years age covered under Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY) ?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setIsCoveredUnderPMJJBY(text);
+                    setFieldValue('householdEntitlement.isCoveredUnderPMJJBY', text);}}
+                  value={isCoveredUnderPMJJBY}
                 />
                 <Spacing space={SH(5)}/>
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether family members between age 18 to 70 years covered under Pradhan Mantri Suraksha Bima Yojana (PMSBY) ?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setIsCoveredUnderPMSBY(text);
+                    setFieldValue('householdEntitlement.isCoveredUnderPMSBY', text);
+
+                  }}
+                  value={isCoveredUnderPMSBY}
                 />
                 <Spacing space={SH(5)}/>
                 {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_46")}</Text>
@@ -777,36 +1055,48 @@ const respondantData=[
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Has any family member migrated during the last 3 years?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setFieldValue('householdMigrationStatus.hasFamilyMemberMigratedLast3Years', text);
+                    setHasFamilyMemberMigratedLast3Years(text);
+                  }}
+                  value={hasFamilyMemberMigratedLast3Years}
                 />
                 <Spacing space={SH(5)}/>
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Had the family taken any advance from middleman  for migration?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setFieldValue('householdMigrationStatus.takenAdvanceForMigrationFromMiddleman', text);
+                    setTakenAdvanceForMigrationFromMiddleman(text);
+                  }}
+                  value={takenAdvanceForMigrationFromMiddleman}
                 />
                 <Spacing space={SH(5)}/>
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether minor children accompanied during migration?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setFieldValue('householdMigrationStatus.minorChildrenAccompaniedMigration', text);
+                    setMinorChildrenAccompaniedMigration(text);
+                  }}
+                  value={minorChildrenAccompaniedMigration}
                 />
                 <Spacing space={SH(5)}/>
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether Women Members Migrated?")}</Text>
                 <RadioButton
                   arrayData={selfHelpData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                    setFieldValue('householdMigrationStatus.womenMembersMigrated', text);
+                    setWomenMembersMigrated(text);
+                  }}
+                  value={womenMembersMigrated}
                 />
                 <Spacing space={SH(5)} />
                 <Input
                   title={t("Family contact mobile no.?")}
                   placeholder={t("Family contact mobile no.?")}
-                  onChangeText={(text) => setState({ ...state, mobileNumber: text })}
-                  value={state.mobileNumber}
+                  onChangeText={(text) => setFieldValue('householdMigrationStatus.familyContactMobileNo', text)}
+                  value={values?.householdMigrationStatus?.familyContactMobileNo}
                   inputType="numeric"
                   maxLength={10}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -815,8 +1105,11 @@ const respondantData=[
                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Identity of the respondent?")}</Text>
                 <RadioButton
                   arrayData={respondantData}
-                  onChangeText={(text) => setState({ ...state, QuestionOne: text })}
-                  value={state.QuestionOne}
+                  onChangeText={(text) => {
+                  setFieldValue('householdMigrationStatus.respondentIdentity', text);
+                  setRespondentIdentity(text);
+                  }}
+                  value={respondentIdentity}
                 />
                    <Spacing space={SH(10)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Capture a photo of the respondent")}</Text>
@@ -876,10 +1169,10 @@ const respondantData=[
                 <Input
                   title={t("Surveyor Name")}
                   placeholder={t("Surveyor Name")}
-                  onChangeText={(text) => setState({ ...state, mobileNumber: text })}
-                  value={state.mobileNumber}
-                  inputType="numeric"
-                  maxLength={10}
+                  onChangeText={(text) => setFieldValue('householdBasicProfile.entryBy', text)}
+                  value={values?.householdBasicProfile?.entryBy}
+                  // inputType="numeric"
+                  maxLength={20}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 />
                 {/* <Spacing space={SH(5)} />
@@ -897,13 +1190,13 @@ const respondantData=[
                 <DatePicker />
                 <Spacing space={SH(15)} /> 
               </View>
+              
             )}
-            <Spacing space={SH(170)} />
+             <Spacing space={SH(170)} />
           </View>
         </KeyboardAvoidingView>
       </ScrollView>
-
-      <View style={AnalyaticsStyles.NavigationButtons}>
+       <View style={AnalyaticsStyles.NavigationButtons}>
         <TouchableOpacity style={AnalyaticsStyles.PreviousButton} onPress={handlePrevious}>
           <Text style={AnalyaticsStyles.PreviousTextStyle}>{t("Survey_Title_47")}</Text>
         </TouchableOpacity>
@@ -912,7 +1205,21 @@ const respondantData=[
             <Text style={AnalyaticsStyles.PreviousTextStyle}>{t("Survey_Title_48")}</Text>
           </TouchableOpacity>
         )}
+         {currentQuestion == 5 && (
+          <TouchableOpacity style={AnalyaticsStyles.SubmitButton} onPress={handleSubmit}>
+            <Text style={AnalyaticsStyles.PreviousTextStyle}>{t("Submit")}</Text>
+          </TouchableOpacity>
+        )}
       </View>
+            </>
+            )}
+              
+            </Formik>
+            
+           
+     
+
+    
       <ConfirmationAlert
         message={alertMessage}
         iconVisible={true}
@@ -923,6 +1230,18 @@ const respondantData=[
         buttonText={t("Ok")}
         buttonminview={Style.ButtonCenter}
       />
+       <FamilyMemberAlert
+                      message={alertMessage}
+                      modalVisible={familyAlertVisible}
+                      setModalVisible={setFamilyAlertVisible}
+                      onPress={() => { setFamilyAlertVisible(!familyAlertVisible), onoknutton() }}
+                      buttonminview={Style.ButtonCenter}
+                      iconVisible={true}
+                      buttonText={t("Submit")}
+                      count={familyMemberCount}
+                      familyMembers={familyMembers}
+                      setFamilyMembers={setFamilyMembers}
+                  />
     </View>
   );
 };

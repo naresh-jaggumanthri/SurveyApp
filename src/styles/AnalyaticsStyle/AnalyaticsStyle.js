@@ -88,6 +88,26 @@ export default AnalyaticsStyle = (Colors) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
+   SubmitButton: {
+    backgroundColor: "green",
+    height: SH(35),
+    borderRadius: 300,
+    width: '40%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+   addButton: {
+    backgroundColor: Colors.theme_background,
+    height: SH(35),
+    borderRadius: 300,
+    width: '90%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    alignSelf:'center',
+    justifyContent: 'center',
+    marginTop:SH(50)
+  },
   PreviousTextStyle: {
     color: Colors.white_text_color,
     fontFamily: Fonts.Poppins_Medium,

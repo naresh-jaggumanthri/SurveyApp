@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { Button, Input, Spacing, PasswordInput, VectorIcon } from '../../../components';
 import { RouteName } from '../../../routes';
 import { Style, Login } from '../../../styles';
@@ -7,14 +7,23 @@ import { SH, SF } from '../../../utils';
 import { useTheme } from '@react-navigation/native';
 import { useTranslation } from "react-i18next";
 import images from '../../../index';
+import { Formik } from 'formik';
+import { LoginFormInitialValues, LoginValidationSchema } from './LoginHelper';
+import api from '../../../api';
+import { APP_NAME, AppOkAlert } from '../../../utils/AlertHelper';
+import DataReducer from '../../../redux/reducers/DataReducer';
+import { login_data_action } from '../../../redux/action/DataAction';
+import { useDispatch } from 'react-redux';
 
 const LoginScreen = (props) => {
     const { Colors } = useTheme();
     const Logins = useMemo(() => Login(Colors), [Colors]);
     const { navigation } = props;
-    const [mobileNumber, setMobileNumber] = useState('');
+    const [name, setName] = useState('');
+    const [password, setPassword] = useState('');
     const [passwordVisibility, setpasswordVisibility] = useState(true);
     const [TextInputPassword, setTextInputPassword] = useState('');
+     const dispatch = useDispatch();
     const onChangeText = (text) => {
         if (text === 'TextInputPassword') setpasswordVisibility(!passwordVisibility);
     };
@@ -22,6 +31,22 @@ const LoginScreen = (props) => {
 
     const OnRegisterPress = () => {
         navigation.navigate(RouteName.REGISTER_SCREEN);
+    }
+    const onLoginPress = async (values) => {
+        dispatch(login_data_action(values));
+        const res=await api.user.signIn(null,null,{
+            username:values.username,
+            password:values.password
+        });
+        if(res.status=='CODE_ERROR'){
+            AppOkAlert("Login Failed",()=>{},"OK",APP_NAME);
+            return;
+        }
+      if(res.status=='OK'){
+            navigation.navigate(RouteName.OTP_VERYFY_SCREEN) 
+            return;
+        }
+       
     }
 
     return (
@@ -39,35 +64,63 @@ const LoginScreen = (props) => {
                         {/* <Text style={Logins.LoginText}>{t("Survey_Title_58")}</Text> */}
                     </View>
                     <Spacing space={SH(30)} />
-                    <View style={Logins.InputSpaceView}>
+                    <Formik
+initialValues={LoginFormInitialValues(name,password)}
+validationSchema={LoginValidationSchema(name,password)}
+onSubmit={(values)=>{
+    onLoginPress(values)
+
+}}>
+{({
+handleChange,
+handleBlur,
+handleSubmit,
+setFieldValue,
+values,
+errors,
+touched,
+})=>(<><View style={Logins.InputSpaceView}>
                         <Input
                             title={t("Mobile_Number")}
                             placeholder={t("Mobile_Number")}
-                            onChangeText={(value) => setMobileNumber(value)}
-                            value={mobileNumber}
-                            inputType="numeric"
+                            onChangeText={(value) => {setName(value); setFieldValue('username', value);}}
+                            value={name}
+                            // inputType="numeric"
                             maxLength={10}
                             placeholderTextColor={Colors.gray_text_color}
                         />
                     </View>
+                    <Text style={{color: 'red'}}>{errors.username}</Text>
+
                     <Spacing space={SH(20)} />
                     <PasswordInput
                         name={passwordVisibility ? 'eye-off' : 'eye'}
                         label={t("Password_Text")}
                         placeholder={t("Password_Text")}
-                        value={TextInputPassword}
+                        value={password}
                         onPress={() => { onChangeText("TextInputPassword") }}
-                        onChangeText={(text) => setTextInputPassword(text)}
+                        maxLength={7}
+                        onChangeText={(text) => {
+                            setPassword(text)
+                            setFieldValue('password', text);
+                        }}
                         secureTextEntry={passwordVisibility}
                     />
+ <Text style={{color: 'red'}}>{errors.password}</Text>
 
                     <Spacing space={SH(29)} />
                     <View style={Logins.LoginButton}>
                         <Button
                             title={t("Login_Text")}
-                            onPress={() => navigation.navigate(RouteName.OTP_VERYFY_SCREEN)}
+                            onPress={() => 
+                                handleSubmit()
+                               
+                                // navigation.navigate(RouteName.OTP_VERYFY_SCREEN)
+                            }
                         />
-                    </View>
+                    </View></>)}
+</Formik>
+
                     <Spacing space={SH(20)} />
                     <View style={Style.FlexRowForgot}>
                         <TouchableOpacity onPress={() => navigation.navigate(RouteName.FORGOT_PASSWORD)}>

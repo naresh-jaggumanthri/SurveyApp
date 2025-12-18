@@ -1,6 +1,6 @@
 {
   "translation": {
-    "Mobile_Number": "Enter Your Mobile Number",
+    "Mobile_Number": "Enter Your User Name",
     "Login_Text": "Login",
     "Password_Text": "Password",
     "Dont_Have_Account": "Don’t have any account?",
@@ -335,6 +335,84 @@
 "Capture a photo of the respondent":"Capture a photo of the respondent",
 "Capture the GEO location":"Capture the GEO location",
 "Surveyor Name":"Surveyor Name",
-"Survey Date and Time":"Survey Date and Time"
+"Survey Date and Time":"Survey Date and Time",
+"Add Member":"Add Member",
+"Name of the Family Member":"Name of the Family Member",
+"Age":"Age",
+"Gender":"Gender",
+"Education Qualification":"Education Qualification",
+"Occupation":"Occupation",
+"Whether Migrated in last three years":"Whether Migrated in last three years",
+"Destination State":"Destination State",
+"Nature/Sector of engagement at destination during migration?":"Nature/Sector of engagement at destination during migration?",
+"Period of migration":"Period of migration",
+"Total number of households":"Total number of households",
+"Male":"Male",
+"Female":"Female",
+"Total Population":"Total Population",
+"Are internal village roads pucca (concrete)?":"Are internal village roads pucca (concrete)?",
+"If No or Partially, requirement of internal village pucca roads (in RMT)?":"If No or Partially, requirement of internal village pucca roads (in RMT)?",
+"Are internal drains available?":"Are internal drains available?",
+"If Yes, Are drains properly functional?":"If Yes, Are drains properly functional?",
+"Is the village electrified?":"Is the village electrified?",
+"Is street lighting available?":"Is street lighting available?",
+"What type of street lighting is provided?":"What type of street lighting is provided?",
+"Is the village connected to the GP headquarters by an all weather road?":"Is the village connected to the GP headquarters by an all weather road?",
+"If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT??":"If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?",
+"Is the GP head quarter connected to any PWD road or State highway or Nation Highway by an all weather road?":"Is the GP head quarter connected to any PWD road or State highway or Nation Highway by an all weather road?",
+"What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?":"What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?",
+"No of men currently in migration?":"No of men currently in migration?",
+"No of women currently in migration?":"No of women currently in migration?",
+"No of minor children below 18 yrs age currently in migration?":"No of minor children below 18 yrs age currently in migration?",
+"Total No. of person currently in migration?":"Total No. of person currently in migration?",
+"Information Related to Migration":"Information Related to Migration",
+"Main source of drinking water?":"Main source of drinking water?",
+"Are all households having toilets?":"Are all households having toilets?",
+"Is there a functioning Anganwadi Centre?":"Is there a functioning Anganwadi Centre?",
+"Is Primary school available within the village?":"Is Primary school available within the village?",
+"Is Secondary school within 3 km distance?":"Is Secondary school within 3 km distance?",
+"Is there a Sub Health Centre in the village?":"Is there a Sub Health Centre in the village?",
+"Community & Social Infrastructure":"Community & Social Infrastructure",
+"Community Centre available?":"Community Centre available?",
+"Common shed for WSHG available?":"Common shed for WSHG available?",
+"Availability of playground in the village?":"Availability of playground in the village?",
+"No. of community tanks available in the village?":"No. of community tanks available in the village?",
+"Livelihood & Service Infrastructure":"Livelihood & Service Infrastructure",
+"Is mobile network coverage available?":"Is mobile network coverage available?",
+"Is Digital last mile connectivity (internet facility) available?":"Is Digital last mile connectivity (internet facility) available?",
+"Is there a drying yard available?":"Is there a drying yard available?",
+"Is there a PDS (ration shop) in the village?":"Is there a PDS (ration shop) in the village?",
+"If No, distance of PDS (ration shop) from the village (in km)?":"If No, distance of PDS (ration shop) from the village (in km)?",
+"Whether banking or post office or KIOSK or mini bank services are available within 3 km distance from the village?":"Whether banking or post office or KIOSK or mini bank services are available within 3 km distance from the village?",
+"Water Resource & Irrigation Structures":"Water Resource & Irrigation Structures",
+"Is water from any mega, medium or minor irrigation project available to the village?":"Is water from any mega, medium or minor irrigation project available to the village?",
+"If Yes, Whether repair or construction of a new distribution canal is required?":"If Yes, Whether repair or construction of a new distribution canal is required?",
+"If Yes, Length of distribution canal requiring repair or new construction in RMT?":"If Yes, Length of distribution canal requiring repair or new construction in RMT?",
+"Is there functional lift irrigation project available?":"Is there functional lift irrigation project available?",
+"Scope of new lift irrigation project?":"Scope of new lift irrigation project?",
+"Availability of functional Check Dams in the village?":"Availability of functional Check Dams in the village?",
+"Scope of new Check Dams in the village?":"Scope of new Check Dams in the village?",
+"Availability of functional distribution canal in the village in RMT?":"Availability of functional distribution canal in the village in RMT?",
+"If Yes, Scope of new distribution canal in the village in RMT?":"If Yes, Scope of new distribution canal in the village in RMT?",
+"Respondent Details":"Respondent Details",
+"Respondent Name":"Respondent Name",
+"Identity":"Identity", 
+"Process Adopted for Survey":"Process Adopted for Survey",
+"Respondent contact mobile no.?":"Respondent contact mobile no.?",
+"Capture a photo of the meeting/FGD":"Capture a photo of the meeting/FGD",
+"Enumerator Name":"Enumerator Name"
+
+
+
+
+
+
+
+
+
+
+
+
+
   }
 }

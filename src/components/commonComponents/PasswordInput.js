@@ -85,6 +85,7 @@ function PasswordInput({
     <View style={styles.container}>
       <Input
         name="password"
+        maxLength={7}
         rightIcon={
           <TouchableOpacity style={styles.IconPostionAboluteTwo} onPress={() => onPress()}>
             <VectorIcon
