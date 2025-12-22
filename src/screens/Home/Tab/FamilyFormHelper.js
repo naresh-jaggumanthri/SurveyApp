@@ -28,6 +28,7 @@ export const HouseHoldFormInitialValues = () => ({
    isCoveredUnderNSKY:null,
    geoLocation:null,
    entryBy:null,
+   surveyDate:null
  },
 
 
@@ -116,7 +117,7 @@ export const HouseHoldFormValidationSchema = (props) =>{
         is: true,
         then: schema => schema.required('Ration Card Number is required'),
         otherwise: schema => schema.notRequired()
-      }),
+      }).matches(/^[A-Za-z0-9]+$/, 'Only letters and numbers allowed'),
 
       drinkingWaterSource: Yup.string().required('Drinking Water Source is required'),
       hasUjjwalaLPGConnection: requiredBoolean,
@@ -153,9 +154,9 @@ export const HouseHoldFormValidationSchema = (props) =>{
     //   minorChildrenAccompaniedMigration: requiredBoolean,
     //   womenMembersMigrated: requiredBoolean,
 
-    //   familyContactMobileNo: Yup.string()
-    //     .matches(/^\d{10}$/, 'Mobile number must be 10 digits')
-    //     .required('Family Contact Mobile No. is required'),
+      familyContactMobileNo: Yup.string()
+        .matches(/^[6-9][0-9]{9}$/, 'Enter valid 10 digit mobile number')
+        .required('Family Contact Mobile No. is required'),
 
     //   respondentIdentity: Yup.string().required('Respondent Identity is required'),
     //   respondentPhotoPathOrUrl: Yup.string().required('Respondent Photo is required')

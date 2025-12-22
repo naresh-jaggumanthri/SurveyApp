@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
+  StyleSheet,
 } from 'react-native';
 // import { Modal, Text, View } from "react-native";
 // import Style from '../../styles/CommonStyle/Style';
@@ -201,16 +202,32 @@ function FamilyalertModal(props) {
     updatedMembers[index][key] = value;
     setFamilyMembers(updatedMembers);
   };
+//   const renderForm = () => {
+//     return familyMembers?.map((member, index) => (
+//       <FamilyMemberForm
+//         key={index}
+//         index={index}
+//         data={member}
+//         onChange={handleMemberChange}
+//       />
+//     ));
+//   };
+
   const renderForm = () => {
-    return familyMembers?.map((member, index) => (
+  return familyMembers?.map((member, index) => (
+    <View key={index} style={styles.card}>
+      {/* <Text style={styles.title}>
+        Family Member {index + 1}
+      </Text> */}
+
       <FamilyMemberForm
-        key={index}
         index={index}
         data={member}
         onChange={handleMemberChange}
       />
-    ));
-  };
+    </View>
+  ));
+};
   const renderCheckboxes = ind => {
     
     return checkboxes.map((checkbox, index) => (
@@ -334,5 +351,26 @@ FamilyalertModal.propTypes = {
   buttonText: propTypes.string,
   cancelButtonText: propTypes.string,
 };
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 3, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#333',
+  },
+});
+
 
 export default FamilyalertModal;

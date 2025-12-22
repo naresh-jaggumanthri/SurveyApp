@@ -49,7 +49,8 @@ const LoginScreen = (props) => {
             token:res.token
         }
          dispatch(login_data_action(finalValues));
-            navigation.navigate(RouteName.OTP_VERYFY_SCREEN) 
+            // navigation.navigate(RouteName.OTP_VERYFY_SCREEN)
+            navigation.navigate(RouteName.HOME_SCREEN)
             return;
         }
        

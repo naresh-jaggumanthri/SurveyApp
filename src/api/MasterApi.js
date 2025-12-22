@@ -13,7 +13,7 @@ export default class MasterAPI extends Base {
   //2.get all districts
   getDistricts(token) {
     
-    return this.apiClient.get(null, "api/districtList", {}, token);
+    return this.apiClient.get(null, "api/districtList/24", {}, token);
   }
 
   //3.get all blocks

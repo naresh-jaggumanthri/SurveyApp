@@ -10,7 +10,7 @@ const images = {
    Payments_Successful: require('./LottieAnimation/PaymentsSuccess.json'),
    Languageanimation: require('./LottieAnimation/languageanimation.json'),
    OTP_Animation: require('./LottieAnimation/OTPanimation.json'),
-   App_logo: require('./Applogo.png'),
+   // App_logo: require('./Applogo.png'),
    Color_picker_image: require('./colorpicker.png'),
    Google_image: require('./googleicon.png'),
    Bottom_Shap: require('./BottomShap.png'),

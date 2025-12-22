@@ -11,6 +11,8 @@ const RouteName = {
     SURVEY_TAB: 'Survey',
     FAMILY_SURVEY_TAB: 'FamilySurvey',
     VILLAGE_SURVEY_TAB: 'VillageSurvey',
+    FAMILY_LIST_TAB: 'FamilyList',
+    VILLAGE_LIST_TAB: 'VillageList',
     CHECKOUT_TAB: 'Checkout',
     WALLETS_TAB: 'Wallets',
     PROFILE_TAB: 'Profile',

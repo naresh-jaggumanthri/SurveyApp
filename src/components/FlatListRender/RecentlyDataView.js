@@ -7,7 +7,7 @@ import { SH, SF, Colors } from '../../utils';
 import { useTranslation } from "react-i18next";
 
 const TrendingEvent = (props) => {
-  const { item,index,onPress } = props;
+  const { item,index,onPress,type} = props;
   const { t } = useTranslation();
   const { Colors } = useTheme();
   const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
@@ -22,13 +22,13 @@ const TrendingEvent = (props) => {
             <View style={HomeTabStyles.Widthstylestwo}>
               <Text style={HomeTabStyles.Textstylesbastu}>{t(item.text)}</Text>
               <Text style={HomeTabStyles.Musictextstryles}>{t(item.musicname)}</Text>
-              <View style={HomeTabStyles.Flexrowmusiz}>
+              {/* <View style={HomeTabStyles.Flexrowmusiz}>
                 <View style={HomeTabStyles.Musicborderview}>
                   <Text style={HomeTabStyles.Musictextstryles}>{t(item.TextTwo)}</Text>
                 </View>
-              </View>
+              </View> */}
               <View style={HomeTabStyles.FlexRowDirection}>
-              <Text style={HomeTabStyles.BlackResponce}>{t("Side_Title_9")} : </Text>
+              <Text style={HomeTabStyles.BlackResponce}>{type==1?t("Number of family members"):t("Number of house holds")} : </Text>
               <Text style={HomeTabStyles.BlackResponceOne}>{item.TextThree}</Text>
               </View>
               <Spacing space={SH(5)} />

@@ -10,6 +10,8 @@ import { Colors, SH, SF } from '../utils';
 import { useTranslation } from "react-i18next";
 import FamilyFormSurveyTab from '../screens/Home/Tab/FamilyFormSurveyTab';
 import VillageFormSurveyTab from '../screens/Home/Tab/VillageFormSurveyTab';
+import FamilyFormList from '../screens/Home/Tab/FamilyFormList';
+import VillageFormList from '../screens/Home/Tab/VillageFormList';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -105,7 +107,52 @@ function SurveyFormScreenStack(props) {
     </Stack.Navigator>
   );
 }
-
+function FamilySurveyFormListScreenStack(props) {
+  const { t } = useTranslation();
+  return (
+    <Stack.Navigator initialRouteName="Offers">
+      <Stack.Screen
+        name={"House Hold Schedule-Migration Survey List"}
+        component={FamilyFormList}
+        options={{
+          ...HeaderArray,
+          headerStyle: {
+            backgroundColor: Colors.theme_background,
+          },
+          headerLeft: () => (
+            <HeaderLeftMenuIcon {...props} />
+          ),
+          headerRight: () => (
+            <ColorPicker />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+function VillageSurveyFormListScreenStack(props) {
+  const { t } = useTranslation();
+  return (
+    <Stack.Navigator initialRouteName="Offers">
+      <Stack.Screen
+        name={"Village Schedule-Migration Survey List"}
+        component={VillageFormList}
+        options={{
+          ...HeaderArray,
+          headerStyle: {
+            backgroundColor: Colors.theme_background,
+          },
+          headerLeft: () => (
+            <HeaderLeftMenuIcon {...props} />
+          ),
+          headerRight: () => (
+            <ColorPicker />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
 function FamilySurveyFormScreenStack(props) {
   const { t } = useTranslation();
   return (
@@ -219,6 +266,21 @@ export function HomeScsreenTabAll() {
           ),
         }}
       />
+       <Tab.Screen
+        name={RouteName.FAMILY_LIST_TAB}
+        component={FamilySurveyFormListScreenStack}
+        options={{
+          tabBarLabel: t("Side_Title_11"),
+          tabBarIcon: ({ focused }) => (
+            <VectorIcon
+              color={focused ? Colors.theme_background : Colors.gray_text_color}
+              name="list"
+              icon="FontAwesome"
+              size={SF(25)}
+            />
+          ),
+        }}
+      />
       <Tab.Screen
         name={RouteName.VILLAGE_SURVEY_TAB}
         component={VillageSurveyFormScreenStack}
@@ -229,6 +291,21 @@ export function HomeScsreenTabAll() {
               color={focused ? Colors.theme_background : Colors.gray_text_color}
               name="form"
               icon="AntDesign"
+              size={SF(25)}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name={RouteName.VILLAGE_LIST_TAB}
+        component={VillageSurveyFormListScreenStack}
+        options={{
+          tabBarLabel: t("Side_Title_12"),
+          tabBarIcon: ({ focused }) => (
+            <VectorIcon
+              color={focused ? Colors.theme_background : Colors.gray_text_color}
+              name="list"
+              icon="FontAwesome"
               size={SF(25)}
             />
           ),

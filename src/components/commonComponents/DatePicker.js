@@ -7,6 +7,7 @@ import VectorIcon from './VectoreIcons';
 import { Colors, SF } from '../../utils';
 
 function DatePicker(props) {
+    const {dateselcetLocal, setdateselcetLocal}=props;
     const [dateselcet, setdateselcet] = useState('Select Date');
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -19,6 +20,7 @@ function DatePicker(props) {
     const handleDatePicked = (date) => {
         hideDateTimePicker(),
             setdateselcet(moment(date, "YYYY-MM-DDTHH:mm:ss Z").local().format('DD-MM-YYYY HH:mm'));
+            setdateselcetLocal(moment(date, "YYYY-MM-DDTHH:mm:ss Z").local().format('DD-MM-YYYY HH:mm'));
     };
 
     return (

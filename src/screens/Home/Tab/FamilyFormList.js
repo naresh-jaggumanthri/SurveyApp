@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useTheme } from '@react-navigation/native';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useRoute, useTheme } from '@react-navigation/native';
 import { View, Text, TouchableOpacity, FlatList, Alert } from "react-native";
 import { SH, SW, widthPercent } from '../../../utils';
 import { Spacing, RecentlyDataView } from '../../../components';
@@ -10,11 +10,17 @@ import { RouteName } from "../../../routes";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from 'react-native-virtualized-view';
 import { useSelector } from 'react-redux';
+import api from '../../../api';
+import { Screen } from 'react-native-screens';
+import PubSub from 'pubsub-js';
 
-const HomeTab = (props) => {
+const FamilyFormList = (props) => {
   const { navigation } = props;
   const { t } = useTranslation();
   const { loginData } = useSelector(state => state.DataReducer) || {};
+  const route=useRoute();
+//   const PubSub = require('pubsub-js');
+
   const data = [
     { name: t("Home_Title_1"), population: 21500000, color: '#f16c26' },
     { name: t("Home_Title_2"), population: 12000000, color: 'green' },
@@ -77,6 +83,45 @@ const HomeTab = (props) => {
   ];
   const { Colors } = useTheme();
   const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
+
+  const [familyList,setFamilyList]=useState([]);
+  useEffect(()=>{
+getFamilyList();
+  },[]);
+ 
+
+  const getFamilyList =async()=>{
+    let token=loginData?.token;
+      
+        const res=await api.user.getHouseHoldListSurveyData(token);
+
+    //      {
+    //   text: 'Side_Title_11',
+    //   imageset: images.Recently_Image_1,
+    //   musicname: 'Home_Title_46',
+    //   TextTwo: 'Home_Title_47',
+    //   TextThree: '144k +',
+    // },
+
+   
+        
+      const result=res.map((m)=>{
+        return{
+          text:m.householdBasicProfile?.headOfTheHouseholdNameAsPerAadhar,
+          imageset: images.Recently_Image_1,
+          musicname:m.householdBasicProfile?.hamlet,
+        //   TextTwo::m.householdBasicProfile.,
+          TextThree:m.householdBasicProfile?.totalFamilyMembers,
+          id:m.householdBasicProfile?.uniqueId,
+          item:m
+        }
+    
+      });
+    //    Alert.alert("FamilyFormList",JSON.stringify(result));
+      setFamilyList(result);
+
+  };
+  
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(20)} />
@@ -166,19 +211,26 @@ const HomeTab = (props) => {
             <Spacing space={SH(10)} />
             <View style={HomeTabStyles.BackGroundShape}>
               <FlatList
-                data={RecentlyData}
+                data={familyList}
                 numColumns={1}
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item, index }) => (<RecentlyDataView
                   item={item}
                   index={index}
-                  onPress={() =>{ 
-                    //Alert.alert("index",JSON.stringify(index));
-                    if(index==0){
-                      navigation.navigate(RouteName.FAMILY_LIST_TAB)
-                    }else if(index==1){
-                      navigation.navigate(RouteName.VILLAGE_LIST_TAB)
-                    }
+                  type={1}
+                  onPress={() =>{
+                    
+                    PubSub.publish('HouseItem',item) 
+                    navigation.navigate(RouteName.FAMILY_SURVEY_TAB);
+ 
+                //       navigation.navigate(RouteName.FAMILY_SURVEY_TAB,{
+                        
+                //         editData:item
+                       
+                //   })
+                    // }else if(index==1){
+                    //   navigation.navigate(RouteName.VILLAGE_SURVEY_TAB)
+                    // }
                     // navigation.navigate(RouteName.VIEW_REPORT_SCREEN)
                   }}
                 />)}
@@ -191,4 +243,4 @@ const HomeTab = (props) => {
     </View>
   );
 };
-export default HomeTab;
+export default FamilyFormList;

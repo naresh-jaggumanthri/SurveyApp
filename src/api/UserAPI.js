@@ -2051,6 +2051,24 @@ export default class UserAPI extends Base {
     );
   }
 
+  saveMigrationSurveyData(params, payload,token) {
+    return this.apiClient.postParamsPayload(
+      {},
+      "api/MigrationSurvey",
+      params,
+      payload,
+      token
+    );
+  }
+
+  getHouseHoldListSurveyData(token){
+    return this.apiClient.get(null, "api/Household", {}, token);
+  }
+
+  getMigrationListSurveyData(token){
+     return this.apiClient.get(null, "api/MigrationSurvey", {}, token);
+  }
+
  
 }
 

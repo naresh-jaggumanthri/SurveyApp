@@ -18,6 +18,8 @@ import {
   EditLocationScreen,
   ViewSurveyReportScreen
 } from '../screens';
+import FamilyFormList from '../screens/Home/Tab/FamilyFormList';
+import VillageFormList from '../screens/Home/Tab/VillageFormList';
 
 const RootNavigator = props => {
 
@@ -50,6 +52,8 @@ const RootNavigator = props => {
         <Stack.Screen name={RouteName.SWIPER_SCREEN} component={Swiperscreen} />
         <Stack.Screen name={RouteName.SELECT_LANGUAGE} component={TranslationScreen} />
         <Stack.Screen name={RouteName.FORGOT_PASSWORD} component={ForgotPassword} />
+         {/* <Stack.Screen name={RouteName.FAMILY_LIST_TAB} component={FamilyFormList} />
+          <Stack.Screen name={RouteName.VILLAGE_LIST_TAB} component={VillageFormList} /> */}
         <Stack.Screen
           options={{
             headerShown: true,
