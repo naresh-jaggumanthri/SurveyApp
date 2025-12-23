@@ -105,6 +105,7 @@ const VillageFormList = (props) => {
              musicname:m.identityRole,
            //   TextTwo::m.householdBasicProfile.,
              TextThree:m.totalHouseholds,
+             item:m
            }
        
          });
@@ -209,7 +210,7 @@ const VillageFormList = (props) => {
                   index={index}
                   type={2}
                   onPress={() =>{ 
-                    //Alert.alert("index",JSON.stringify(index));
+                    // Alert.alert("index",JSON.stringify(item));
                     // if(index==0){
                     //   navigation.navigate(RouteName.FAMILY_SURVEY_TAB)
                     // }else if(index==1){

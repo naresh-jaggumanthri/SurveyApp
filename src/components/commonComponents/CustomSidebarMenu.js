@@ -60,7 +60,7 @@ const CustomSidebarMenu = (props) => {
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_3")}</Text>
         </TouchableOpacity> */}
         <TouchableOpacity style={Sidemenu.flexrowset} onPress={
-          () => Onpressfunction(RouteName.SURVEY_TAB)
+          () => Onpressfunction(RouteName.FAMILY_SURVEY_TAB)
         }>
           <VectorIcon
             icon="AntDesign"
@@ -71,7 +71,7 @@ const CustomSidebarMenu = (props) => {
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_11")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={Sidemenu.flexrowset} onPress={
-          () => Onpressfunction(RouteName.SURVEY_TAB)
+          () => Onpressfunction(RouteName.VILLAGE_SURVEY_TAB)
         }>
           <VectorIcon
             icon="AntDesign"

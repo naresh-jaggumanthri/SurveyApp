@@ -5,7 +5,7 @@ import React, {
   useRef,
   useLayoutEffect,
 } from 'react';
-import {useRoute, useTheme} from '@react-navigation/native';
+import {useIsFocused, useRoute, useTheme} from '@react-navigation/native';
 import {
   View,
   ScrollView,
@@ -15,6 +15,7 @@ import {
   FlatList,
   Alert,
   Modal,
+  PermissionsAndroid
 } from 'react-native';
 import {Style, AnalyaticsStyle, HomeTabStyle} from '../../../styles';
 import {useTranslation} from 'react-i18next';
@@ -45,6 +46,8 @@ import {
   HouseHoldValidationSchema,
 } from './FamilyFormHelper';
 import PubSub from 'pubsub-js';
+import Geolocation from '@react-native-community/geolocation';
+import moment from 'moment';
 
 const FamilyFormSurveyTab = props => {
   const {t} = useTranslation();
@@ -63,12 +66,14 @@ const FamilyFormSurveyTab = props => {
   const [panchayats, setPanchayats] = useState([]);
   const [villages, setVillages] = useState([]);
   const [editData, setEditData] = useState(undefined);
+ 
   const formikRef = useRef(null);
   const route = useRoute();
 
   useLayoutEffect(() => {
     var token = PubSub.subscribe('HouseItem', mySubscriber);
     formikRef.current.resetForm({values: undefined});
+    
   }, []);
 
   //  const {editData}=null;
@@ -136,6 +141,17 @@ const FamilyFormSurveyTab = props => {
   const [bankList, setBankList] = useState([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [previewData, setPreviewData] = useState(null);
+  const [location, setLocation] = useState(false);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+  if (isFocused&&editData==undefined) {
+    // Alert.alert("HIII",JSON.stringify(editData));
+  }
+}, [isFocused]);
+
+
+  
 
   const dropDownData = [
     {label: 'Item 1', value: '1'},
@@ -261,6 +277,8 @@ const FamilyFormSurveyTab = props => {
     // Add more options as needed
   ]);
   const {loginData} = useSelector(state => state.DataReducer) || {};
+  const [dateSelectLocal, setDateSelectLocal] = useState(moment(new Date(), "YYYY-MM-DDTHH:mm:ss Z").local().format('DD-MM-YYYY HH:mm'));
+  
 
   var mySubscriber = function (msg, data) {
     // console.log(msg, data);
@@ -276,7 +294,10 @@ const FamilyFormSurveyTab = props => {
       const result = data?.item;
     }
   };
+ 
   useEffect(() => {
+    // getLocation();
+    // Alert.alert("hi");
     getMasterState();
     getBankList();
   }, []);
@@ -529,6 +550,70 @@ const FamilyFormSurveyTab = props => {
       setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
     }
   };
+   const getLocation = () => {
+    const result = requestLocationPermission();
+    result.then(res => {
+      console.log('res is:', res);
+      if (res) {
+        try{
+
+          Geolocation.getCurrentPosition(
+  position => {
+    const { latitude, longitude } = position.coords;
+    console.log(latitude, longitude);
+    setLocation(position);
+  },
+  error => {
+    console.log(error.message);
+  },
+  {
+    enableHighAccuracy:false,
+    timeout: 30000,
+    maximumAge: 10000,
+  },
+);
+        // Geolocation.getCurrentPosition(
+        //   position => {
+        //     console.log(position);
+        //     setLocation(position);
+        //   },
+        //   error => {
+        //     // See error code charts below.
+        //     console.log(error.code, error.message);
+        //     setLocation(false);
+        //   },
+        //   {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+        // );
+      }catch(e){}
+      }
+    });
+    console.log(location);
+  };
+  const requestLocationPermission = async () => {
+  try {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        title: 'Geolocation Permission',
+        message: 'Can we access your location?',
+        buttonNeutral: 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      },
+    );
+    console.log('granted', granted);
+    if (granted === 'granted') {
+      console.log('You can use Geolocation');
+      return true;
+    } else {
+      console.log('You cannot use Geolocation');
+      return false;
+    }
+  } catch (err) {
+    return false;
+  }
+};
+//  PubSub.unsubscribe(token);
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(40)} />
@@ -1006,7 +1091,12 @@ const FamilyFormSurveyTab = props => {
                             obj,
                           );
                         }}
-                        value={isWomenInSHG}
+                        value={
+                          editData != undefined
+                            ? values?.householdBasicProfile
+                                ?.isWomenCoveredUnderSHG
+                            : isWomenInSHG
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.isWomenCoveredUnderSHG}
@@ -1026,7 +1116,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setIsWomenInSubhadraYojana(text);
                         }}
-                        value={isWomenInSubhadraYojana}
+                        value={
+                          editData != undefined
+                            ? values.householdBasicProfile
+                                .isWomenCoveredUnderSubhadraYojana
+                            : isWomenInSubhadraYojana
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {
@@ -1097,7 +1192,11 @@ const FamilyFormSurveyTab = props => {
                           );
                           setHasRationCard(text);
                         }}
-                        value={hasRationCard}
+                        value={
+                          editData != undefined
+                            ? values.householdBasicProfile.hasRationCard
+                            : hasRationCard
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.hasRationCard}
@@ -1139,7 +1238,11 @@ const FamilyFormSurveyTab = props => {
                           );
                           setDrinkingWaterSource(text);
                         }}
-                        value={drinkingWaterSource}
+                        value={
+                          editData != undefined
+                            ? values.householdBasicProfile.drinkingWaterSource
+                            : drinkingWaterSource
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.drinkingWaterSource}
@@ -1157,7 +1260,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setIsLpgConnectionUnderUjjwala(text);
                         }}
-                        value={isLpgConnectionUnderUjjwala}
+                        value={
+                          editData != undefined
+                            ? values.householdBasicProfile
+                                .hasUjjwalaLPGConnection
+                            : isLpgConnectionUnderUjjwala
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.hasUjjwalaLPGConnection}
@@ -1175,7 +1283,11 @@ const FamilyFormSurveyTab = props => {
                           );
                           setHavingLabourCards(text);
                         }}
-                        value={havingLabourCards}
+                        value={
+                          editData != undefined
+                            ? values.householdBasicProfile.hasLabourCard
+                            : havingLabourCards
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.hasLabourCard}
@@ -1195,7 +1307,11 @@ const FamilyFormSurveyTab = props => {
                           );
                           setIsCoveredUnderNSKY(text);
                         }}
-                        value={isCoveredUnderNSKY}
+                        value={
+                          editData != undefined
+                            ? values.householdBasicProfile.isCoveredUnderNSKY
+                            : isCoveredUnderNSKY
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.isCoveredUnderNSKY}
@@ -1276,7 +1392,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setIsFamilyInvolvedInWeavingOrHandloom(text);
                         }}
-                        value={isFamilyInvolvedInWeavingOrHandloom}
+                        value={
+                          editData != undefined
+                            ? values.householdOccupationAndLand
+                                .isFamilyInvolvedInWeavingOrHandloom
+                            : isFamilyInvolvedInWeavingOrHandloom
+                        }
                       />
 
                       <Spacing space={SH(5)} />
@@ -1294,7 +1415,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setIsFamilyCoveredUnderPOHI_LoomsScheme(text);
                         }}
-                        value={isFamilyCoveredUnderPOHI_LoomsScheme}
+                        value={
+                          editData != undefined
+                            ? values.householdOccupationAndLand
+                                .isFamilyCoveredUnderPOHI_LoomsScheme
+                            : isFamilyCoveredUnderPOHI_LoomsScheme
+                        }
                       />
 
                       <Spacing space={SH(5)} />
@@ -1312,7 +1438,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setFraClaimantStatus(text);
                         }}
-                        value={fraClaimantStatus}
+                        value={
+                          editData != undefined
+                            ? values.householdOccupationAndLand
+                                .fraClaimantStatus
+                            : fraClaimantStatus
+                        }
                       />
                       {values?.householdOccupationAndLand?.fraClaimantStatus ===
                         'FRA Claimant' && (
@@ -1355,7 +1486,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setOwnsHomesteadPattaLand(text);
                         }}
-                        value={ownsHomesteadPattaLand}
+                        value={
+                          editData != undefined
+                            ? values.householdOccupationAndLand
+                                .ownsHomesteadPattaLand
+                            : ownsHomesteadPattaLand
+                        }
                       />
 
                       <Spacing space={SH(5)} />
@@ -1373,7 +1509,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setApproximatePrivateLandHolding(text);
                         }}
-                        value={approximatePrivateLandHolding}
+                        value={
+                          editData != undefined
+                            ? values.householdOccupationAndLand
+                                .approximatePrivateLandHolding
+                            : approximatePrivateLandHolding
+                        }
                       />
 
                       <Spacing space={SH(5)} />
@@ -1389,7 +1530,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setIsIrrigationFacilityAvailable(text);
                         }}
-                        value={isIrrigationFacilityAvailable}
+                        value={
+                          editData != undefined
+                            ? values.householdOccupationAndLand
+                                .isIrrigationFacilityAvailable
+                            : isIrrigationFacilityAvailable
+                        }
                       />
 
                       {values?.householdOccupationAndLand
@@ -1477,7 +1623,11 @@ const FamilyFormSurveyTab = props => {
                           );
                           setKishanSchemeCoverage(text);
                         }}
-                        value={kishanSchemeCoverage}
+                        value={
+                          editData != undefined
+                            ? values.householdEntitlement.kishanSchemeCoverage
+                            : kishanSchemeCoverage
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1494,7 +1644,12 @@ const FamilyFormSurveyTab = props => {
                             text,
                           );
                         }}
-                        value={hasRuralHousingSchemeHouse}
+                        value={
+                          editData != undefined
+                            ? values.householdEntitlement
+                                .hasRuralHousingSchemeHouse
+                            : hasRuralHousingSchemeHouse
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1509,7 +1664,11 @@ const FamilyFormSurveyTab = props => {
                             text,
                           );
                         }}
-                        value={hasMGNREGSJobCard}
+                        value={
+                          editData != undefined
+                            ? values.householdEntitlement.hasMGNREGSJobCard
+                            : hasMGNREGSJobCard
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Input
@@ -1545,7 +1704,12 @@ const FamilyFormSurveyTab = props => {
                             text,
                           );
                         }}
-                        value={hasIndividualHouseholdLatrine}
+                        value={
+                          editData != undefined
+                            ? values.householdEntitlement
+                                .hasIndividualHouseholdLatrine
+                            : hasIndividualHouseholdLatrine
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1560,7 +1724,12 @@ const FamilyFormSurveyTab = props => {
                             text,
                           );
                         }}
-                        value={hasElectricityConnection}
+                        value={
+                          editData != undefined
+                            ? values.householdEntitlement
+                                .hasElectricityConnection
+                            : hasElectricityConnection
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1577,7 +1746,12 @@ const FamilyFormSurveyTab = props => {
                             text,
                           );
                         }}
-                        value={isCoveredUnderAyushmanBharat}
+                        value={
+                          editData != undefined
+                            ? values.householdEntitlement
+                                .isCoveredUnderAyushmanBharat
+                            : isCoveredUnderAyushmanBharat
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1594,7 +1768,12 @@ const FamilyFormSurveyTab = props => {
                             text,
                           );
                         }}
-                        value={isEnrolledUnderShramYogiMaandhan}
+                        value={
+                          editData != undefined
+                            ? values.householdEntitlement
+                                .isEnrolledUnderShramYogiMaandhan
+                            : isEnrolledUnderShramYogiMaandhan
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1611,7 +1790,12 @@ const FamilyFormSurveyTab = props => {
                             text,
                           );
                         }}
-                        value={hasJanDhanYojanaAccount}
+                        value={
+                          editData != undefined
+                            ? values.householdEntitlement
+                                .hasJanDhanYojanaAccount
+                            : hasJanDhanYojanaAccount
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1628,7 +1812,11 @@ const FamilyFormSurveyTab = props => {
                             text,
                           );
                         }}
-                        value={isCoveredUnderPMJJBY}
+                        value={
+                          editData != undefined
+                            ? values.householdEntitlement.isCoveredUnderPMJJBY
+                            : isCoveredUnderPMJJBY
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1645,7 +1833,11 @@ const FamilyFormSurveyTab = props => {
                             text,
                           );
                         }}
-                        value={isCoveredUnderPMSBY}
+                        value={
+                          editData != undefined
+                            ? values.householdEntitlement.isCoveredUnderPMSBY
+                            : isCoveredUnderPMSBY
+                        }
                       />
                       <Spacing space={SH(5)} />
                       {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_46")}</Text>
@@ -1697,7 +1889,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setHasFamilyMemberMigratedLast3Years(text);
                         }}
-                        value={hasFamilyMemberMigratedLast3Years}
+                        value={
+                          editData != undefined
+                            ? values.householdMigrationStatus
+                                .hasFamilyMemberMigratedLast3Years
+                            : hasFamilyMemberMigratedLast3Years
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1714,7 +1911,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setTakenAdvanceForMigrationFromMiddleman(text);
                         }}
-                        value={takenAdvanceForMigrationFromMiddleman}
+                        value={
+                          editData != undefined
+                            ? values.householdMigrationStatus
+                                .takenAdvanceForMigrationFromMiddleman
+                            : takenAdvanceForMigrationFromMiddleman
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1731,7 +1933,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setMinorChildrenAccompaniedMigration(text);
                         }}
-                        value={minorChildrenAccompaniedMigration}
+                        value={
+                          editData != undefined
+                            ? values.householdMigrationStatus
+                                .minorChildrenAccompaniedMigration
+                            : minorChildrenAccompaniedMigration
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1746,7 +1953,12 @@ const FamilyFormSurveyTab = props => {
                           );
                           setWomenMembersMigrated(text);
                         }}
-                        value={womenMembersMigrated}
+                        value={
+                          editData != undefined
+                            ? values.householdMigrationStatus
+                                .womenMembersMigrated
+                            : womenMembersMigrated
+                        }
                       />
                       <Spacing space={SH(5)} />
                       <Input
@@ -1811,7 +2023,11 @@ const FamilyFormSurveyTab = props => {
                           );
                           setRespondentIdentity(text);
                         }}
-                        value={respondentIdentity}
+                        value={
+                          editData != undefined
+                            ? values.householdMigrationStatus.respondentIdentity
+                            : respondentIdentity
+                        }
                       />
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1819,7 +2035,18 @@ const FamilyFormSurveyTab = props => {
                       </Text>
                       <Spacing space={SH(10)} />
                       <View style={AnalyaticsStyles.FlexRow}>
-                        <ImagePicker showdata={true} />
+                        <ImagePicker
+                          value={
+                            values.householdMigrationStatus.respondentPhotoPathOrUrl
+                          }
+                          onChange={img =>
+                            setFieldValue(
+                              'householdMigrationStatus.respondentPhotoPathOrUrl',
+                              img,
+                            )
+                          }
+                          showdata={true}
+                        />
                         <TouchableOpacity
                           onPress={() => {
                             setAlertVisible(true);
@@ -1870,7 +2097,8 @@ const FamilyFormSurveyTab = props => {
                         <View style={Style.FlexEditView}>
                           <TouchableOpacity
                             onPress={() =>
-                              navigation.navigate(RouteName.MAP_SCREEN)
+                              // navigation.navigate(RouteName.MAP_SCREEN)
+                              getLocation()
                             }>
                             <Text style={Style.datetextstyles}>
                               {' '}
@@ -1880,10 +2108,10 @@ const FamilyFormSurveyTab = props => {
                                 size={SF(20)}
                                 color={Colors.theme_background}
                               />{' '}
-                              22.29969, 70.808241
+                            {location ? location.coords.latitude : null},{location ? location.coords.longitude : null}
                             </Text>
                           </TouchableOpacity>
-                          <TouchableOpacity
+                          {/* <TouchableOpacity
                             onPress={() =>
                               navigation.navigate(
                                 RouteName.EDIT_LOCATION_SCREEN,
@@ -1896,7 +2124,7 @@ const FamilyFormSurveyTab = props => {
                               size={SF(30)}
                               color={Colors.theme_background}
                             />
-                          </TouchableOpacity>
+                          </TouchableOpacity> */}
                         </View>
                       </View>
                       <Spacing space={SH(5)} />
@@ -1925,7 +2153,10 @@ const FamilyFormSurveyTab = props => {
                         {t('Survey Date and Time')}
                       </Text>
                       <Spacing space={SH(5)} />
-                      <DatePicker />
+                      <DatePicker
+                                             dateselcetLocal={dateSelectLocal}
+                                             setdateselectLocal={setDateSelectLocal}
+                                           />
                       <Spacing space={SH(15)} />
                     </View>
                   )}
@@ -1958,15 +2189,15 @@ const FamilyFormSurveyTab = props => {
                   </Text>
 
                   <ScrollView>
-                     <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Basic Details')}
-                      </Text>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Basic Details')}
+                    </Text>
                     <Text>
-                      <Text style={{fontWeight: 'bold'}}>District:</Text>{' '}
+                      <Text style={{fontWeight: 'bold'}}>{t('District')}:</Text>{' '}
                       {previewData?.householdBasicProfile?.district}
                     </Text>
                     <Text>
-                      <Text style={{fontWeight: 'bold'}}>Block:</Text>{' '}
+                      <Text style={{fontWeight: 'bold'}}>{t('Block')}:</Text>{' '}
                       {previewData?.householdBasicProfile?.block}
                     </Text>
                     <Text>
@@ -2263,172 +2494,225 @@ const FamilyFormSurveyTab = props => {
                           ?.involvedInLivestockActivity
                       }
                     </Text>
-                       <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Entitlement')}
-                      </Text>
-                       <Text>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Entitlement')}
+                    </Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'Whether covered  under PM Kishan / CM Kishan Scheme?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
                       {previewData?.householdEntitlement?.kishanSchemeCoverage}
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                         {t(
+                        {t(
                           'Has the family provided house under the Rural Housing Scheme?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
-                      {previewData?.householdEntitlement?.hasRuralHousingSchemeHouse}
+                      {
+                        previewData?.householdEntitlement
+                          ?.hasRuralHousingSchemeHouse
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Does your family have a Job Card under MGNREGS?')}:
                       </Text>{' '}
                       {previewData?.householdEntitlement?.hasMGNREGSJobCard}
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'Mention the Full Job card No (after Revenue Village code)',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
                       {previewData?.householdEntitlement?.fullJobCardNumber}
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'Whether the Household provided with Individual Household Latrine in past?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
-                      {previewData?.householdEntitlement?.hasIndividualHouseholdLatrine}
+                      {
+                        previewData?.householdEntitlement
+                          ?.hasIndividualHouseholdLatrine
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                        {t('Whether the household has electricity connection?')}:
+                        {t('Whether the household has electricity connection?')}
+                        :
                       </Text>{' '}
-                      {previewData?.householdEntitlement?.hasElectricityConnection}
+                      {
+                        previewData?.householdEntitlement
+                          ?.hasElectricityConnection
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'Whether Covered under Pradhan Mantri Ayushman  Jan Arogya Yojana?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
-                      {previewData?.householdEntitlement?.isCoveredUnderAyushmanBharat}
+                      {
+                        previewData?.householdEntitlement
+                          ?.isCoveredUnderAyushmanBharat
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                         {t(
+                        {t(
                           'Is any household member enrolled under Pradhan Mantri Shram Yogi Maandhan pension scheme?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
-                      {previewData?.householdEntitlement?.isEnrolledUnderShramYogiMaandhan}
+                      {
+                        previewData?.householdEntitlement
+                          ?.isEnrolledUnderShramYogiMaandhan
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'Does the household have Pradhan Mantri Jan Dhan Yojana bank account?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
-                      {previewData?.householdEntitlement?.hasJanDhanYojanaAccount}
+                      {
+                        previewData?.householdEntitlement
+                          ?.hasJanDhanYojanaAccount
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                       {t(
+                        {t(
                           'Whether the family members between 18 to 50 years age covered under Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY) ?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
                       {previewData?.householdEntitlement?.isCoveredUnderPMJJBY}
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                         {t(
+                        {t(
                           'Whether family members between age 18 to 70 years covered under Pradhan Mantri Suraksha Bima Yojana (PMSBY) ?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
                       {previewData?.householdEntitlement?.isCoveredUnderPMSBY}
                     </Text>
-                     <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Migration Status')}
-                      </Text>
-                       <Text>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Migration Status')}
+                    </Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                          {t(
+                        {t(
                           'Has any family member migrated during the last 3 years?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
-                      {previewData?.householdMigrationStatus?.hasFamilyMemberMigratedLast3Years}
+                      {
+                        previewData?.householdMigrationStatus
+                          ?.hasFamilyMemberMigratedLast3Years
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                         {t(
+                        {t(
                           'Had the family taken any advance from middleman  for migration?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
-                      {previewData?.householdMigrationStatus?.takenAdvanceForMigrationFromMiddleman}
+                      {
+                        previewData?.householdMigrationStatus
+                          ?.takenAdvanceForMigrationFromMiddleman
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                          {t(
+                        {t(
                           'Had the family taken any advance from middleman  for migration?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
-                      {previewData?.householdMigrationStatus?.isCoveredUnderPMSBY}
+                      {
+                        previewData?.householdMigrationStatus
+                          ?.isCoveredUnderPMSBY
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                         {t(
+                        {t(
                           'Whether minor children accompanied during migration?',
-                        )}:
+                        )}
+                        :
                       </Text>{' '}
-                      {previewData?.householdMigrationStatus?.minorChildrenAccompaniedMigration}
+                      {
+                        previewData?.householdMigrationStatus
+                          ?.minorChildrenAccompaniedMigration
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                         {t('Whether Women Members Migrated?')}:
+                        {t('Whether Women Members Migrated?')}:
                       </Text>{' '}
-                      {previewData?.householdMigrationStatus?.womenMembersMigrated}
+                      {
+                        previewData?.householdMigrationStatus
+                          ?.womenMembersMigrated
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                         {t('Family contact mobile no.?')}:
+                        {t('Family contact mobile no.?')}:
                       </Text>{' '}
-                      {previewData?.householdMigrationStatus?.familyContactMobileNo}
+                      {
+                        previewData?.householdMigrationStatus
+                          ?.familyContactMobileNo
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                          {t('Identity of the respondent?')}:
+                        {t('Identity of the respondent?')}:
                       </Text>{' '}
-                      {previewData?.householdMigrationStatus?.respondentIdentity}
+                      {
+                        previewData?.householdMigrationStatus
+                          ?.respondentIdentity
+                      }
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                         {t('Capture a photo of the respondent')}:
+                        {t('Capture a photo of the respondent')}:
                       </Text>{' '}
-                      {previewData?.householdMigrationStatus?.respondentPhotoPathOrUrl}
+                      {
+                        previewData?.householdMigrationStatus
+                          ?.respondentPhotoPathOrUrl
+                      }
                     </Text>
-                     <Text>
-                      <Text style={{fontWeight: 'bold'}}>
-                         {t('Location')}:
-                      </Text>{' '}
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>{t('Location')}:</Text>{' '}
                       {previewData?.householdBasicProfile?.geoLocation}
                     </Text>
-                     
-                     <Text>
+
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                         {t('Surveyor Name')}:
+                        {t('Surveyor Name')}:
                       </Text>{' '}
                       {previewData?.householdBasicProfile?.entryBy}
                     </Text>
-                     <Text>
+                    <Text>
                       <Text style={{fontWeight: 'bold'}}>
-                         {t('Survey Date and Time')}:
+                        {t('Survey Date and Time')}:
                       </Text>{' '}
-                      {previewData?.householdBasicProfile?.isCoveredUnderPMSBY}
+                      {previewData?.householdBasicProfile?.surveyDate}
                     </Text>
-                    
                   </ScrollView>
 
                   <Spacing space={SH(15)} />
@@ -2496,11 +2780,15 @@ const FamilyFormSurveyTab = props => {
                       'householdOccupationAndLand.sourcesOfIrrigation',
                       sourcesOfIrrigation,
                     );
-                    // Alert.alert("errors",JSON.stringify(errors));
+                    //  Alert.alert("errors",JSON.stringify(dateSelectLocal));
                     //  return;
+                    setFieldValue('householdBasicProfile.surveyDate', dateSelectLocal);
+                     let res=(location ? location.coords.latitude : null)+','+(location ? location.coords.longitude : null);
+                    setFieldValue('householdBasicProfile.geoLocation',res);
+                   
                     let finalValuesPreview = {
                       ...values,
-                      householdFamilyMember: familyMembers,
+                      householdFamilyMember:familyMembers,
                     };
 
                     setPreviewData(finalValuesPreview);

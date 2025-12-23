@@ -39,6 +39,8 @@ function DatePicker(props) {
                 isVisible={isDatePickerVisible}
                 onConfirm={handleDatePicked}
                 onCancel={hideDateTimePicker}
+                minimumDate={new Date()}
+                maximumDate={new Date()}
             />
         </View>
     )

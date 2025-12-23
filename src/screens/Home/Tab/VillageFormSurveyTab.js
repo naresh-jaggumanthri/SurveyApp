@@ -1,4 +1,10 @@
-import React, {useState, useMemo, useEffect, useRef, useLayoutEffect} from 'react';
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useLayoutEffect,
+} from 'react';
 import {useTheme} from '@react-navigation/native';
 import {
   View,
@@ -9,6 +15,7 @@ import {
   FlatList,
   Alert,
   Modal,
+  PermissionsAndroid,
 } from 'react-native';
 import {Style, AnalyaticsStyle, HomeTabStyle} from '../../../styles';
 import {useTranslation} from 'react-i18next';
@@ -38,6 +45,8 @@ import {
 import api from '../../../api';
 import {useSelector} from 'react-redux';
 import PubSub from 'pubsub-js';
+import Geolocation from '@react-native-community/geolocation';
+import moment from 'moment';
 // import { VillageFormSurveyTab } from '.';
 
 const VillageFormSurveyTab = props => {
@@ -159,7 +168,7 @@ const VillageFormSurveyTab = props => {
     {label: t('Head of the household'), value: t('Head of the household')},
   ];
 
-  const [dateSelectLocal, setDateSelectLocal] = useState('Select Date');
+  const [dateSelectLocal, setDateSelectLocal] = useState(moment(new Date(), "YYYY-MM-DDTHH:mm:ss Z").local().format('DD-MM-YYYY HH:mm'));
 
   const [checkboxes, setCheckboxes] = useState([
     {label: t('Survey_Title_24'), checked: false},
@@ -370,22 +379,84 @@ const VillageFormSurveyTab = props => {
   const [IdentityRole, setIdentityRole] = useState(null);
   const [SurveyProcess, setSurveyProcess] = useState(null);
   const [editData, setEditData] = useState(undefined);
-   const [previewData, setPreviewData] = useState(null);
-   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [previewData, setPreviewData] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [location, setLocation] = useState(false);
   const formikRef = useRef(null);
   useLayoutEffect(() => {
-    var token = PubSub.subscribe('HouseItem', mySubscriber);
+    var token = PubSub.subscribe('VillageItem', mySubscriber);
     formikRef.current.resetForm({values: undefined});
   }, []);
   var mySubscriber = function (msg, data) {
     // console.log(msg, data);
-    // Alert.alert("Data",JSON.stringify(data));
+    //  Alert.alert("Data",JSON.stringify(data?.item));
     setEditData(data);
     if (data && formikRef.current) {
+      const resultData = data?.item;
+      const resetData = {
+        District: resultData.district,
+        Block: resultData.block,
+        GramPanchayat: resultData.gramPanchayat,
+        RevenueVillage: resultData.revenueVillage,
+        TotalHouseholds: resultData.totalHouseholds,
+        MalePopulation: resultData.malePopulation,
+        FemalePopulation: resultData.femalePopulation,
+        InternalVillageRoads: resultData.internalVillageRoads,
+        InternalVillageRoadsRequirement:
+          resultData.internalVillageRoadsRequirement,
+        InternalDrainsAvailable: resultData.internalDrainsAvailable,
+        DrainsProperlyFunctional: resultData.drainsProperlyFunctional,
+        IsElectrified: resultData.isElectrified,
+        StreetLightingAvailable: resultData.streetLightingAvailable,
+        StreetLightingType: resultData.streetLightingType,
+        VillageConnectedToGP: resultData.villageConnectedToGP,
+        LengthAllWeatherRoadToGP: resultData.lengthAllWeatherRoadToGP,
+        GPConnectedToPWDOrHighway: resultData.gpConnectedToPWDOrHighway,
+        LengthAllWeatherRoadToHighway: resultData.lengthAllWeatherRoadToHighway,
+        MenInMigration: resultData.menInMigration,
+        WomenInMigration: resultData.womenInMigration,
+        TotalPersonsInMigration: resultData.totalPersonsInMigration,
+        MinorChildrenInMigration: resultData.minorChildrenInMigration,
+        DrinkingWaterSource: resultData.drinkingWaterSource,
+        AllHouseholdsWithToilets: resultData.allHouseholdsWithToilets,
+        AnganwadiCentre: resultData.anganwadiCentre,
+        PrimarySchoolAvailable: resultData.primarySchoolAvailable,
+        SecondarySchoolWithin3km: resultData.secondarySchoolWithin3km,
+        SubHealthCentre: resultData.subHealthCentre,
+        CommunityCentreAvailable: resultData.communityCentreAvailable,
+        CommonShedForWSHG: resultData.commonShedForWSHG,
+        PlaygroundAvailable: resultData.playgroundAvailable,
+        CommunityTanks: resultData.communityTanks,
+        MobileNetworkCoverage: resultData.mobileNetworkCoverage,
+        DigitalConnectivity: resultData.digitalConnectivity,
+        DryingYard: resultData.dryingYard,
+        PDSAvailable: resultData.pdsAvailable,
+        DistanceOfPDS: resultData.distanceOfPDS,
+        BankingPostOfficeNearby: resultData.bankingPostOfficeNearby,
+        WaterFromIrrigationProject: resultData.waterFromIrrigationProject,
+        RepairOrNewDistributionCanalRequired:
+          resultData.repairOrNewDistributionCanalRequired,
+        LengthOfDistributionCanal: resultData.lengthOfDistributionCanal,
+        FunctionalLiftIrrigation: resultData.functionalLiftIrrigation,
+        ScopeOfNewLiftIrrigation: resultData.scopeOfNewLiftIrrigation,
+        FunctionalCheckDams: resultData.functionalCheckDams,
+        ScopeOfNewCheckDams: resultData.scopeOfNewCheckDams,
+        FunctionalDistributionCanal: resultData.functionalDistributionCanal,
+        ScopeOfNewDistributionCanal: resultData.scopeOfNewDistributionCanal,
+        RespondentName: resultData.respondentName,
+        IdentityRole: resultData.identityRole,
+        SurveyProcess: resultData.surveyProcess,
+        RespondentMobile: resultData.respondentMobile,
+        MeetingPhotoPath: resultData.meetingPhotoPath,
+        GeoLocation: resultData.geoLocation,
+        EnumeratorName: resultData.enumeratorName,
+        SurveyDate: resultData.surveyDate,
+        TotalPopulation: resultData.totalPopulation,
+      };
       formikRef.current.resetForm({
         values: {
           ...VillageFormInitialValues(props),
-          ...data.item,
+          ...resetData,
         },
       });
       const result = data?.item;
@@ -460,6 +531,74 @@ const VillageFormSurveyTab = props => {
     } else {
       setAlertVisible(true);
       setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
+    }
+  };
+
+  const getLocation = async() => {
+    
+    const result = requestLocationPermission();
+      
+    result.then(res => {
+
+      console.log('res is:', res);
+      if (res) {
+        
+        try {
+          Geolocation.getCurrentPosition(position => {
+              const {latitude, longitude} = position.coords;
+              console.log(latitude, longitude);
+            
+              setLocation(position);
+            },
+            error => {
+              // Alert.alert("latitude, longitude",JSON.stringify(error));
+              console.log(error.message);
+            },
+            {
+              enableHighAccuracy:false,
+              timeout: 30000,
+              maximumAge: 10000,
+            },
+          );
+          // Geolocation.getCurrentPosition(
+          //   position => {
+          //     console.log(position);
+          //     setLocation(position);
+          //   },
+          //   error => {
+          //     // See error code charts below.
+          //     console.log(error.code, error.message);
+          //     setLocation(false);
+          //   },
+          //   {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+          // );
+        } catch (e) {}
+      }
+    });
+    console.log(location);
+  };
+  const requestLocationPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Geolocation Permission',
+          message: 'Can we access your location?',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      console.log('granted', granted);
+      if (granted === 'granted') {
+        console.log('You can use Geolocation');
+        return true;
+      } else {
+        console.log('You cannot use Geolocation');
+        return false;
+      }
+    } catch (err) {
+      return false;
     }
   };
 
@@ -621,10 +760,14 @@ const VillageFormSurveyTab = props => {
                       <Input
                         title={t('Male')}
                         placeholder={t('Male')}
-                        onChangeText={text =>
-                          setFieldValue('MalePopulation', text)
-                        }
-                        value={values?.MalePopulation}
+                        onChangeText={text =>{
+    setFieldValue('MalePopulation', Number(text) || 0);
+    const male = Number(text) || 0;
+  const female = Number(values?.FemalePopulation) || 0;
+
+  setFieldValue('TotalPopulation', male + female);
+  }}
+                        value={String(values?.MalePopulation ?? '')}
                         inputType={'numeric'}
                         maxLength={8}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -636,10 +779,14 @@ const VillageFormSurveyTab = props => {
                       <Input
                         title={t('Female')}
                         placeholder={t('Female')}
-                        onChangeText={text =>
-                          setFieldValue('FemalePopulation', text)
-                        }
-                        value={values?.FemalePopulation}
+                       onChangeText={text =>{
+    setFieldValue('FemalePopulation', Number(text) || 0);
+    const male = Number(values?.MalePopulation) || 0;
+  const female = Number(text) || 0;
+
+  setFieldValue('TotalPopulation', male + female);
+  }}
+                        value={String(values?.FemalePopulation ?? '')}
                         inputType={'numeric'}
                         maxLength={8}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -650,14 +797,8 @@ const VillageFormSurveyTab = props => {
                       <Spacing space={SH(15)} />
                       <Input
                         title={t('Total Population')}
-                        placeholder={JSON.stringify(
-                          parseInt(values?.MalePopulation) +
-                            parseInt(values?.FemalePopulation),
-                        )}
-                        onChangeText={text =>
-                          setFieldValue('TotalPopulation', text)
-                        }
-                        value={values?.TotalPopulation}
+                        placeholder={String(values?.TotalPopulation ?? 0)}
+                        value={String(values?.TotalPopulation ?? 0)}
                         inputType={'numeric'}
                         disabled={true}
                         maxLength={8}
@@ -680,7 +821,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('InternalVillageRoads', text);
                           setIsConcreteRoads(text);
                         }}
-                        value={isConcreteRoads}
+                        value={editData!=undefined?values?.InternalVillageRoads:isConcreteRoads}
                       />
                       {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_39")}</Text>
                 {renderCheckboxes()} */}
@@ -703,7 +844,7 @@ const VillageFormSurveyTab = props => {
                           );
                           setInternalVillageRoadsRequirement(text);
                         }}
-                        value={InternalVillageRoadsRequirement}
+                        value={editData!=undefined?values?.InternalVillageRoadsRequirement:InternalVillageRoadsRequirement}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.InternalVillageRoadsRequirement}
@@ -718,7 +859,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('InternalDrainsAvailable', text);
                           setInternalDrainsAvailable(text);
                         }}
-                        value={InternalDrainsAvailable}
+                        value={editData!=undefined?values?.InternalDrainsAvailable:InternalDrainsAvailable}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.InternalDrainsAvailable}
@@ -733,7 +874,7 @@ const VillageFormSurveyTab = props => {
                           setDrainsProperlyFunctional(text);
                           setFieldValue('DrainsProperlyFunctional', text);
                         }}
-                        value={DrainsProperlyFunctional}
+                        value={editData!=undefined?values?.DrainsProperlyFunctional:DrainsProperlyFunctional}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.DrainsProperlyFunctional}
@@ -748,7 +889,7 @@ const VillageFormSurveyTab = props => {
                           setIsElectrified(text);
                           setFieldValue('IsElectrified', text);
                         }}
-                        value={IsElectrified}
+                        value={editData!=undefined?values?.IsElectrified:IsElectrified}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.IsElectrified}
@@ -763,7 +904,7 @@ const VillageFormSurveyTab = props => {
                           setStreetLightingAvailable(text);
                           setFieldValue('StreetLightingAvailable', text);
                         }}
-                        value={StreetLightingAvailable}
+                        value={editData!=undefined?values?.StreetLightingAvailable:StreetLightingAvailable}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.StreetLightingAvailable}
@@ -778,7 +919,7 @@ const VillageFormSurveyTab = props => {
                           setStreetLightingType(text);
                           setFieldValue('StreetLightingType', text);
                         }}
-                        value={StreetLightingType}
+                        value={editData!=undefined?values?.StreetLightingType:StreetLightingType}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.StreetLightingType}
@@ -795,7 +936,7 @@ const VillageFormSurveyTab = props => {
                           setVillageConnectedToGP(text);
                           setFieldValue('VillageConnectedToGP', text);
                         }}
-                        value={VillageConnectedToGP}
+                        value={editData!=undefined?values?.VillageConnectedToGP:VillageConnectedToGP}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.VillageConnectedToGP}
@@ -828,7 +969,7 @@ const VillageFormSurveyTab = props => {
                           setGPConnectedToPWDOrHighway(text);
                           setFieldValue('GPConnectedToPWDOrHighway', text);
                         }}
-                        value={GPConnectedToPWDOrHighway}
+                        value={editData!=undefined?values.GPConnectedToPWDOrHighway:GPConnectedToPWDOrHighway}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.GPConnectedToPWDOrHighway}
@@ -863,7 +1004,15 @@ const VillageFormSurveyTab = props => {
                         title={t('No of men currently in migration?')}
                         placeholder={t('No of men currently in migration?')}
                         onChangeText={text => {
-                          setFieldValue('MenInMigration', text);
+                          setFieldValue('MenInMigration', Number(text) || 0);
+                          const men = Number(text) || 0;
+                          const women = Number(values?.WomenInMigration) || 0;
+                          const children =
+                            Number(values?.MinorChildrenInMigration) || 0;
+
+                          const total = men + women + children;
+
+                          setFieldValue('TotalPersonsInMigration',JSON.stringify(total));
                         }}
                         value={values?.MenInMigration}
                         inputType={'numeric'}
@@ -880,7 +1029,15 @@ const VillageFormSurveyTab = props => {
                         maxLength={6}
                         placeholder={t('No of women currently in migration?')}
                         onChangeText={text => {
-                          setFieldValue('WomenInMigration', text);
+                          setFieldValue('WomenInMigration', Number(text) || 0);
+                          const men = Number(values?.MenInMigration) || 0;
+                          const women = Number(text) || 0;
+                          const children =
+                            Number(values?.MinorChildrenInMigration) || 0;
+
+                          const total = men + women + children;
+
+                          setFieldValue('TotalPersonsInMigration',JSON.stringify(total));
                         }}
                         value={values?.WomenInMigration}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -897,7 +1054,15 @@ const VillageFormSurveyTab = props => {
                           'No of minor children below 18 yrs age currently in migration?',
                         )}
                         onChangeText={text => {
-                          setFieldValue('MinorChildrenInMigration', text);
+                        
+                          setFieldValue('MinorChildrenInMigration', Number(text) || 0);
+                         const men = Number(values?.MenInMigration) || 0;
+                          const women = Number(values?.WomenInMigration) || 0;
+                          const children = Number(text) || 0;
+
+                          const total = men + women + children;
+
+                          setFieldValue('TotalPersonsInMigration',JSON.stringify(total));
                         }}
                         value={values?.MinorChildrenInMigration}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -910,15 +1075,14 @@ const VillageFormSurveyTab = props => {
                       <Spacing space={SH(15)} />
                       <Input
                         title={t('Total No. of person currently in migration?')}
-                        placeholder={JSON.stringify(
-                          parseInt(values?.MenInMigration) +
-                            parseInt(values?.WomenInMigration) +
-                            parseInt(values?.MinorChildrenInMigration),
-                        )}
+                        placeholder={String(values?.TotalPersonsInMigration??0)}
                         onChangeText={text => {
-                          setFieldValue('TotalInMigration', text);
+                          setFieldValue(
+                            'TotalPersonsInMigration',
+                            Number(text) || 0,
+                          );
                         }}
-                        value={values?.TotalInMigration}
+                        value={String(values?.TotalPersonsInMigration ?? 0)}
                         disabled={true}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                         inputType={'numeric'}
@@ -938,7 +1102,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('DrinkingWaterSource', text);
                           setDrinkingWaterSource(text);
                         }}
-                        value={DrinkingWaterSource}
+                        value={editData!=undefined?values?.DrinkingWaterSource:DrinkingWaterSource}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.DrinkingWaterSource}
@@ -953,7 +1117,7 @@ const VillageFormSurveyTab = props => {
                           setAllHouseholdsWithToilets(text);
                           setFieldValue('AllHouseholdsWithToilets', text);
                         }}
-                        value={AllHouseholdsWithToilets}
+                        value={editData!=undefined?values?.AllHouseholdsWithToilets:AllHouseholdsWithToilets}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.AllHouseholdsWithToilets}
@@ -972,7 +1136,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('AnganwadiCentre', text);
                           setAnganwadiCentre(text);
                         }}
-                        value={AnganwadiCentre}
+                        value={editData!=undefined?values?.AnganwadiCentre:AnganwadiCentre}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.AnganwadiCentre}
@@ -987,7 +1151,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('PrimarySchoolAvailable', text);
                           setPrimarySchoolAvailable(text);
                         }}
-                        value={PrimarySchoolAvailable}
+                        value={editData!=undefined?values?.PrimarySchoolAvailable:PrimarySchoolAvailable}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.PrimarySchoolAvailable}
@@ -1002,7 +1166,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('SecondarySchoolWithin3km', text);
                           setSecondarySchoolWithin3km(text);
                         }}
-                        value={SecondarySchoolWithin3km}
+                        value={editData!=undefined?values?.SecondarySchoolWithin3km:SecondarySchoolWithin3km}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.SecondarySchoolWithin3km}
@@ -1017,7 +1181,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('SubHealthCentre', text);
                           setSubHealthCentre(text);
                         }}
-                        value={SubHealthCentre}
+                        value={editData!=undefined?values?.SubHealthCentre:SubHealthCentre}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.SubHealthCentre}
@@ -1035,7 +1199,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('CommunityCentreAvailable', text);
                           setCommunityCentreAvailable(text);
                         }}
-                        value={CommunityCentreAvailable}
+                        value={editData!=undefined?values?.CommunityCentreAvailable:CommunityCentreAvailable}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.CommunityCentreAvailable}
@@ -1050,7 +1214,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('CommonShedForWSHG', text);
                           setCommonShedForWSHG(text);
                         }}
-                        value={CommonShedForWSHG}
+                        value={editData!=undefined?values?.CommonShedForWSHG:CommonShedForWSHG}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.CommonShedForWSHG}
@@ -1065,7 +1229,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('PlaygroundAvailable', text);
                           setPlaygroundAvailable(text);
                         }}
-                        value={PlaygroundAvailable}
+                        value={editData!=undefined?values?.PlaygroundAvailable:PlaygroundAvailable}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.PlaygroundAvailable}
@@ -1103,7 +1267,7 @@ const VillageFormSurveyTab = props => {
                           setMobileNetworkCoverage(text);
                           setFieldValue('MobileNetworkCoverage', text);
                         }}
-                        value={MobileNetworkCoverage}
+                        value={editData!=undefined?values.MobileNetworkCoverage:MobileNetworkCoverage}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.MobileNetworkCoverage}
@@ -1120,7 +1284,7 @@ const VillageFormSurveyTab = props => {
                           setDigitalConnectivity(text);
                           setFieldValue('DigitalConnectivity', text);
                         }}
-                        value={DigitalConnectivity}
+                        value={editData!=undefined?values.DigitalConnectivity:DigitalConnectivity}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.DigitalConnectivity}
@@ -1135,7 +1299,7 @@ const VillageFormSurveyTab = props => {
                           setDryingYard(text);
                           setFieldValue('DryingYard', text);
                         }}
-                        value={DryingYard}
+                        value={editData!=undefined?values.DryingYard:DryingYard}
                       />
                       <Text style={{color: 'red'}}>{errors?.DryingYard}</Text>
                       <Spacing space={SH(5)} />
@@ -1148,7 +1312,7 @@ const VillageFormSurveyTab = props => {
                           setPDSAvailable(text);
                           setFieldValue('PDSAvailable', text);
                         }}
-                        value={PDSAvailable}
+                        value={editData!=undefined?values?.PDSAvailable:PDSAvailable}
                       />
                       <Text style={{color: 'red'}}>{errors?.PDSAvailable}</Text>
                       <Spacing space={SH(15)} />
@@ -1184,7 +1348,7 @@ const VillageFormSurveyTab = props => {
                           setBankingPostOfficeNearby(text);
                           setFieldValue('BankingPostOfficeNearby', text);
                         }}
-                        value={BankingPostOfficeNearby}
+                        value={editData!=undefined?values?.BankingPostOfficeNearby:BankingPostOfficeNearby}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.BankingPostOfficeNearby}
@@ -1218,7 +1382,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('WaterFromIrrigationProject', text);
                           setWaterFromIrrigationProject(text);
                         }}
-                        value={WaterFromIrrigationProject}
+                        value={editData!=undefined?values?.WaterFromIrrigationProject:WaterFromIrrigationProject}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.WaterFromIrrigationProject}
@@ -1238,7 +1402,7 @@ const VillageFormSurveyTab = props => {
                           );
                           setRepairOrNewDistributionCanalRequired(text);
                         }}
-                        value={RepairOrNewDistributionCanalRequired}
+                        value={editData!=undefined?values?.RepairOrNewDistributionCanalRequired:RepairOrNewDistributionCanalRequired}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.RepairOrNewDistributionCanalRequired}
@@ -1278,7 +1442,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('FunctionalLiftIrrigation', text);
                           setFunctionalLiftIrrigation(text);
                         }}
-                        value={FunctionalLiftIrrigation}
+                        value={editData!=undefined?values?.FunctionalLiftIrrigation:FunctionalLiftIrrigation}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.FunctionalLiftIrrigation}
@@ -1293,7 +1457,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('ScopeOfNewLiftIrrigation', text);
                           setScopeOfNewLiftIrrigation(text);
                         }}
-                        value={ScopeOfNewLiftIrrigation}
+                        value={editData!=undefined?values?.ScopeOfNewLiftIrrigation:ScopeOfNewLiftIrrigation}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.ScopeOfNewLiftIrrigation}
@@ -1310,7 +1474,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('FunctionalCheckDams', text);
                           setFunctionalCheckDams(text);
                         }}
-                        value={FunctionalCheckDams}
+                        value={editData!=undefined?values?.FunctionalCheckDams:FunctionalCheckDams}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.FunctionalCheckDams}
@@ -1325,8 +1489,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('ScopeOfNewCheckDams', text);
                           setScopeOfNewCheckDams(text);
                         }}
-                        value={ScopeOfNewCheckDams}
-                      />
+                        value={editData!=undefined?values?.ScopeOfNewCheckDams:ScopeOfNewCheckDams}/>
                       <Text style={{color: 'red'}}>
                         {errors?.ScopeOfNewCheckDams}
                       </Text>
@@ -1342,7 +1505,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('FunctionalDistributionCanal', text);
                           setFunctionalDistributionCanal(text);
                         }}
-                        value={FunctionalDistributionCanal}
+                        value={editData!=undefined?values?.FunctionalDistributionCanal:FunctionalDistributionCanal}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.FunctionalDistributionCanal}
@@ -1423,7 +1586,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('IdentityRole', text);
                           setIdentityRole(text);
                         }}
-                        value={IdentityRole}
+                        value={editData!=undefined?values?.IdentityRole:IdentityRole}
                       />
                       <Text style={{color: 'red'}}>{errors?.IdentityRole}</Text>
                       <Spacing space={SH(5)} />
@@ -1436,7 +1599,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('SurveyProcess', text);
                           setSurveyProcess(text);
                         }}
-                        value={SurveyProcess}
+                        value={editData!=undefined?values?.SurveyProcess:SurveyProcess}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.SurveyProcess}
@@ -1462,7 +1625,14 @@ const VillageFormSurveyTab = props => {
                       </Text>
                       <Spacing space={SH(10)} />
                       <View style={AnalyaticsStyles.FlexRow}>
-                        <ImagePicker showdata={true} />
+                        {/* <ImagePicker showdata={true} /> */}
+                        <ImagePicker
+                          value={values.MeetingPhotoPath}
+                          onChange={img =>
+                            setFieldValue('MeetingPhotoPath', img)
+                          }
+                          showdata={true}
+                        />
                         <TouchableOpacity
                           onPress={() => {
                             setAlertVisible(true);
@@ -1513,7 +1683,8 @@ const VillageFormSurveyTab = props => {
                         <View style={Style.FlexEditView}>
                           <TouchableOpacity
                             onPress={() =>
-                              navigation.navigate(RouteName.MAP_SCREEN)
+                              // navigation.navigate(RouteName.MAP_SCREEN)
+                              getLocation()
                             }>
                             <Text style={Style.datetextstyles}>
                               {' '}
@@ -1523,23 +1694,24 @@ const VillageFormSurveyTab = props => {
                                 size={SF(20)}
                                 color={Colors.theme_background}
                               />{' '}
-                              22.29969, 70.808241
+                              {location ? location.coords.latitude : null},
+                              {location ? location.coords.longitude : null}
                             </Text>
                           </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() =>
-                              navigation.navigate(
-                                RouteName.EDIT_LOCATION_SCREEN,
-                              )
-                            }
-                            style={Style.dobView}>
-                            <VectorIcon
-                              icon="AntDesign"
-                              name="edit"
-                              size={SF(30)}
-                              color={Colors.theme_background}
-                            />
-                          </TouchableOpacity>
+                          {/* <TouchableOpacity
+                                                    onPress={() =>
+                                                      navigation.navigate(
+                                                        RouteName.EDIT_LOCATION_SCREEN,
+                                                      )
+                                                    }
+                                                    style={Style.dobView}>
+                                                    <VectorIcon
+                                                      icon="AntDesign"
+                                                      name="edit"
+                                                      size={SF(30)}
+                                                      color={Colors.theme_background}
+                                                    />
+                                                  </TouchableOpacity> */}
                         </View>
                       </View>
                       <Spacing space={SH(5)} />
@@ -1571,7 +1743,7 @@ const VillageFormSurveyTab = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <DatePicker
-                        dateselectlocal={dateSelectLocal}
+                        dateselcetLocal={dateSelectLocal}
                         setdateselectLocal={setDateSelectLocal}
                       />
                       <Spacing space={SH(15)} />
@@ -1581,520 +1753,476 @@ const VillageFormSurveyTab = props => {
                 </View>
               </KeyboardAvoidingView>
             </ScrollView>
-             <Modal visible={showConfirmModal} transparent animationType="slide">
-                          <View
-                            style={{
-                              flex: 1,
-                              backgroundColor: 'rgba(0,0,0,0.5)',
-                              justifyContent: 'center',
-                              padding: 20,
-                            }}>
-                            <View
-                              style={{
-                                backgroundColor: '#fff',
-                                borderRadius: 10,
-                                padding: 20,
-                                maxHeight: '80%',
-                              }}>
-                              <Text
-                                style={{
-                                  fontSize: 18,
-                                  fontWeight: 'bold',
-                                  marginBottom: 10,
-                                }}>
-                                Confirm Survey Details
-                              </Text>
-            
-                              <ScrollView>
-                                 <Text style={AnalyaticsStyles.TitleStyle}>
-                                    {t('Basic Details')}
-                                  </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>District:</Text>{' '}
-                                  {previewData?.District}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>Block:</Text>{' '}
-                                  {previewData?.Block}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Gram Panchayat')}:
-                                  </Text>{' '}
-                                  {previewData?.GramPanchayat}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Revenue Village')}:
-                                  </Text>{' '}
-                                  {previewData?.RevenueVillage}
-                                </Text>
-            
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>{t('Total number of households')}:</Text>{' '}
-                                  {previewData?.TotalHouseholds}
-                                </Text>
-            
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Male')}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.MalePopulation
-                                  }
-                                </Text>
-            
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Female')}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.FemalePopulation
-                                  }
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Total Population')}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.TotalPopulation
-                                  }
-                                </Text>
-            
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('Are internal village roads pucca (concrete)?')}:
-                                  </Text>{' '}
-                                  {previewData?.InternalVillageRoads}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t(
+            <Modal visible={showConfirmModal} transparent animationType="slide">
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  justifyContent: 'center',
+                  padding: 20,
+                }}>
+                <View
+                  style={{
+                    backgroundColor: '#fff',
+                    borderRadius: 10,
+                    padding: 20,
+                    maxHeight: '80%',
+                  }}>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      marginBottom: 10,
+                    }}>
+                    Confirm Survey Details
+                  </Text>
+
+                  <ScrollView>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Basic Details')}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>District:</Text>{' '}
+                      {previewData?.District}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>Block:</Text>{' '}
+                      {previewData?.Block}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Gram Panchayat')}:
+                      </Text>{' '}
+                      {previewData?.GramPanchayat}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Revenue Village')}:
+                      </Text>{' '}
+                      {previewData?.RevenueVillage}
+                    </Text>
+
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Total number of households')}:
+                      </Text>{' '}
+                      {previewData?.TotalHouseholds}
+                    </Text>
+
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>{t('Male')}:</Text>{' '}
+                      {previewData?.MalePopulation}
+                    </Text>
+
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>{t('Female')}:</Text>{' '}
+                      {previewData?.FemalePopulation}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Total Population')}:
+                      </Text>{' '}
+                      {previewData?.TotalPopulation}
+                    </Text>
+
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Are internal village roads pucca (concrete)?')}:
+                      </Text>{' '}
+                      {previewData?.InternalVillageRoads}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'If No or Partially, requirement of internal village pucca roads (in RMT)?',
-                        )}:
-                                  </Text>{' '}
-                                  {previewData?.InternalVillageRoadsRequirement}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('Are internal drains available?')}:
-                                  </Text>{' '}
-                                  {previewData?.InternalDrainsAvailable}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('If Yes, Are drains properly functional?')}:
-                                  </Text>{' '}
-                                  {previewData?.DrainsProperlyFunctional}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Is the village electrified?')}:
-                                  </Text>{' '}
-                                  {previewData?.IsElectrified}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Is street lighting available?')}:
-                                  </Text>{' '}
-                                  {previewData?.StreetLightingAvailable}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('What type of street lighting is provided?')}:
-                                  </Text>{' '}
-                                  {previewData?.StreetLightingType}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t(
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.InternalVillageRoadsRequirement}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Are internal drains available?')}:
+                      </Text>{' '}
+                      {previewData?.InternalDrainsAvailable}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('If Yes, Are drains properly functional?')}:
+                      </Text>{' '}
+                      {previewData?.DrainsProperlyFunctional}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Is the village electrified?')}:
+                      </Text>{' '}
+                      {previewData?.IsElectrified}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Is street lighting available?')}:
+                      </Text>{' '}
+                      {previewData?.StreetLightingAvailable}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('What type of street lighting is provided?')}:
+                      </Text>{' '}
+                      {previewData?.StreetLightingType}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'Is the village connected to the GP headquarters by an all weather road?',
-                        )}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.VillageConnectedToGP
-                                  }
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t(
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.VillageConnectedToGP}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
-                        )}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.LengthAllWeatherRoadToGP
-                                  }
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t(
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.LengthAllWeatherRoadToGP}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'Is the GP head quarter connected to any PWD road or State highway or Nation Highway by an all weather road?',
-                        )}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.GPConnectedToPWDOrHighway
-                                  }
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t(
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.GPConnectedToPWDOrHighway}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
                         )}
-                                    :
-                                  </Text>{' '}
-                                  {
-                                    previewData?.LengthAllWeatherRoadToHighway
-                                  }
-                                </Text>
+                        :
+                      </Text>{' '}
+                      {previewData?.LengthAllWeatherRoadToHighway}
+                    </Text>
 
- <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Information Related to Migration')}
-                      </Text>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Information Related to Migration')}
+                    </Text>
 
-            
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>{t('No of men currently in migration?')}:</Text>{' '}
-                                  {previewData?.MenInMigration}
-                                </Text>
-            
-              <Text>
-                                  <Text style={{fontWeight: 'bold'}}>{t('No of women currently in migration?')}:</Text>{' '}
-                                  {previewData?.WomenInMigration}
-                                </Text>
-            
-                              
-                               
-            
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t(
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('No of men currently in migration?')}:
+                      </Text>{' '}
+                      {previewData?.MenInMigration}
+                    </Text>
+
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('No of women currently in migration?')}:
+                      </Text>{' '}
+                      {previewData?.WomenInMigration}
+                    </Text>
+
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'No of minor children below 18 yrs age currently in migration?',
-                        )}:
-                                  </Text>{' '}
-                                  {previewData?.MinorChildrenInMigration}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Total No. of person currently in migration?')}:
-                                  </Text>{' '}
-                                  {JSON.stringify(
-                          parseInt(previewData?.MenInMigration) +
-                            parseInt(previewData?.WomenInMigration) +
-                            parseInt(previewData?.MinorChildrenInMigration),
                         )}
-                                </Text>
-                                 <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Water Supply & Sanitation')}
-                      </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Main source of drinking water?')}
-                                    :
-                                  </Text>{' '}
-                                  {previewData?.DrinkingWaterSource}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Are all households having toilets?')}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.AllHouseholdsWithToilets
-                                  }
-                                </Text>
-                                 <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Education & Health Facilities')}
-                      </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Is there a functioning Anganwadi Centre?')}:
-                                  </Text>{' '}
-                                  {previewData?.AnganwadiCentre}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                      {t('Is Primary school available within the village?')}
-                                    :
-                                  </Text>{' '}
-                                  {previewData?.PrimarySchoolAvailable}
-                                </Text>
-                              
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('Is Secondary school within 3 km distance?')}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.SecondarySchoolWithin3km
-                                  }
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}> {t('Is there a Sub Health Centre in the village?')}:</Text>{' '}
-                                  {
-                                    previewData?.SubHealthCentre
-                                  }
-                                </Text>
-                                 <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Community & Social Infrastructure')}
-                      </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('Community Centre available?')}
-                                    :
-                                  </Text>{' '}
-                                  {
-                                    previewData?.CommunityCentreAvailable
-                                  }
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Common shed for WSHG available?')}
-                                    :
-                                  </Text>{' '}
-                                  {
-                                    previewData?.CommonShedForWSHG
-                                  }
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Availability of playground in the village?')}
-                                    :
-                                  </Text>{' '}
-                                  {
-                                    previewData?.PlaygroundAvailable
-                                  }
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t(
-                          'No. of community tanks available in the village?',
-                        )}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.CommunityTanks
-                                  }
-                                </Text>
-                                  <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Livelihood & Service Infrastructure')}
-                      </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Is mobile network coverage available?')}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.MobileNetworkCoverage
-                                  }
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t(
+                        :
+                      </Text>{' '}
+                      {previewData?.MinorChildrenInMigration}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Total No. of person currently in migration?')}:
+                      </Text>{' '}
+                      {JSON.stringify(
+                        parseInt(previewData?.MenInMigration) +
+                          parseInt(previewData?.WomenInMigration) +
+                          parseInt(previewData?.MinorChildrenInMigration),
+                      )}
+                    </Text>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Water Supply & Sanitation')}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Main source of drinking water?')}:
+                      </Text>{' '}
+                      {previewData?.DrinkingWaterSource}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Are all households having toilets?')}:
+                      </Text>{' '}
+                      {previewData?.AllHouseholdsWithToilets}
+                    </Text>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Education & Health Facilities')}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Is there a functioning Anganwadi Centre?')}:
+                      </Text>{' '}
+                      {previewData?.AnganwadiCentre}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Is Primary school available within the village?')}:
+                      </Text>{' '}
+                      {previewData?.PrimarySchoolAvailable}
+                    </Text>
+
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Is Secondary school within 3 km distance?')}:
+                      </Text>{' '}
+                      {previewData?.SecondarySchoolWithin3km}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {' '}
+                        {t('Is there a Sub Health Centre in the village?')}:
+                      </Text>{' '}
+                      {previewData?.SubHealthCentre}
+                    </Text>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Community & Social Infrastructure')}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Community Centre available?')}:
+                      </Text>{' '}
+                      {previewData?.CommunityCentreAvailable}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Common shed for WSHG available?')}:
+                      </Text>{' '}
+                      {previewData?.CommonShedForWSHG}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Availability of playground in the village?')}:
+                      </Text>{' '}
+                      {previewData?.PlaygroundAvailable}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('No. of community tanks available in the village?')}:
+                      </Text>{' '}
+                      {previewData?.CommunityTanks}
+                    </Text>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Livelihood & Service Infrastructure')}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Is mobile network coverage available?')}:
+                      </Text>{' '}
+                      {previewData?.MobileNetworkCoverage}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'Is Digital last mile connectivity (internet facility) available?',
                         )}
-                                    :
-                                  </Text>{' '}
-                                  {
-                                    previewData?.DigitalConnectivity
-                                  }
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Is there a drying yard available?')}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.DryingYard
-                                  }
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Is there a PDS (ration shop) in the village?')}:
-                                  </Text>{' '}
-                                  {previewData?.PDSAvailable}
-                                </Text>
-                                <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {' '}
-                                    {t(
-                            'If No, distance of PDS (ration shop) from the village (in km)?',
-                          )}:
-                                  </Text>{' '}
-                                  {
-                                    previewData?.DistanceOfPDS
-                                  }
-                                </Text>
-                                  
-                                   <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t(
+                        :
+                      </Text>{' '}
+                      {previewData?.DigitalConnectivity}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Is there a drying yard available?')}:
+                      </Text>{' '}
+                      {previewData?.DryingYard}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Is there a PDS (ration shop) in the village?')}:
+                      </Text>{' '}
+                      {previewData?.PDSAvailable}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {' '}
+                        {t(
+                          'If No, distance of PDS (ration shop) from the village (in km)?',
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.DistanceOfPDS}
+                    </Text>
+
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'Whether banking or post office or KIOSK or mini bank services are available within 3 km distance from the village?',
-                        )}:
-                                  </Text>{' '}
-                                  {previewData?.BankingPostOfficeNearby}
-                                </Text>
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.BankingPostOfficeNearby}
+                    </Text>
 
-                                 <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Water Resource & Irrigation Structures')}
-                      </Text>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Water Resource & Irrigation Structures')}
+                    </Text>
 
-
-                                
-
-
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                      {t(
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'Is water from any mega, medium or minor irrigation project available to the village?',
-                        )}:
-                                  </Text>{' '}
-                                  {previewData?.WaterFromIrrigationProject}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t(
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.WaterFromIrrigationProject}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'If Yes, Whether repair or construction of a new distribution canal is required?',
-                        )}:
-                                  </Text>{' '}
-                                  {previewData?.RepairOrNewDistributionCanalRequired}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t(
-                            'If Yes, Length of distribution canal requiring repair or new construction in RMT?',
-                          )}:
-                                  </Text>{' '}
-                                  {previewData?.LengthOfDistributionCanal}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t(
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.RepairOrNewDistributionCanalRequired}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
+                          'If Yes, Length of distribution canal requiring repair or new construction in RMT?',
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.LengthOfDistributionCanal}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'Is there functional lift irrigation project available?',
-                        )}:
-                                  </Text>{' '}
-                                  {previewData?.FunctionalLiftIrrigation}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t('Scope of new lift irrigation project?')}:
-                                  </Text>{' '}
-                                  {previewData?.ScopeOfNewLiftIrrigation}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                    {t(
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.FunctionalLiftIrrigation}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Scope of new lift irrigation project?')}:
+                      </Text>{' '}
+                      {previewData?.ScopeOfNewLiftIrrigation}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'Availability of functional Check Dams in the village?',
-                        )}:
-                                  </Text>{' '}
-                                  {previewData?.FunctionalCheckDams}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                      {t('Scope of new Check Dams in the village?')}:
-                                  </Text>{' '}
-                                  {previewData?.ScopeOfNewCheckDams}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t(
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.FunctionalCheckDams}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Scope of new Check Dams in the village?')}:
+                      </Text>{' '}
+                      {previewData?.ScopeOfNewCheckDams}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
                           'Availability of functional distribution canal in the village in RMT?',
-                        )}:
-                                  </Text>{' '}
-                                  {previewData?.FunctionalDistributionCanal}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                  {t(
-                            'If Yes, Scope of new distribution canal in the village in RMT?',
-                          )}:
-                                  </Text>{' '}
-                                  {previewData?.ScopeOfNewDistributionCanal}
-                                </Text>
-  <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Respondent Details')}
-                      </Text>
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.FunctionalDistributionCanal}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t(
+                          'If Yes, Scope of new distribution canal in the village in RMT?',
+                        )}
+                        :
+                      </Text>{' '}
+                      {previewData?.ScopeOfNewDistributionCanal}
+                    </Text>
+                    <Text style={AnalyaticsStyles.TitleStyle}>
+                      {t('Respondent Details')}
+                    </Text>
 
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Respondent Name')}:
+                      </Text>{' '}
+                      {previewData?.RespondentName}
+                    </Text>
 
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>{t('Identity')}:</Text>{' '}
+                      {previewData?.IdentityRole}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Process Adopted for Survey')}:
+                      </Text>{' '}
+                      {previewData?.SurveyProcess}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Respondent contact mobile no.?')}:
+                      </Text>{' '}
+                      {previewData?.RespondentMobile}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Capture a photo of the meeting/FGD')}:
+                      </Text>{' '}
+                      {previewData?.MeetingPhotoPath}
+                    </Text>
 
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>{t('Location')}:</Text>{' '}
+                      {previewData?.GeoLocation}
+                    </Text>
 
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('Respondent Name')}:
-                                  </Text>{' '}
-                                  {previewData?.RespondentName}
-                                </Text>
-                                 
-                                   <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                      {t('Identity')}:
-                                  </Text>{' '}
-                                  {previewData?.IdentityRole}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('Process Adopted for Survey')}:
-                                  </Text>{' '}
-                                  {previewData?.SurveyProcess}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                      {t('Respondent contact mobile no.?')}:
-                                  </Text>{' '}
-                                  {previewData?.RespondentMobile}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('Capture a photo of the meeting/FGD')}:
-                                  </Text>{' '}
-                                  {previewData?.MeetingPhotoPath}
-                                </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Enumerator Name')}:
+                      </Text>{' '}
+                      {previewData?.EnumeratorName}
+                    </Text>
+                    <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Survey Date and Time')}:
+                      </Text>{' '}
+                      {previewData?.SurveyDate}
+                    </Text>
+                  </ScrollView>
 
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('Location')}:
-                                  </Text>{' '}
-                                  {previewData?.GeoLocation}
-                                </Text>
-                                 
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                     {t('Enumerator Name')}:
-                                  </Text>{' '}
-                                  {previewData?.EnumeratorName}
-                                </Text>
-                                 <Text>
-                                  <Text style={{fontWeight: 'bold'}}>
-                                      {t('Survey Date and Time')}:
-                                  </Text>{' '}
-                                  {previewData?.SurveyDate}
-                                </Text>
-                                 
-                                
-                                 
-                                
-                                
-                              </ScrollView>
-            
-                              <Spacing space={SH(15)} />
-            
-                              <View
-                                style={{
-                                  flexDirection: 'row',
-                                  justifyContent: 'space-between',
-                                }}>
-                                <TouchableOpacity
-                                  onPress={() => setShowConfirmModal(false)}
-                                  style={{padding: 10}}>
-                                  <Text style={{color: 'red'}}>Edit</Text>
-                                </TouchableOpacity>
-            
-                                <TouchableOpacity
-                                  onPress={() => {
-                                    setShowConfirmModal(false);
-                                    handleSubmit(); // ✅ FINAL SUBMIT
-                                  }}
-                                  style={{padding: 10}}>
-                                  <Text style={{color: 'green'}}>Confirm & Submit</Text>
-                                </TouchableOpacity>
-                              </View>
-                            </View>
-                          </View>
-                        </Modal>
+                  <Spacing space={SH(15)} />
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <TouchableOpacity
+                      onPress={() => setShowConfirmModal(false)}
+                      style={{padding: 10}}>
+                      <Text style={{color: 'red'}}>Edit</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => {
+                        setShowConfirmModal(false);
+                        handleSubmit(); // ✅ FINAL SUBMIT
+                      }}
+                      style={{padding: 10}}>
+                      <Text style={{color: 'green'}}>Confirm & Submit</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
 
             <View style={AnalyaticsStyles.NavigationButtons}>
               <TouchableOpacity
@@ -2118,16 +2246,19 @@ const VillageFormSurveyTab = props => {
                   style={AnalyaticsStyles.SubmitButton}
                   onPress={() => {
                     setFieldValue('SurveyDate', dateSelectLocal);
-                    // Alert.alert("errors",JSON.stringify(errors));
-                    //return;
-                     let finalValuesPreview = {
+                    // Alert.alert("errors",JSON.stringify(dateSelectLocal));
+                    // return;
+                    let res=(location ? location.coords.latitude : null)+','+(location ? location.coords.longitude : null);
+                    setFieldValue('GeoLocation',res);
+                    
+                    let finalValuesPreview = {
                       ...values,
-                      SurveyDate:dateSelectLocal
+                      SurveyDate: dateSelectLocal,
                     };
 
                     setPreviewData(finalValuesPreview);
                     setShowConfirmModal(true);
-                    handleSubmit();
+                    // handleSubmit();
                   }}>
                   <Text style={AnalyaticsStyles.PreviousTextStyle}>
                     {t('Submit')}

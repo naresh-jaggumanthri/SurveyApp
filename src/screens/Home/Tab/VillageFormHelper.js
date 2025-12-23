@@ -55,7 +55,8 @@ export const VillageFormInitialValues = () => ({
  GeoLocation:null,
  EnumeratorName:null,
  SurveyDate:"2025-12-10T15:30:00",
- TotalPopulation:0
+ TotalPopulation:0,
+ TotalPersonsInMigration:0
 });
 
 export const VillageFormValidationSchema = (props)=>{

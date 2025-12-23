@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { TouchableOpacity, StyleSheet, Image, View } from 'react-native';
+import { TouchableOpacity, StyleSheet, Image, View, Alert } from 'react-native';
 import PropTypes from 'prop-types';
 import { SH, SW,SF, Colors } from '../../utils';
 import IconF from 'react-native-vector-icons/FontAwesome';
 import { AnalyaticsStyle } from '../../styles';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera,launchImageLibrary } from 'react-native-image-picker';
 import { useTheme } from '@react-navigation/native';
 import images from '../../index';
 import { VectorIcon } from '../../components';
@@ -47,7 +47,7 @@ function ImgPicker(props) {
             }),
         [],
     );
-    const chooseFile = () => {
+    const pickFromGallery = () => {
         let options = {
             mediaType: 'photo',
             cropping: true,
@@ -68,7 +68,41 @@ function ImgPicker(props) {
             SetImgpathselect(response.assets[0].uri);
 
         });
+    //     launchCamera(options,(response)=>{
+    //         if (response.didCancel) {
+    //   console.log('User cancelled image picker');
+    // } else if (response.error) {
+    //   console.log('Image picker error: ', response.error);
+    // } else {
+    //   let imageUri = response.uri || response.assets?.[0]?.uri;
+    //   SetImgpathselect(imageUri);
+    // }
+
+    //     });
     };
+     const pickFromCamera = () => {
+    launchCamera(
+      { mediaType: 'photo', quality: 0.7, saveToPhotos: true },
+      response => {
+        if (response.didCancel || response.errorCode) return;
+
+        const asset = response.assets[0];
+        // onChange({
+        //   uri: asset.uri,
+        //   type: asset.type,
+        //   name: asset.fileName || `photo_${Date.now()}.jpg`,
+        // });
+        SetImgpathselect(asset.uri);
+      }
+    );
+  };
+    const chooseFile = () => {
+    Alert.alert('Select Image', 'Choose source', [
+      { text: 'Camera', onPress: pickFromCamera },
+      { text: 'Gallery', onPress: pickFromGallery },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
     return (
         <View style={Styles.mainView}>
             {showdata &&
