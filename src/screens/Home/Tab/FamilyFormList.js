@@ -108,7 +108,7 @@ getFamilyList();
       const result=res.map((m)=>{
         return{
           text:m.householdBasicProfile?.headOfTheHouseholdNameAsPerAadhar,
-          imageset: images.Recently_Image_1,
+          imageset: images.home,
           musicname:m.householdBasicProfile?.hamlet,
         //   TextTwo::m.householdBasicProfile.,
           TextThree:m.householdBasicProfile?.totalFamilyMembers,
@@ -121,7 +121,7 @@ getFamilyList();
       setFamilyList(result);
 
   };
-  
+   
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(20)} />

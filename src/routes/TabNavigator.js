@@ -72,6 +72,11 @@ function HomeTabScreenStack(props) {
           headerStyle: {
             backgroundColor: Colors.theme_background,
           },
+          headerTitleStyle:{
+            fontWeight:"bold",
+            fontSize:SF(20),
+            color:"white"
+          },
           ...HeaderArray,
           headerLeft: () => (
             <HeaderLeftMenuIcon {...props} />
@@ -119,6 +124,12 @@ function FamilySurveyFormListScreenStack(props) {
           headerStyle: {
             backgroundColor: Colors.theme_background,
           },
+          headerTitleStyle:{
+            fontWeight:"bold",
+            fontSize:SF(20),
+            color:"white"
+
+          },
           headerLeft: () => (
             <HeaderLeftMenuIcon {...props} />
           ),
@@ -141,6 +152,12 @@ function VillageSurveyFormListScreenStack(props) {
           ...HeaderArray,
           headerStyle: {
             backgroundColor: Colors.theme_background,
+          },
+          headerTitleStyle:{
+            fontWeight:"bold",
+            fontSize:SF(20),
+            color:"white"
+
           },
           headerLeft: () => (
             <HeaderLeftMenuIcon {...props} />
@@ -165,6 +182,12 @@ function FamilySurveyFormScreenStack(props) {
           headerStyle: {
             backgroundColor: Colors.theme_background,
           },
+          headerTitleStyle:{
+            fontWeight:"bold",
+            fontSize:SF(20),
+            color:"white"
+
+          },
           headerLeft: () => (
             <HeaderLeftMenuIcon {...props} />
           ),
@@ -187,6 +210,12 @@ function VillageSurveyFormScreenStack(props) {
           ...HeaderArray,
           headerStyle: {
             backgroundColor: Colors.theme_background,
+          },
+          headerTitleStyle:{
+            fontWeight:"bold",
+            fontSize:SF(20),
+            color:"white"
+
           },
           headerLeft: () => (
             <HeaderLeftMenuIcon {...props} />
@@ -255,7 +284,7 @@ export function HomeScsreenTabAll() {
         name={RouteName.FAMILY_SURVEY_TAB}
         component={FamilySurveyFormScreenStack}
         options={{
-          tabBarLabel: t("Side_Title_11"),
+          tabBarLabel: t("HH Survey"),
           tabBarIcon: ({ focused }) => (
             <VectorIcon
               color={focused ? Colors.theme_background : Colors.gray_text_color}
@@ -270,7 +299,7 @@ export function HomeScsreenTabAll() {
         name={RouteName.FAMILY_LIST_TAB}
         component={FamilySurveyFormListScreenStack}
         options={{
-          tabBarLabel: t("Side_Title_11"),
+          tabBarLabel: t("HH Survey List"),
           tabBarIcon: ({ focused }) => (
             <VectorIcon
               color={focused ? Colors.theme_background : Colors.gray_text_color}
@@ -285,7 +314,7 @@ export function HomeScsreenTabAll() {
         name={RouteName.VILLAGE_SURVEY_TAB}
         component={VillageSurveyFormScreenStack}
         options={{
-          tabBarLabel: t("Side_Title_12"),
+          tabBarLabel: t("Village Survey"),
           tabBarIcon: ({ focused }) => (
             <VectorIcon
               color={focused ? Colors.theme_background : Colors.gray_text_color}
@@ -300,7 +329,7 @@ export function HomeScsreenTabAll() {
         name={RouteName.VILLAGE_LIST_TAB}
         component={VillageSurveyFormListScreenStack}
         options={{
-          tabBarLabel: t("Side_Title_12"),
+          tabBarLabel: t("Village Survey List"),
           tabBarIcon: ({ focused }) => (
             <VectorIcon
               color={focused ? Colors.theme_background : Colors.gray_text_color}
@@ -311,7 +340,7 @@ export function HomeScsreenTabAll() {
           ),
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name={RouteName.PROFILE_TAB}
         component={ProfileScreenStack}
         options={{
@@ -325,7 +354,7 @@ export function HomeScsreenTabAll() {
             />
           ),
         }}
-      />
+      /> */}
     </Tab.Navigator>
   )
 }

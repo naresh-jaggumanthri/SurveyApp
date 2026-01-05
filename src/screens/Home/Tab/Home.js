@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTheme } from '@react-navigation/native';
 import { View, Text, TouchableOpacity, FlatList, Alert } from "react-native";
 import { SH, SW, widthPercent } from '../../../utils';
@@ -10,6 +10,10 @@ import { RouteName } from "../../../routes";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from 'react-native-virtualized-view';
 import { useSelector } from 'react-redux';
+import { BackHandler } from 'react-native';
+import api from '../../../api';
+
+
 
 const HomeTab = (props) => {
   const { navigation } = props;
@@ -31,20 +35,23 @@ const HomeTab = (props) => {
       },
     ],
   };
+  const [familyCount,setFamilyCount]=useState(0);
+  const [villageCount,setVillageCount]=useState(0);
+
   const RecentlyData = [
     {
       text: 'Side_Title_11',
-      imageset: images.Recently_Image_1,
+      imageset: images.home,
       musicname: 'Home_Title_46',
       TextTwo: 'Home_Title_47',
-      TextThree: '144k +',
+      TextThree: familyCount,
     },
     {
       text: 'Side_Title_12',
-      imageset: images.Recently_Image_2,
+      imageset: images.village,
       musicname: 'Home_Title_48',
       TextTwo: 'Home_Title_49',
-      TextThree: '12M +',
+      TextThree: villageCount,
     },
     // {
     //   text: 'Home_Title_8',
@@ -77,6 +84,79 @@ const HomeTab = (props) => {
   ];
   const { Colors } = useTheme();
   const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
+  useEffect(() => {
+    getFamilyList();
+    getVillageList();
+  const backAction = () => true; // ⛔ blocks back button
+
+  const backHandler = BackHandler.addEventListener(
+    'hardwareBackPress',
+    backAction
+  );
+
+  return () => backHandler.remove();
+}, []);
+const getFamilyList =async()=>{
+    let token=loginData?.token;
+      
+        const res=await api.user.getHouseHoldListSurveyData(token);
+
+    //      {
+    //   text: 'Side_Title_11',
+    //   imageset: images.Recently_Image_1,
+    //   musicname: 'Home_Title_46',
+    //   TextTwo: 'Home_Title_47',
+    //   TextThree: '144k +',
+    // },
+
+   
+        
+      // const result=res.map((m)=>{
+      //   return{
+      //     text:m.householdBasicProfile?.headOfTheHouseholdNameAsPerAadhar,
+      //     imageset: images.home,
+      //     musicname:m.householdBasicProfile?.hamlet,
+      //   //   TextTwo::m.householdBasicProfile.,
+      //     TextThree:m.householdBasicProfile?.totalFamilyMembers,
+      //     id:m.householdBasicProfile?.uniqueId,
+      //     item:m
+      //   }
+    
+      // });
+       //Alert.alert("FamilyFormList",JSON.stringify(res.length));
+      setFamilyCount(res.length);
+
+  };
+   const getVillageList =async()=>{
+           let token=loginData?.token;
+             
+               const res=await api.user.getMigrationListSurveyData(token);
+       
+           //      {
+           //   text: 'Side_Title_11',
+           //   imageset: images.Recently_Image_1,
+           //   musicname: 'Home_Title_46',
+           //   TextTwo: 'Home_Title_47',
+           //   TextThree: '144k +',
+           // },
+       
+          
+               
+            //  const result=res.map((m)=>{
+            //    return{
+            //      text:m.respondentName,
+            //      imageset: images.village,
+            //      musicname:m.identityRole,
+            //    //   TextTwo::m.householdBasicProfile.,
+            //      TextThree:m.totalHouseholds,
+            //      item:m
+            //    }
+           
+            //  });
+           //    Alert.alert("FamilyFormList",JSON.stringify(result));
+             setVillageCount(res.length);
+       
+         };
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(20)} />

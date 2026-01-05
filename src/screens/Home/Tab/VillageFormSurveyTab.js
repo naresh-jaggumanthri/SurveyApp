@@ -522,12 +522,13 @@ const VillageFormSurveyTab = props => {
       null,
       values,
       token,
+      false
     );
     //Alert.alert("response",JSON.stringify(response));
     //return
     if (response != null && response != undefined) {
       setAlertVisible(true);
-      setAlertMessage(t('Survey_Submit_Successfully'));
+      setAlertMessage(t('Survey_Submit_Successfully_village'));
     } else {
       setAlertVisible(true);
       setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
@@ -604,7 +605,7 @@ const VillageFormSurveyTab = props => {
 
   return (
     <View style={Style.BgColorWhiteAll}>
-      <Spacing space={SH(40)} />
+      <Spacing space={SH(10)} />
       <View style={AnalyaticsStyles.FlexViewBack}>
         {backgroundColors.map((color, index) => (
           <View
@@ -645,7 +646,7 @@ const VillageFormSurveyTab = props => {
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={Style.ScrollViewStyles}>
               <KeyboardAvoidingView enabled>
-                <Spacing space={SH(40)} />
+                <Spacing space={SH(10)} />
                 <View style={AnalyaticsStyles.MainView}>
                   {/* First question start */}
                   {/* <Text style={AnalyaticsStyles.TitleStyle}>{t("Basic Details")}</Text> */}

@@ -28,7 +28,8 @@ export const HouseHoldFormInitialValues = () => ({
    isCoveredUnderNSKY:null,
    geoLocation:null,
    entryBy:null,
-   surveyDate:null
+//    surveyDate:null,
+//    respondentPhoto:null
  },
 
 
@@ -76,7 +77,8 @@ export const HouseHoldFormInitialValues = () => ({
  householdFamilyMember: []
 
 });
-export const HouseHoldFormValidationSchema = (props) =>{  
+export const HouseHoldFormValidationSchema = (props) =>{
+    // return true;  
     return Yup.object().shape({
 
     householdBasicProfile: Yup.object().shape({
@@ -86,7 +88,7 @@ export const HouseHoldFormValidationSchema = (props) =>{
       revenueVillage: Yup.string().required('Revenue Village is required'),
       hamlet: Yup.string().required('Hamlet is required'),
 
-      headOfTheHouseholdNameAsPerAadhar: Yup.string().required('Head of the Household Name is required'),
+      headOfTheHouseholdNameAsPerAadhar: Yup.string().min(3,'At least three characters required').required('Head of the Household Name is required'),
       headOfTheHouseholdGender: Yup.string().required('Head of the Household Gender is required'),
 
       aadharNo: Yup.string()
@@ -97,10 +99,10 @@ export const HouseHoldFormValidationSchema = (props) =>{
 
       bankAccountNumber: Yup.string().required('Bank Account Number is required'),
       bankName: Yup.string().required('Bank Name is required'),
-      ifscCodeOrBranch: Yup.string().required('IFSC Code / Branch is required'),
+      ifscCodeOrBranch: Yup.string().matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'Invalid IFSC code').required('IFSC Code / Branch is required'),
 
       womenMemberName: Yup.string().required('Women Member Name is required'),
-      womenMemberAge: Yup.number().typeError('Age must be a number').required('Women Member Age is required'),
+      womenMemberAge: Yup.number().min(1, 'At least one character is required').typeError('Age must be a number').required('Women Member Age is required'),
       womenMemberMaritalStatus: Yup.string().required('Women Member Marital Status is required'),
       womenMemberRelationshipWithHead: Yup.string().required('Relationship with Head is required'),
 
@@ -117,69 +119,85 @@ export const HouseHoldFormValidationSchema = (props) =>{
         is: true,
         then: schema => schema.required('Ration Card Number is required'),
         otherwise: schema => schema.notRequired()
-      }).matches(/^[A-Za-z0-9]+$/, 'Only letters and numbers allowed'),
+      }).matches(/^[A-Z0-9]{11,12}$/, 'Only letters and numbers allowed'),
 
       drinkingWaterSource: Yup.string().required('Drinking Water Source is required'),
       hasUjjwalaLPGConnection: requiredBoolean,
       hasLabourCard: requiredBoolean,
       isCoveredUnderNSKY: requiredBoolean,
-
-    //   geoLocation: Yup.string().required('Geo Location is required'),
-    //   entryBy: Yup.string().required('Entry By is required')
+      geoLocation: Yup.string().required('Geo Location is required'),
+      entryBy: Yup.string().required('Entry By is required')
     }),
 
-    // householdEntitlement: Yup.object().shape({
-    //   kishanSchemeCoverage: Yup.string().required('Kishan Scheme Coverage is required'),
-    //   hasRuralHousingSchemeHouse: requiredBoolean,
-    //   hasIndividualHouseholdLatrine: requiredBoolean,
-    //   hasElectricityConnection: requiredBoolean,
-    //   hasMGNREGSJobCard: requiredBoolean,
+    householdEntitlement: Yup.object().shape({
+      kishanSchemeCoverage: Yup.string().required('Kishan Scheme Coverage is required'),
+      hasRuralHousingSchemeHouse: requiredBoolean,
+      hasIndividualHouseholdLatrine: requiredBoolean,
+      hasElectricityConnection: requiredBoolean,
+      hasMGNREGSJobCard: requiredBoolean,
 
-    //   fullJobCardNumber: Yup.string().when('hasMGNREGSJobCard', {
-    //     is: true,
-    //     then: schema => schema.required('Job Card Number is required'),
-    //     otherwise: schema => schema.notRequired()
-    //   }),
+      fullJobCardNumber: Yup.string().when('hasMGNREGSJobCard', {
+        is: true,
+        then: schema => schema.required('Job Card Number is required'),
+        otherwise: schema => schema.notRequired()
+      }),
 
-    //   hasJanDhanYojanaAccount: requiredBoolean,
-    //   isCoveredUnderAyushmanBharat: requiredBoolean,
-    //   isEnrolledUnderShramYogiMaandhan: requiredBoolean,
-    //   isCoveredUnderPMJJBY: requiredBoolean,
-    //   isCoveredUnderPMSBY: requiredBoolean
-    // }),
+      hasJanDhanYojanaAccount: requiredBoolean,
+      isCoveredUnderAyushmanBharat: requiredBoolean,
+      isEnrolledUnderShramYogiMaandhan: requiredBoolean,
+      isCoveredUnderPMJJBY: requiredBoolean,
+      isCoveredUnderPMSBY: requiredBoolean
+    }),
 
-    // householdMigrationStatus: Yup.object().shape({
-    //   hasFamilyMemberMigratedLast3Years: requiredBoolean,
-    //   takenAdvanceForMigrationFromMiddleman: requiredBoolean,
-    //   minorChildrenAccompaniedMigration: requiredBoolean,
-    //   womenMembersMigrated: requiredBoolean,
+    householdMigrationStatus: Yup.object().shape({
+      hasFamilyMemberMigratedLast3Years: requiredBoolean,
+      takenAdvanceForMigrationFromMiddleman: requiredBoolean,
+      minorChildrenAccompaniedMigration: requiredBoolean,
+      womenMembersMigrated: requiredBoolean,
 
       familyContactMobileNo: Yup.string()
         .matches(/^[6-9][0-9]{9}$/, 'Enter valid 10 digit mobile number')
         .required('Family Contact Mobile No. is required'),
 
-    //   respondentIdentity: Yup.string().required('Respondent Identity is required'),
+      respondentIdentity: Yup.string().required('Respondent Identity is required'),
     //   respondentPhotoPathOrUrl: Yup.string().required('Respondent Photo is required')
-    // }),
+    }),
 
-    // householdOccupationAndLand: Yup.object().shape({
-    //   primaryOccupationOfTheFamily: Yup.string().required('Primary Occupation is required'),
-    // //   otherPrimaryOccupationDetails: Yup.string(),
+    householdOccupationAndLand: Yup.object().shape({
+      primaryOccupationOfTheFamily: Yup.string().required('Primary Occupation is required'),
+      otherPrimaryOccupationDetails: Yup.string().when('primaryOccupationOfTheFamily',{
+        is:'Other User entry',
+        then: schema => schema.required('Other occupation details are required').min(3,'Minimum three characters are required'),
+        otherwise: schema => schema.notRequired()
 
-    //   isFamilyInvolvedInWeavingOrHandloom: requiredBoolean,
-    //   isFamilyCoveredUnderPOHI_LoomsScheme: requiredBoolean,
 
-    //   fraClaimantStatus: Yup.string().required('FRA Claimant Status is required'),
-    //   fra_LandAmountInAcres: Yup.number()
-    //     .typeError('Land amount must be a number')
-    //     .required('FRA Land Amount is required'),
+      }),
 
-    //   ownsHomesteadPattaLand: requiredBoolean,
-    //   approximatePrivateLandHolding: Yup.string().required('Private Land Holding is required'),
-    //   isIrrigationFacilityAvailable: requiredBoolean,
-    //   sourcesOfIrrigation: Yup.string().required('Sources of Irrigation is required'),
-    //   involvedInLivestockActivity: Yup.string().required('Livestock Activity is required')
-    // }),
+      isFamilyInvolvedInWeavingOrHandloom: requiredBoolean,
+      isFamilyCoveredUnderPOHI_LoomsScheme: requiredBoolean,
+
+      fraClaimantStatus: Yup.string().required('FRA Claimant Status is required'),
+     fra_LandAmountInAcres: Yup.number()
+  .typeError('FRA Land Amount must be a number')
+  .when('fraClaimantStatus', {
+    is: 'FRA Claimant',
+    then: schema =>
+      schema
+        .required('FRA Land Amount is required')
+        .min(0.5, 'Minimum land should be 0.5 acres')
+        .max(5, 'Maximum land should be 5 acres'),
+    otherwise: schema => schema.notRequired(),
+  }),
+      ownsHomesteadPattaLand: requiredBoolean,
+      approximatePrivateLandHolding: Yup.string().required('Private Land Holding is required'),
+      isIrrigationFacilityAvailable: requiredBoolean,
+      sourcesOfIrrigation: Yup.string().when('isIrrigationFacilityAvailable', {
+        is:true,
+        then: schema => schema.required('Sources of Irrigation is required'),
+        otherwise: schema => schema.notRequired()
+      }),
+      involvedInLivestockActivity: Yup.string().required('Livestock Activity is required')
+    }),
 
     // householdFamilyMember: Yup.array()
     //   .min(1, 'At least one family member is required')
@@ -192,11 +210,11 @@ export const HouseHoldFormValidationSchema = (props) =>{
 
     //       migratedInLast3Years: requiredBoolean,
 
-        //   destinationState: Yup.string().when('migratedInLast3Years', {
-        //     is: true,
-        //     then: schema => schema.required('Destination State is required'),
-        //     otherwise: schema => schema.notRequired()
-        //   }),
+    //       destinationState: Yup.string().when('migratedInLast3Years', {
+    //         is: true,
+    //         then: schema => schema.required('Destination State is required'),
+    //         otherwise: schema => schema.notRequired()
+    //       }),
 
     //       sectorOfEngagementDuringMigration: Yup.string().required('Sector is required'),
     //       periodOfMigration: Yup.string().required('Period of Migration is required'),

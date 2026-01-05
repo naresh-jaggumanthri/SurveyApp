@@ -48,6 +48,9 @@ const images = {
    NO_Image_Camera: require('./CameraImage.png'),
    NO_Video_Camera: require('./hundred.png'),
    Login_Logo: require('./Image.png'),
+   home:require('./house.png'),
+   village:require('./village.png'),
+   new_logo:require('./new_logo.png')
 
 }
 export default images;

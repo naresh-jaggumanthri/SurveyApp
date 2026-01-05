@@ -63,7 +63,7 @@ const LoginScreen = (props) => {
                 contentContainerStyle={Style.ScrollViewStyle}>
                 <View style={Logins.SetPadding}>
                     <View style={Logins.CenterImage}>
-                        <Image source={images.Login_Logo} style={Logins.LogoImageStyle} />
+                        <Image source={images.new_logo} style={Logins.LogoImageStyle} />
                     </View>
                     <Spacing space={SH(20)} />
                     <View style={Logins.LogIntoAccount}>
@@ -119,8 +119,10 @@ touched,
                     <View style={Logins.LoginButton}>
                         <Button
                             title={t("Login_Text")}
-                            onPress={() => 
-                                handleSubmit()
+                            onPress={() => {
+                                // navigation.navigate(RouteName.HOME_SCREEN);
+                                handleSubmit();
+                            }
                                
                                 // navigation.navigate(RouteName.OTP_VERYFY_SCREEN)
                             }
@@ -129,7 +131,7 @@ touched,
 </Formik>
 
                     <Spacing space={SH(20)} />
-                    <View style={Style.FlexRowForgot}>
+                    {/* <View style={Style.FlexRowForgot}>
                         <TouchableOpacity onPress={() => navigation.navigate(RouteName.FORGOT_PASSWORD)}>
                             <Text style={Logins.ForgetPasswordStyles}>{t("Forgot_Password")}</Text>
                         </TouchableOpacity>
@@ -137,7 +139,7 @@ touched,
                             <Text style={Logins.TextStyle}>{t("Dont_Have_Account")} <Text style={Logins.registerTextStyle} onPress={() => OnRegisterPress()}> {t("Register_Text")}</Text></Text>
                         </View>
                     </View>
-                    <Spacing space={SH(20)} />
+                    <Spacing space={SH(20)} /> */}
                     {/* <Text style={Logins.OrTextStyle}>Or</Text>
                     <Spacing space={SH(20)} />
                     <View style={Logins.FlexRowSignUp}>

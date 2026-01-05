@@ -2041,23 +2041,25 @@ export default class UserAPI extends Base {
     );
   }
 
-  saveHouseholdSurveyData(params, payload,token) {
+  saveHouseholdSurveyData(params, payload,token,isFormData) {
     return this.apiClient.postParamsPayload(
       {},
       "api/Household",
       params,
       payload,
-      token
+      token,
+      isFormData
     );
   }
 
-  saveMigrationSurveyData(params, payload,token) {
+  saveMigrationSurveyData(params, payload,token,isFormData) {
     return this.apiClient.postParamsPayload(
       {},
       "api/MigrationSurvey",
       params,
       payload,
-      token
+      token,
+      isFormData
     );
   }
 
@@ -2068,6 +2070,17 @@ export default class UserAPI extends Base {
   getMigrationListSurveyData(token){
      return this.apiClient.get(null, "api/MigrationSurvey", {}, token);
   }
+
+   postHouseholdSurveyDataFilesUpload(body, params,token) {
+    return this.apiClient.postImageUpdate(
+      null,
+      `api/Household`,
+      body,
+      null,
+      true,
+      token
+    );
+  };
 
  
 }

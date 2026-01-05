@@ -17,6 +17,12 @@ const TrendingEvent = (props) => {
         <View>
           <View style={HomeTabStyles.Flexrowbox}>
             <View style={HomeTabStyles.Widthstyles}>
+               {/* <VectorIcon
+                            color={Colors.gray_text_color}
+                            name="list"
+                            icon="FontAwesome"
+                            size={SF(55)}
+                          /> */}
               <Image source={item.imageset} style={HomeTabStyles.Setimagestyles} />
             </View>
             <View style={HomeTabStyles.Widthstylestwo}>
@@ -28,7 +34,7 @@ const TrendingEvent = (props) => {
                 </View>
               </View> */}
               <View style={HomeTabStyles.FlexRowDirection}>
-              <Text style={HomeTabStyles.BlackResponce}>{type==1?t("Number of family members"):t("Number of house holds")} : </Text>
+              <Text style={HomeTabStyles.BlackResponce}>{index==0?t("Number of family members"):t("Number of house holds")} : </Text>
               <Text style={HomeTabStyles.BlackResponceOne}>{item.TextThree}</Text>
               </View>
               <Spacing space={SH(5)} />

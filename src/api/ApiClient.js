@@ -6,6 +6,7 @@ import queryString from "query-string";
 //import sslPinning from 'react-native-ssl-pinning';
 import { Alert } from "react-native";
 import { useSelector } from "react-redux";
+import DeviceHelper from "../utils/DeviceHelper";
 // import { saveApiHistoryInDb } from "./ApiHelper";
 
 //import { fetch } from "react-native-ssl-pinning";
@@ -73,7 +74,7 @@ export default class ApiClient {
     });
   }
 
-  postImage(intl, requestUrl, payload = {}, params = {}, isFormData) {
+  postImage(intl, requestUrl, payload = {}, params = {}, isFormData,token) {
     return this.requestImage({
       intl: intl,
       url: requestUrl,
@@ -81,6 +82,19 @@ export default class ApiClient {
       body: payload,
       params,
       isFormData,
+      token
+    });
+  }
+
+  postImageUpdate(intl, requestUrl, payload = {}, params = {}, isFormData,token) {
+    return this.requestImageUpdate({
+      intl: intl,
+      url: requestUrl,
+      method: 'post',
+      body: payload,
+      params,
+      isFormData,
+      token
     });
   }
 
@@ -100,7 +114,7 @@ export default class ApiClient {
     });
   }
 
-  postParamsPayload(intl, requestUrl, params = {}, payload = {},token) {
+  postParamsPayload(intl, requestUrl, params = {}, payload = {},token,isFormData) {
     return this.request({
       intl: intl,
       url: requestUrl,
@@ -108,6 +122,7 @@ export default class ApiClient {
       body: payload,
       token: token,
       params,
+      isFormData
     });
   }
 
@@ -291,7 +306,7 @@ export default class ApiClient {
     params,
     token,
     body,
-    isFormData,
+    isFormData
    
   }) => {
     //  Alert.alert("url", `${token}`);
@@ -524,7 +539,7 @@ export default class ApiClient {
       if (err.name === 'AbortError') {
         console.log('Network Error');
       } else {
-        console.log(error.message);
+        console.log(err.message);
       }
       let res = '';
       //     let name = RootNavigation.navigationRef.getCurrentRoute().name;
@@ -565,6 +580,7 @@ export default class ApiClient {
     params,
     body,
     isFormData,
+    token
   }) => {
 
     let isConnected = await DeviceHelper.isConnectedToInternet();
@@ -595,9 +611,10 @@ export default class ApiClient {
       //   sslPinning: {
       //     certs: ["mycert","mycert2"]
       // }
-      //Accept: 'application/json',
+      'Accept': '*/*',
 
       'content-type': 'multipart/form-data',
+       'Authorization': token ? `Bearer ${token}` : undefined,
       //added by naresh
       //'Cache-Control': 'no-cache, no-store, must-revalidate',
       //'Pragma': 'no-cache',
@@ -651,10 +668,25 @@ export default class ApiClient {
       //   console.error('SSL pinning configuration failed:', error);
       // });
       //Alert.alert(JSON.stringify(init));
-      let res = await fetch(urlWithQuery, init);
+      // let res = await fetch(urlWithQuery, init);
+      try {
+  const response = await fetch(urlWithQuery, init);
 
+  // if (!response.ok) {
+  //   throw new Error(`HTTP error! Status: ${response.status}`);
+  // }
 
-      // console.log('imgresponse 1:- ',JSON.stringify(res));
+  const res = await response.json(); // 👈 Parses body
+  console.log('Headers:', res.headers.get('content-type'));
+  console.log('API DATA:', res);
+   //  Alert.alert("result>>",JSON.stringify(res));
+       console.log('imgresponse 1:- ',JSON.stringify(res));
+
+} catch (error) {
+  console.error('Fetch error:', error);
+}
+
+     
       let status = res.status;
       let response;
       try {
@@ -793,7 +825,270 @@ export default class ApiClient {
       if (isConnected) {
         res = {
           //message: "We are unable to process your request at this moment. .Please try again later",
-          message: 'Another User logged in another device',
+          message: 'Network Exception Occured'+JSON.stringify(err),
+          status: API_STATUS.CODE_ERROR,
+        };
+        return res;
+        //   }else{
+        //     res = {
+        //       //message: "We are unable to process your request at this moment. .Please try again later",
+        //       message: 'No Internet Connection',
+        //       status: API_STATUS.CODE_ERROR,
+        //   };
+        //     return res;
+        //   }
+      }
+      return;
+    }
+  };
+   requestImageUpdate = async ({
+    intl,
+    url,
+    method,
+    params,
+    body,
+    isFormData,
+    token
+  }) => {
+
+    let isConnected = await DeviceHelper.isConnectedToInternet();
+    if (!isConnected) {
+      const res = {
+        message: NO_INTERNET_MSG,
+        error: NO_INTERNET_MSG,
+        noIntenet: true,
+        status: API_STATUS.NO_INTERNET,
+      };
+      return res;
+    }
+
+    const urlWithQuery = `${this.prefix}/${url}?${queryString.stringify(
+      params,
+    )}`;
+    console.log('urlWithQuery=======> ', urlWithQuery);
+
+    // const jwtToken = await getJwtToken();
+    //const jwtToken=undefined;
+
+    //console.log('jwt token===========>', JSON.parse(jwtToken));
+
+    // const apiKey = await getApiKey();
+    //const apiKey=undefined;
+    let headers = {
+       'Authorization': token ? `Bearer ${token}` : undefined,
+    };
+    // if (jwtToken) {
+    //   headers = {
+    //     ...headers,
+    //     Authorization: JSON.parse(jwtToken),
+    //     //'x-api-key': apiKey,
+
+    //   };
+    // }
+    let init = {
+      method,
+      headers: headers,
+      body: body
+    };
+
+    if (method !== 'get' && method !== 'head') {
+      if (isFormData) {
+        init = {
+          ...init,
+          body: body
+        }
+      } else {
+        if (typeof body == 'string') {
+          init.body = body;
+          // headers = {
+          //   ...headers,
+          //   'content-type': 'text/plain',
+          // };
+          init = {
+            ...init,
+            headers,
+          };
+        } else {
+          //init.body = JSON.stringify(body);
+        }
+      }
+      //init.body = JSON.stringify(body);
+      //init.data = body;
+    }
+    // console.log('headers : ', headers);
+
+    // console.log('headers : ', init);
+    try {
+  
+      // let res = await fetch(urlWithQuery, init);
+        //  try {
+  const responses = await fetch(urlWithQuery, init);
+
+  // if (!response.ok) {
+  //   throw new Error(`HTTP error! Status: ${response.status}`);
+  // }
+
+  const res = await responses.json(); // 👈 Parses body
+  // console.log('Headers:', res.headers.get('content-type'));
+  console.log('API DATA:', res);
+
+  return res;
+
+  // {"message": "Household saved successfully", "success": true, "uniqueId": "6f7ef23a-da81-42c0-a4fb-e636987cdb9d"}
+
+
+   //  Alert.alert("result>>",JSON.stringify(res));
+      //  console.log('imgresponse 1:- ',JSON.stringify(res));
+
+// } catch (error) {
+//   console.error('Fetch error:', error);
+// }
+
+      //  Alert.alert("result>>",JSON.stringify(res));
+      //  console.log('imgresponse 1:- ',JSON.stringify(res));
+      let status = res?.status;
+      let response;
+      try {
+        if (status >= 500) {
+          //throw new Error('Bad response from server');
+          res = {
+            //...res,
+            message: response || 'Bad response from server',
+            status: API_STATUS.SERVER_ERROR,
+          };
+          return res;
+        }
+        if (status == 200) {
+          return res={
+            status:API_STATUS.OK
+          };
+
+
+        }
+        if (status == 401) {
+
+          // PubSub.publish(TOKEN_EXPIRE, {
+          //   tokenExpire: true,
+          // });
+          if (isConnected) {
+            let newRes = {
+              ...response,
+              message: "We are unable to process your request at this moment.Please try again later",
+              //message: 'Another User Logged In Another Device',
+            };
+            return newRes;
+          }
+          if (!isConnected) {
+            let newRes2 = {
+              ...response,
+              message: 'No Internet Connection',
+            };
+            return newRes2;
+          }
+        }
+        try {
+          response = await res.json();
+
+
+        } catch (e) {
+          res = await res.text();
+          if (res == 'Success') {
+            return { status: true };
+          }
+          // console.log('urlWithQuery=======> ', `${this.prefix}/${urlWithQuery}`);
+          return res;
+        }
+        // console.log('response 1:- ', response);
+        //to store in db
+        //saveApiHistoryInDb(body, urlWithQuery, response);
+
+        if (typeof response == 'object' || Array.isArray(response) || typeof response == 'string') {
+          res = response;
+          return res;
+        } else if (res.status == 200) {
+          res = {
+            message: response,
+            status: API_STATUS.OK,
+            data: response,
+          };
+          return res;
+        }
+
+        if (status >= 500) {
+          //throw new Error('Bad response from server');
+          res = {
+            //...res,
+            message: response || 'Bad response from server',
+            status: API_STATUS.SERVER_ERROR,
+          };
+          return res;
+        }
+        if (status == 404) {
+          //throw new Error('Bad response from server');
+          //res.error = res.message || 'Bad Credentials';
+          res = {
+            //...res,
+            message: response || 'Bad Credentials',
+            status: API_STATUS.BAD_REQUEST,
+          };
+          return res;
+        }
+        if (status >= 400) {
+          //throw new Error('Bad response from server');
+          //res.error = res.message || 'Bad Credentials';
+          res = {
+            //...res,
+            message: response || 'Bad Credentials',
+            status: API_STATUS.BAD_REQUEST,
+          };
+          // PubSub.publish(TOKEN_EXPIRE, {
+          //   tokenExpire: true,
+          // });
+          //navigationRef.navigate(LOGIN_PAGE);
+          return res;
+        }
+
+        if (res.status == 'failed') {
+          //res.error = `${res.response || res.message} ${res.httpStatus}`;
+          res = {
+            //...res,
+            message: response || 'Bad Credentials',
+            status: API_STATUS.BAD_REQUEST,
+          };
+          return res;
+        }
+
+        return res;
+      } catch (err) {
+
+        const res = {
+          //message: "We are unable to process your request at this moment.Please try again later",
+          message: 'Something went wrong.',
+          status: API_STATUS.CODE_ERROR,
+        };
+
+        //AppOkAlert('Another User logged in another device',()=>{});
+        return res;
+      }
+    } catch (err) {
+      //alert(err);
+
+      let res = '';
+      //     let name = RootNavigation.navigationRef.getCurrentRoute().name;
+      //    if(name!=PATIENT_LIST_PAGE){
+      //     if(err.message=='Network request failed'){
+      //       res = {
+      //         //message: "We are unable to process your request at this moment. .Please try again later",
+      //         message: 'No Internet Connection',
+      //         status: API_STATUS.CODE_ERROR,
+      //     };
+      //       return res;
+      //     }
+
+      if (isConnected) {
+        res = {
+          //message: "We are unable to process your request at this moment. .Please try again later",
+          message: 'Network Exception Occured'+JSON.stringify(err),
           status: API_STATUS.CODE_ERROR,
         };
         return res;

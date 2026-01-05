@@ -135,7 +135,7 @@ export default AnalyaticsStyle = (Colors) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     width: '100%',
-    paddingHorizontal: SH(10)
+    paddingHorizontal: SH(1)
   },
   Thankyou: {
     width: widthPercent(15),

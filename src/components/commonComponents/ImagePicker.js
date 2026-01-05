@@ -10,9 +10,10 @@ import images from '../../index';
 import { VectorIcon } from '../../components';
 
 function ImgPicker(props) {
-    const { showdatatwo,showDataThree, showdata, userimagstyle, text } = props;
-    const [imgpathselect, SetImgpathselect] = useState('');
+    const { showdatatwo,showDataThree, showdata, userimagstyle, text,imageData,setImageData,onPress,imgpathselect,SetImgpathselect} = props;
+   
     const [filePath, setFilePath] = useState('');
+    
     const [AlertData, setAlertData] = useState(false);
     const { Colors } = useTheme();
     const AnalyaticsStyles = useMemo(() => AnalyaticsStyle(Colors), [Colors]);
@@ -48,24 +49,40 @@ function ImgPicker(props) {
         [],
     );
     const pickFromGallery = () => {
-        let options = {
-            mediaType: 'photo',
-            cropping: true,
-            includeBase64: false,
-            saveToPhotos: true,
-            maxWidth: 200,
-            maxHeight: 200,
-            quality: 10,
-            allowsEditing: true,
-        };
+        // let options = {
+        //     mediaType: 'photo',
+        //     cropping: true,
+        //     includeBase64:true,
+        //     saveToPhotos: true,
+        //     maxWidth: 200,
+        //     maxHeight: 200,
+        //     quality: 10,
+        //     allowsEditing: true,
+        // };
+         let options = {
+    title: 'Select Image',
+    type: 'library',
+    selectionLimit: 0,
+      mediaType: 'photo',
+      includeBase64:false,
+    options: {
+      selectionLimit: 0,
+      mediaType: 'photo',
+      includeBase64:false,
+    //   includeExtra,
+    },
+};
         launchImageLibrary(options, (response) => {
-            console.log(response, '=====>')
-            if (response.didCancel) {
-                setAlertData(current => !current)
-                return;
-            }
-            setFilePath(response.assets[0].base64);
-            SetImgpathselect(response.assets[0].uri);
+            // console.log(response, '=====>')
+            //   Alert.alert("response23",JSON.stringify(response));
+            // if (response?.didCancel) {
+            //     setAlertData(current => !current)
+            //     return;
+            // }
+            // setFilePath(response.assets[0].base64);
+            setImageData(response?.assets[0]);
+            SetImgpathselect(response?.assets[0]?.uri);
+
 
         });
     //     launchCamera(options,(response)=>{
@@ -81,18 +98,34 @@ function ImgPicker(props) {
     //     });
     };
      const pickFromCamera = () => {
-    launchCamera(
-      { mediaType: 'photo', quality: 0.7, saveToPhotos: true },
-      response => {
+        let options={
+    title: 'Take Image',
+    type: 'capture',
+     includeBase64: true,
+     mediaType: 'photo',
+     saveToPhotos: true,
+    options: {
+      saveToPhotos: true,
+      mediaType: 'photo',
+      includeBase64:true,
+    //   includeExtra,
+    },
+  };
+//    { mediaType: 'photo', quality: 0.7, saveToPhotos: true }
+    launchCamera(options,(response) => {
         if (response.didCancel || response.errorCode) return;
 
-        const asset = response.assets[0];
+      
+
+        const asset = response?.assets[0];
         // onChange({
         //   uri: asset.uri,
         //   type: asset.type,
         //   name: asset.fileName || `photo_${Date.now()}.jpg`,
         // });
-        SetImgpathselect(asset.uri);
+       
+          setImageData(response?.assets[0]);
+        SetImgpathselect(asset?.originalPath);
       }
     );
   };

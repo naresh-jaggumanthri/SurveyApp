@@ -70,6 +70,17 @@ const CustomSidebarMenu = (props) => {
           />
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_11")}</Text>
         </TouchableOpacity>
+         <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+          () => Onpressfunction(RouteName.FAMILY_LIST_TAB)
+        }>
+          <VectorIcon
+            icon="FontAwesome"
+            size={SF(19)}
+            name="list"
+            color={Colors.theme_background}
+          />
+          <Text style={Sidemenu.hometextstyle}>{t("HH Survey List")}</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.VILLAGE_SURVEY_TAB)
         }>
@@ -80,6 +91,17 @@ const CustomSidebarMenu = (props) => {
             color={Colors.theme_background}
           />
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_12")}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+          () => Onpressfunction(RouteName.VILLAGE_LIST_TAB)
+        }>
+          <VectorIcon
+            icon="FontAwesome"
+            size={SF(19)}
+            name="list"
+            color={Colors.theme_background}
+          />
+          <Text style={Sidemenu.hometextstyle}>{t("Village Survey List")}</Text>
         </TouchableOpacity>
         {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.VIEW_REPORT_SCREEN)
@@ -138,18 +160,18 @@ const CustomSidebarMenu = (props) => {
           <VectorIcon icon="Ionicons" size={SF(19)} name="notifications" style={Sidemenu.logoimage} color={Colors.theme_background} />
           <Text style={Sidemenu.hometextstyle}>{t("Notification_Text")}</Text>
         </TouchableOpacity> */}
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.PROFILE_TAB)
         }>
           <VectorIcon icon="FontAwesome" size={SF(19)} name="user-circle" style={Sidemenu.logoimage} color={Colors.theme_background} />
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_7")}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={Sidemenu.flexrowset} onPress={
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.EDIT_PROFILE_SCREEN)
         }>
           <VectorIcon icon="AntDesign" size={SF(19)} name="edit" style={Sidemenu.logoimage} color={Colors.theme_background} />
           <Text style={Sidemenu.hometextstyle}>{t("Side_Title_8")}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {/* <TouchableOpacity style={Sidemenu.flexrowset} onPress={
           () => Onpressfunction(RouteName.HELP_SCREEN)
         }>

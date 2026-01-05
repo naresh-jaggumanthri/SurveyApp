@@ -40,18 +40,20 @@ function FamilyalertModal(props) {
     count,
     familyMembers,
     setFamilyMembers,
+    handleMemberChange
   } = props;
   const {t} = useTranslation();
   const [state, setState] = useState({});
   const AnalyaticsStyles = useMemo(() => AnalyaticsStyle(Colors), [Colors]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const genderData = [
     {label: t('Male'), value: t('Male')},
     {label: t('Female'), value: t('Female')},
     {label: t('Others'), value: t('Others')},
   ];
   const selfHelpData = [
-    {label: t('Yes'), value: 'true'},
-    {label: t('No'), value: 'false'},
+    {label: t('Yes'), value: true},
+    {label: t('No'), value: false},
   ];
   const sectorData = [
     {label: t('Brick Kiln'), value: 'Brick Kiln'},
@@ -68,15 +70,15 @@ function FamilyalertModal(props) {
     {label: t('Other'), value: 'Other'},
   ];
   const migrationData = [
-    {label: t('1-3months'), value: '1-3months'},
-    {label: t('4-6months'), value: '4-6months'},
-    {label: t('7-12months'), value: '7-12months'},
+    {label: t('1-3months'), value: '1-3 months'},
+    {label: t('4-6months'), value: '4-6 months'},
+    {label: t('7-12months'), value: '7-12 months'},
   ];
   const [checkboxes, setCheckboxes] = useState([
-    {label: t('Poultry'), checked: false, mainIndex: 0},
-    {label: t('Goatery'), checked: false, mainIndex: 0},
-    {label: t('Dairy'), checked: false, mainIndex: 0},
-    {label: t('Others'), checked: false, mainIndex: 0},
+    {label: t('DDUGKY'), checked: false, mainIndex: 0},
+    {label: t('RSETI'), checked: false, mainIndex: 0},
+    {label: t('Other'), checked: false, mainIndex: 0},
+    {label: t('None'), checked: false, mainIndex: 0},
 
     // Add more options as needed
   ]);
@@ -89,15 +91,20 @@ function FamilyalertModal(props) {
           gender: '',
           educationalQualification: '',
           migratedInLast3Years: false,
-          destinationState: '',
-          sectorOfEngagementDuringMigration: '',
+          DestinationState: '',
+          SectorOfEngagementDuringMigration: '',
           periodOfMigration: '',
-          monthlyRemittanceDuringMigration: '',
+          monthlyRemittanceDuringMigration:0,
           interestInSkillDevelopment: '',
         })),
       );
     }
   }, [count]);
+  //  const handleMemberChange = (index, key, value) => {
+  //   const updatedMembers = [...familyMembers];
+  //   updatedMembers[index][key] = value;
+  //   setFamilyMembers(updatedMembers);
+  // };
   const FamilyMemberForm = ({index, data, onChange}) => (
     <View>
       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -154,8 +161,8 @@ function FamilyalertModal(props) {
       <Input
         title={t('Destination State')}
         placeholder={t('Destination State')}
-        onChangeText={text => onChange(index, 'destinationState', text)}
-        value={data.destinationState}
+        onChangeText={text => onChange(index, 'DestinationState', text)}
+        value={data.DestinationState}
         inputType="text"
         maxLength={10}
         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -166,8 +173,8 @@ function FamilyalertModal(props) {
       </Text>
       <RadioButton
         arrayData={sectorData}
-        onChangeText={text => onChange(index, 'sectorOfEngagementDuringMigration', text)}
-        value={data.sectorOfEngagementDuringMigration}
+        onChangeText={text => onChange(index, 'SectorOfEngagementDuringMigration', text)}
+        value={data.SectorOfEngagementDuringMigration}
       />
       <Spacing space={SH(15)} />
       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -186,7 +193,7 @@ function FamilyalertModal(props) {
         )}
         onChangeText={text => onChange(index, 'monthlyRemittanceDuringMigration', text)}
         value={data.monthlyRemittanceDuringMigration}
-        inputType="text"
+        inputType="numeric"
         maxLength={10}
         titleStyle={AnalyaticsStyles.PleaseEnterDate}
       />
@@ -197,11 +204,12 @@ function FamilyalertModal(props) {
       {renderCheckboxes(index)}
     </View>
   );
-  const handleMemberChange = (index, key, value) => {
-    const updatedMembers = [...familyMembers];
+ 
+  const handleSubmitAllMembers=(index, key, value)=>{
+const updatedMembers = [...familyMembers];
     updatedMembers[index][key] = value;
     setFamilyMembers(updatedMembers);
-  };
+  }
 //   const renderForm = () => {
 //     return familyMembers?.map((member, index) => (
 //       <FamilyMemberForm
@@ -213,21 +221,70 @@ function FamilyalertModal(props) {
 //     ));
 //   };
 
-  const renderForm = () => {
-  return familyMembers?.map((member, index) => (
-    <View key={index} style={styles.card}>
-      {/* <Text style={styles.title}>
-        Family Member {index + 1}
-      </Text> */}
 
+const renderForm = () => {
+  if (!familyMembers || familyMembers.length === 0) return null;
+
+  return (
+    <View style={styles.card}>
       <FamilyMemberForm
-        index={index}
-        data={member}
+        index={currentIndex}
+        data={familyMembers[currentIndex]}
         onChange={handleMemberChange}
       />
+
+      <View style={styles.buttonRow}>
+        {/* Previous */}
+        {currentIndex > 0 && (
+          <Button
+            title="Previous"
+            onPress={() => setCurrentIndex(i => i - 1)}
+            buttonStyle={{width:SH(130)}}
+        
+          />
+        )}
+
+        {/* Next */}
+        {currentIndex < familyMembers.length - 1 && (
+          <Button
+            title="Next"
+            onPress={() => setCurrentIndex(i => i + 1)}
+            buttonStyle={{width:SH(130)}}
+          />
+        )}
+
+        {/* Finish */}
+        {/* {currentIndex === familyMembers.length - 1 && (
+          <Button
+            title="Finish"
+            onPress={handleSubmitAllMembers}
+          />
+        )} */}
+      </View>
     </View>
-  ));
+  );
 };
+
+//   const renderForm = () => {
+// //   return familyMembers?.map((member, index) => (
+//     <View key={index} style={styles.card}>
+//       {/* <Text style={styles.title}>
+//         Family Member {index + 1}
+//       </Text> */}
+
+//       <FamilyMemberForm
+//       index={currentIndex}
+//         // index={index}
+//         data={familyMembers[currentIndex]}
+//         onChange={handleMemberChange}
+//       />
+//       {currentIndex<familyMembers.size() &&<Button
+//   title="Next"
+//   onPress={() => setCurrentIndex(i => i + 1)}
+// />}
+//     </View>
+// //   ));
+// };
   const renderCheckboxes = ind => {
     
     return checkboxes.map((checkbox, index) => (
@@ -369,6 +426,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
     color: '#333',
+  },
+  
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
   },
 });
 

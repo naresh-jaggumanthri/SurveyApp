@@ -101,7 +101,7 @@ const VillageFormList = (props) => {
          const result=res.map((m)=>{
            return{
              text:m.respondentName,
-             imageset: images.Recently_Image_1,
+             imageset: images.village,
              musicname:m.identityRole,
            //   TextTwo::m.householdBasicProfile.,
              TextThree:m.totalHouseholds,
