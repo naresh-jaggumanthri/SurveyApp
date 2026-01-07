@@ -16,7 +16,9 @@ import {
   AllServeyScreen,
   ThankyouScreen,
   EditLocationScreen,
-  ViewSurveyReportScreen
+  ViewSurveyReportScreen,
+  FamilyFormSurveyEdit,
+  VillageFormSurveyEdit
 } from '../screens';
 import FamilyFormList from '../screens/Home/Tab/FamilyFormList';
 import VillageFormList from '../screens/Home/Tab/VillageFormList';
@@ -52,6 +54,15 @@ const RootNavigator = props => {
         <Stack.Screen name={RouteName.SWIPER_SCREEN} component={Swiperscreen} />
         <Stack.Screen name={RouteName.SELECT_LANGUAGE} component={TranslationScreen} />
         <Stack.Screen name={RouteName.FORGOT_PASSWORD} component={ForgotPassword} />
+         <Stack.Screen
+      name={RouteName.FAMILY_SURVEY_EDIT_TAB}
+      component={FamilyFormSurveyEdit}
+      />
+       <Stack.Screen
+      name={RouteName.VILLAGE_SURVEY_EDIT_TAB}
+      component={VillageFormSurveyEdit}
+      
+      />
          {/* <Stack.Screen name={RouteName.FAMILY_LIST_TAB} component={FamilyFormList} />
           <Stack.Screen name={RouteName.VILLAGE_LIST_TAB} component={VillageFormList} /> */}
         <Stack.Screen

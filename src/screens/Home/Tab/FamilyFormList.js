@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRoute, useTheme } from '@react-navigation/native';
-import { View, Text, TouchableOpacity, FlatList, Alert } from "react-native";
-import { SH, SW, widthPercent } from '../../../utils';
-import { Spacing, RecentlyDataView } from '../../../components';
+import { View, Text, TouchableOpacity, FlatList, Alert, StyleSheet } from "react-native";
+import { Colors, SH, SW, widthPercent } from '../../../utils';
+import { Spacing, RecentlyDataView, VectorIcon } from '../../../components';
 import { HomeTabStyle, Style } from '../../../styles';
 import { PieChart, LineChart } from 'react-native-chart-kit';
 import images from '../../../index';
@@ -209,7 +209,9 @@ getFamilyList();
               </TouchableOpacity> */}
             </View>
             <Spacing space={SH(10)} />
+           
             <View style={HomeTabStyles.BackGroundShape}>
+                
               <FlatList
                 data={familyList}
                 numColumns={1}
@@ -221,7 +223,7 @@ getFamilyList();
                   onPress={() =>{
                     
                     PubSub.publish('HouseItem',item) 
-                    navigation.navigate(RouteName.FAMILY_SURVEY_TAB);
+                    navigation.navigate(RouteName.FAMILY_SURVEY_EDIT_TAB);
  
                 //       navigation.navigate(RouteName.FAMILY_SURVEY_TAB,{
                         
@@ -236,11 +238,43 @@ getFamilyList();
                 />)}
                 keyExtractor={item => item.id}
               />
+             
             </View>
+            
           </View>
         </View>
       </ScrollView>
+      <TouchableOpacity
+  style={styles.fab}
+  onPress={() => navigation.navigate(RouteName.FAMILY_SURVEY_TAB)}
+>
+  <VectorIcon
+    icon="AntDesign"
+    name="plus"
+    size={26}
+    color="#fff"
+  />
+</TouchableOpacity>
     </View>
   );
 };
+
+
+const styles = StyleSheet.create({
+  fab: {
+    position: 'absolute',
+    bottom: SH(25),
+    right: SW(20),
+    width: SH(56),
+    height: SH(56),
+    borderRadius: SH(28),
+    backgroundColor: Colors.theme_background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,           // Android shadow
+    shadowColor: '#000',    // iOS shadow
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+  },
+});
 export default FamilyFormList;

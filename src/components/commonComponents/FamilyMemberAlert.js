@@ -237,7 +237,7 @@ const renderForm = () => {
         {/* Previous */}
         {currentIndex > 0 && (
           <Button
-            title="Previous"
+            title="Previous Member"
             onPress={() => setCurrentIndex(i => i - 1)}
             buttonStyle={{width:SH(130)}}
         
@@ -247,7 +247,7 @@ const renderForm = () => {
         {/* Next */}
         {currentIndex < familyMembers.length - 1 && (
           <Button
-            title="Next"
+            title="Next Member"
             onPress={() => setCurrentIndex(i => i + 1)}
             buttonStyle={{width:SH(130)}}
           />

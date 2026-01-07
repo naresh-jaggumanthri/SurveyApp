@@ -12,6 +12,8 @@ import FamilyFormSurveyTab from '../screens/Home/Tab/FamilyFormSurveyTab';
 import VillageFormSurveyTab from '../screens/Home/Tab/VillageFormSurveyTab';
 import FamilyFormList from '../screens/Home/Tab/FamilyFormList';
 import VillageFormList from '../screens/Home/Tab/VillageFormList';
+import FamilyFormSurveyEdit from '../screens/Home/Tab/FamilyFormSurveyEdit';
+import VillageFormSurveyEdit from '../screens/Home/Tab/VillageFormSurveyEdit';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -138,6 +140,7 @@ function FamilySurveyFormListScreenStack(props) {
           ),
         }}
       />
+     
     </Stack.Navigator>
   );
 }
@@ -167,8 +170,19 @@ function VillageSurveyFormListScreenStack(props) {
           ),
         }}
       />
+       
     </Stack.Navigator>
   );
+}
+function FamilyEditScreenStack(){
+   const { t } = useTranslation();
+  return ( <Stack.Navigator initialRouteName="editscreen">
+       <Stack.Screen
+      name={RouteName.FAMILY_SURVEY_EDIT_TAB}
+      component={FamilyFormSurveyEdit}
+      options={{ headerShown: true }}
+      />
+  </Stack.Navigator>);
 }
 function FamilySurveyFormScreenStack(props) {
   const { t } = useTranslation();
@@ -196,6 +210,7 @@ function FamilySurveyFormScreenStack(props) {
           ),
         }}
       />
+     
     </Stack.Navigator>
   );
 }
@@ -355,6 +370,13 @@ export function HomeScsreenTabAll() {
           ),
         }}
       /> */}
+      {/* <Tab.Screen
+  name="HiddenScreen"
+  component={FamilyEditScreenStack}
+  options={{
+    tabBarButton: () => null, // hides tab
+  }}
+/> */}
     </Tab.Navigator>
   )
 }

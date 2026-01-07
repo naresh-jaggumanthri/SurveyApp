@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTheme } from '@react-navigation/native';
-import { View, Text, TouchableOpacity, FlatList, Alert } from "react-native";
-import { SH, SW, widthPercent } from '../../../utils';
-import { Spacing, RecentlyDataView } from '../../../components';
+import { View, Text, TouchableOpacity, FlatList, Alert, StyleSheet } from "react-native";
+import { Colors, SH, SW, widthPercent } from '../../../utils';
+import { Spacing, RecentlyDataView, VectorIcon } from '../../../components';
 import { HomeTabStyle, Style } from '../../../styles';
 import { PieChart, LineChart } from 'react-native-chart-kit';
 import images from '../../../index';
@@ -215,7 +215,7 @@ const VillageFormList = (props) => {
                     //   navigation.navigate(RouteName.FAMILY_SURVEY_TAB)
                     // }else if(index==1){
                      PubSub.publish('VillageItem',item) 
-                      navigation.navigate(RouteName.VILLAGE_SURVEY_TAB)
+                      navigation.navigate(RouteName.VILLAGE_SURVEY_EDIT_TAB)
                     // }
                     // navigation.navigate(RouteName.VIEW_REPORT_SCREEN)
                   }}
@@ -226,7 +226,35 @@ const VillageFormList = (props) => {
           </View>
         </View>
       </ScrollView>
+        <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate(RouteName.VILLAGE_SURVEY_TAB)}
+      >
+        <VectorIcon
+          icon="AntDesign"
+          name="plus"
+          size={26}
+          color="#fff"
+        />
+      </TouchableOpacity>
     </View>
   );
 };
+const styles = StyleSheet.create({
+  fab: {
+    position: 'absolute',
+    bottom: SH(25),
+    right: SW(20),
+    width: SH(56),
+    height: SH(56),
+    borderRadius: SH(28),
+    backgroundColor: Colors.theme_background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,           // Android shadow
+    shadowColor: '#000',    // iOS shadow
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+  },
+});
 export default VillageFormList;

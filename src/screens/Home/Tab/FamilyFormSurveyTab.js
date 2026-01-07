@@ -182,6 +182,7 @@ const FamilyFormSurveyTab = props => {
 
   const headRelationData = [
     {label: 'Spouse', value: 'Spouse'},
+     {label: 'Son', value: 'Son'},
     {label: 'Daughter', value: 'Daughter'},
     {label: 'Daughter-in-law', value: 'Daughter-In-Law'},
     {label: 'Sister', value: 'Sister'},
@@ -1322,7 +1323,7 @@ if (ifscRegex.test(text)) {
                           // );
                         }}
                         value={
-                          values?.householdBasicProfile?.totalFamilyMembers
+                          values?.householdBasicProfile?.totalFamilyMembers||familyMemberCount
                         }
                         inputType="numeric"
                         maxLength={3}
@@ -1353,6 +1354,12 @@ if (ifscRegex.test(text)) {
                           </Text>
                         </TouchableOpacity>
                       )}
+                       <Text style={{color: 'red'}}>
+                        {
+                          errors?.householdBasicProfile
+                            ?.totalFamilyMembers
+                        }
+                      </Text>
                     </View>
                   )}
                   {/* Two question start */}
@@ -3139,7 +3146,7 @@ if (ifscRegex.test(text)) {
         }}
         buttonminview={Style.ButtonCenter}
         iconVisible={true}
-        buttonText={t('Submit')}
+        buttonText={t('Add')}
         count={familyMemberCount}
         familyMembers={familyMembers}
         setFamilyMembers={setFamilyMembers}

@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useRef,
   useLayoutEffect,
+  useCallback,
 } from 'react';
 import {useTheme} from '@react-navigation/native';
 import {
@@ -47,9 +48,10 @@ import {useSelector} from 'react-redux';
 import PubSub from 'pubsub-js';
 import Geolocation from '@react-native-community/geolocation';
 import moment from 'moment';
+import { BackHandler } from 'react-native';
 // import { VillageFormSurveyTab } from '.';
 
-const VillageFormSurveyTab = props => {
+const VillageFormSurveyEdit = props => {
   const {t} = useTranslation();
   const {navigation} = props;
 
@@ -328,6 +330,10 @@ const VillageFormSurveyTab = props => {
       setBackgroundColors(updatedColors);
       setCurrentQuestion(currentQuestion - 1);
     }
+  };
+  const handleCancel=()=>{
+    //Alert.alert("hello");
+    navigation.goBack();
   };
   const [alertVisible, setAlertVisible] = useState(false);
 
@@ -2250,6 +2256,7 @@ const VillageFormSurveyTab = props => {
                   {t('Survey_Title_47')}
                 </Text>
               </TouchableOpacity>
+             
               {currentQuestion < 5 && (
                 <TouchableOpacity
                   style={AnalyaticsStyles.PreviousButton}
@@ -2283,6 +2290,13 @@ const VillageFormSurveyTab = props => {
                   </Text>
                 </TouchableOpacity>
               )}
+                <TouchableOpacity
+                style={AnalyaticsStyles.CancelButton}
+                onPress={handleCancel}>
+                <Text style={AnalyaticsStyles.PreviousTextStyle}>
+                  {t('Cancel')}
+                </Text>
+              </TouchableOpacity>
             </View>
           </>
         )}
@@ -2313,4 +2327,4 @@ const VillageFormSurveyTab = props => {
     </View>
   );
 };
-export default VillageFormSurveyTab;
+export default VillageFormSurveyEdit;

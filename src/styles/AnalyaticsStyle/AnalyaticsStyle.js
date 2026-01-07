@@ -83,7 +83,7 @@ export default AnalyaticsStyle = (Colors) => StyleSheet.create({
     backgroundColor: Colors.theme_background,
     height: SH(35),
     borderRadius: 300,
-    width: '40%',
+    width: '30%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center'
@@ -92,7 +92,15 @@ export default AnalyaticsStyle = (Colors) => StyleSheet.create({
     backgroundColor: "green",
     height: SH(35),
     borderRadius: 300,
-    width: '40%',
+    width: '30%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },CancelButton: {
+    backgroundColor:"red",
+    height: SH(35),
+    borderRadius: 300,
+    width: '30%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center'

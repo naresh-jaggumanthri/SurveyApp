@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useTheme } from '@react-navigation/native';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useFocusEffect, useTheme } from '@react-navigation/native';
 import { View, Text, TouchableOpacity, FlatList, Alert } from "react-native";
 import { SH, SW, widthPercent } from '../../../utils';
 import { Spacing, RecentlyDataView } from '../../../components';
@@ -87,15 +87,34 @@ const HomeTab = (props) => {
   useEffect(() => {
     getFamilyList();
     getVillageList();
-  const backAction = () => true; // ⛔ blocks back button
+  // const backAction = () => true; // ⛔ blocks back button
 
-  const backHandler = BackHandler.addEventListener(
-    'hardwareBackPress',
-    backAction
-  );
+  // const backHandler = BackHandler.addEventListener(
+  //   'hardwareBackPress',
+  //   backAction
+  // );
 
-  return () => backHandler.remove();
+  // return () => backHandler.remove();
 }, []);
+useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // ⛔ Block back button ONLY on this tab
+        return true; // true = prevent default back action
+      };
+
+      BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress
+      );
+
+      return () =>
+        BackHandler.removeEventListener(
+          'hardwareBackPress',
+          onBackPress
+        );
+    }, [])
+  );
 const getFamilyList =async()=>{
     let token=loginData?.token;
       
