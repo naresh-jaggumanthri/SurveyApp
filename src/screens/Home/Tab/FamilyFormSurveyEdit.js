@@ -144,6 +144,10 @@ const FamilyFormSurveyEdit = props => {
   const [imageData, setImageData] = useState(null);
   const [location, setLocation] = useState(false);
    const [imgpathselect, SetImgpathselect] = useState('');
+    // Your state and other variables...
+  const [familyAlertVisible, setFamilyAlertVisible] = useState(false);
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const [familyMemberCount, setFamilyMemberCount] = useState(0);
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -285,15 +289,30 @@ const FamilyFormSurveyEdit = props => {
 
   var mySubscriber = function (msg, data) {
     // console.log(msg, data);
-    // Alert.alert("Data",JSON.stringify(data));
+    //  Alert.alert("Data",JSON.stringify(data?.item?.householdFamilyMember));
+    setFamilyMemberCount(data?.item?.householdFamilyMember?.length ?? 0);
+    const members=data?.item?.householdFamilyMember;
+    setFamilyMembers(members);
     setEditData(data);
     if (data && formikRef.current) {
       formikRef.current.resetForm({
-        values: {
-          ...HouseHoldFormInitialValues(props),
-          ...data.item,
-        },
-      });
+  values: {
+    ...HouseHoldFormInitialValues(props),
+    ...data.item,
+    householdBasicProfile: {
+      ...HouseHoldFormInitialValues(props).householdBasicProfile,
+      ...data?.item?.householdBasicProfile,
+      totalFamilyMembers: data?.item?.householdFamilyMember?.length ?? 0,
+    },
+  },
+});
+      // formikRef.current.resetForm({
+      //   values: {
+      //     ...HouseHoldFormInitialValues(props),
+      //     ...data.item,
+          
+      //   },
+      // });
       const result = data?.item;
     }
   };
@@ -421,10 +440,7 @@ const FamilyFormSurveyEdit = props => {
 
   const [currentQuestion, setCurrentQuestion] = useState(1); // Track the current question number
 
-  // Your state and other variables...
-  const [familyAlertVisible, setFamilyAlertVisible] = useState(false);
-  const [familyMembers, setFamilyMembers] = useState([]);
-  const [familyMemberCount, setFamilyMemberCount] = useState(0);
+ 
 
   const handleAddFamilyMember = () => {
     // Alert.alert("inn");
@@ -650,7 +666,7 @@ const FamilyFormSurveyEdit = props => {
       {/* <Text style={AnalyaticsStyles.TitleStyle}>{t("Basic Details")}</Text> */}
       <Formik
         innerRef={formikRef}
-        initialValues={HouseHoldFormInitialValues(props)}
+        initialValues={HouseHoldFormInitialValues(props,loginData)}
         validationSchema={HouseHoldFormValidationSchema(props)}
         onSubmit={values => {
     
@@ -1297,7 +1313,7 @@ if (ifscRegex.test(text)) {
                       <Spacing space={SH(5)} />
                       <Input
                         title={t('Total Number of Family Members')}
-                        placeholder={t('Total Number of Family Members')}
+                        placeholder={""+values?.householdBasicProfile?.totalFamilyMembers||familyMemberCount}
                         onChangeText={text => {
                          
 
@@ -3162,6 +3178,7 @@ if (ifscRegex.test(text)) {
         setFamilyMembers={setFamilyMembers}
         onPressCancel={() => setFamilyAlertVisible(!familyAlertVisible)}
         handleMemberChange={handleMemberChange}
+        editable={true}
         
       />
     </View>

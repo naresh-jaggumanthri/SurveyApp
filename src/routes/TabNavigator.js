@@ -57,6 +57,28 @@ function Root() {
           headerShown: false
         }}
       />
+       {/* <Stack.Screen
+        name={"House Hold Schedule-Migration Survey List"}
+        component={FamilyFormList}
+        options={{
+          ...HeaderArray,
+          headerStyle: {
+            backgroundColor: Colors.theme_background,
+          },
+          headerTitleStyle:{
+            fontWeight:"bold",
+            fontSize:SF(20),
+            color:"white"
+
+          },
+          headerLeft: () => (
+            <HeaderLeftMenuIcon {...props} />
+          ),
+          headerRight: () => (
+            <ColorPicker />
+          ),
+        }}
+      /> */}
     </Stack.Navigator>
   );
 }
@@ -88,6 +110,7 @@ function HomeTabScreenStack(props) {
           ),
         }}
       />
+     
     </Stack.Navigator>
   );
 }
@@ -126,6 +149,8 @@ function FamilySurveyFormListScreenStack(props) {
           headerStyle: {
             backgroundColor: Colors.theme_background,
           },
+            
+        
           headerTitleStyle:{
             fontWeight:"bold",
             fontSize:SF(20),
@@ -156,6 +181,7 @@ function VillageSurveyFormListScreenStack(props) {
           headerStyle: {
             backgroundColor: Colors.theme_background,
           },
+          tabBarStyle: { display: 'none' },
           headerTitleStyle:{
             fontWeight:"bold",
             fontSize:SF(20),
@@ -203,13 +229,35 @@ function FamilySurveyFormScreenStack(props) {
 
           },
           headerLeft: () => (
+            <HeaderLeftMenuIcon {...props}/>
+          ),
+          headerRight: () => (
+            <ColorPicker/>
+          ),
+        }}
+      />
+         {/* <Stack.Screen
+        name={"House Hold Schedule-Migration Survey List"}
+        component={FamilyFormList}
+        options={{
+          ...HeaderArray,
+          headerStyle: {
+            backgroundColor: Colors.theme_background,
+          },
+          headerTitleStyle:{
+            fontWeight:"bold",
+            fontSize:SF(20),
+            color:"white"
+
+          },
+          headerLeft: () => (
             <HeaderLeftMenuIcon {...props} />
           ),
           headerRight: () => (
             <ColorPicker />
           ),
         }}
-      />
+      />  */}
      
     </Stack.Navigator>
   );
@@ -314,7 +362,10 @@ export function HomeScsreenTabAll() {
         name={RouteName.FAMILY_LIST_TAB}
         component={FamilySurveyFormListScreenStack}
         options={{
-          tabBarLabel: t("HH Survey List"),
+          // tabBarLabel: t("HH Survey List"),
+         
+          tabBarButton: () => null,
+        
           tabBarIcon: ({ focused }) => (
             <VectorIcon
               color={focused ? Colors.theme_background : Colors.gray_text_color}
@@ -324,7 +375,7 @@ export function HomeScsreenTabAll() {
             />
           ),
         }}
-      />
+      /> 
       <Tab.Screen
         name={RouteName.VILLAGE_SURVEY_TAB}
         component={VillageSurveyFormScreenStack}
@@ -338,6 +389,7 @@ export function HomeScsreenTabAll() {
               size={SF(25)}
             />
           ),
+         
         }}
       />
       <Tab.Screen
@@ -353,6 +405,7 @@ export function HomeScsreenTabAll() {
               size={SF(25)}
             />
           ),
+           tabBarButton: () => null,
         }}
       />
       {/* <Tab.Screen

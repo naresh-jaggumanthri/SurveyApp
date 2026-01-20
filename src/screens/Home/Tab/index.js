@@ -5,3 +5,5 @@ export { default as FamilyFormSurveyTab } from './FamilyFormSurveyTab';
 export { default as VillageFormSurveyTab } from './VillageFormSurveyTab';
 export { default as FamilyFormSurveyEdit } from './FamilyFormSurveyEdit';
 export { default as VillageFormSurveyEdit} from './VillageFormSurveyEdit';
+export { default as FamilyFormList} from './FamilyFormList';
+export { default as VillageFormList} from './VillageFormList';

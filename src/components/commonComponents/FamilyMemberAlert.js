@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useMemo, useState} from 'react';
 import {
   Modal,
   View,
@@ -25,6 +25,7 @@ import {Colors, SH} from '../../utils';
 import {useTranslation} from 'react-i18next';
 // import { AnalyaticsStyle } from "../../styles";
 import {Style, AnalyaticsStyle, HomeTabStyle} from '../../styles';
+import PubSub from 'pubsub-js';
 
 function FamilyalertModal(props) {
   const {
@@ -40,7 +41,8 @@ function FamilyalertModal(props) {
     count,
     familyMembers,
     setFamilyMembers,
-    handleMemberChange
+    handleMemberChange,
+    editable
   } = props;
   const {t} = useTranslation();
   const [state, setState] = useState({});
@@ -82,8 +84,22 @@ function FamilyalertModal(props) {
 
     // Add more options as needed
   ]);
+   useLayoutEffect(() => {
+      var token = PubSub.subscribe('HouseItem', mySubscriber);
+      
+      
+    }, []);
+   var mySubscriber = function (msg, data) {    
+      const members=data?.item?.householdFamilyMember;
+      setFamilyMembers(members);
+    };
   useEffect(() => {
+    //  Alert.alert("familyMembers",JSON.stringify(familyMembers));
     if (count > 0) {
+      if(editable){
+       
+//  setFamilyMembers(familyMembers);
+      }else{
       setFamilyMembers(
         Array.from({length: count}, () => ({
           name: '',
@@ -98,6 +114,7 @@ function FamilyalertModal(props) {
           interestInSkillDevelopment: '',
         })),
       );
+    }
     }
   }, [count]);
   //  const handleMemberChange = (index, key, value) => {

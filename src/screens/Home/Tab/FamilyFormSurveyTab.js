@@ -650,7 +650,7 @@ const FamilyFormSurveyTab = props => {
       {/* <Text style={AnalyaticsStyles.TitleStyle}>{t("Basic Details")}</Text> */}
       <Formik
         innerRef={formikRef}
-        initialValues={HouseHoldFormInitialValues(props)}
+        initialValues={HouseHoldFormInitialValues(props,loginData)}
         validationSchema={HouseHoldFormValidationSchema(props)}
         onSubmit={values => {
     
@@ -2435,6 +2435,7 @@ if (ifscRegex.test(text)) {
                         value={values?.householdBasicProfile?.entryBy}
                         // inputType="numeric"
                         maxLength={20}
+                        disabled={true}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                        <Text style={{color: 'red'}}>
@@ -3152,6 +3153,7 @@ if (ifscRegex.test(text)) {
         setFamilyMembers={setFamilyMembers}
         onPressCancel={() => setFamilyAlertVisible(!familyAlertVisible)}
         handleMemberChange={handleMemberChange}
+        editable={false}
         
       />
     </View>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector } from "react-redux";
-import { Colors, Fonts } from '../utils';
+import { Colors, Fonts, SF } from '../utils';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +22,10 @@ import {
 } from '../screens';
 import FamilyFormList from '../screens/Home/Tab/FamilyFormList';
 import VillageFormList from '../screens/Home/Tab/VillageFormList';
+import { Style } from '../styles';
+import HeaderLeftMenuIcon from '../components/commonComponents/HeaderLeftMenuIcon';
+import ColorPicker from '../components/commonComponents/ColorPicker';
+
 
 const RootNavigator = props => {
 
@@ -30,7 +34,12 @@ const RootNavigator = props => {
     ...DefaultTheme,
     Colors: Colors
   };
-  const [colorValue, setColorValue] = useState(MyTheme)
+  const [colorValue, setColorValue] = useState(MyTheme);
+  const HeaderArray = {
+    headerShown: true,
+    headerTitleStyle: Style.headerTitleStyle,
+    headerShadowVisible: false,
+  };
   useEffect(() => {
     if (Colors.length != 0 && colorrdata != "") {
       Colors.theme_background = colorrdata;
@@ -54,6 +63,7 @@ const RootNavigator = props => {
         <Stack.Screen name={RouteName.SWIPER_SCREEN} component={Swiperscreen} />
         <Stack.Screen name={RouteName.SELECT_LANGUAGE} component={TranslationScreen} />
         <Stack.Screen name={RouteName.FORGOT_PASSWORD} component={ForgotPassword} />
+
          <Stack.Screen
       name={RouteName.FAMILY_SURVEY_EDIT_TAB}
       component={FamilyFormSurveyEdit}
@@ -61,11 +71,10 @@ const RootNavigator = props => {
        <Stack.Screen
       name={RouteName.VILLAGE_SURVEY_EDIT_TAB}
       component={VillageFormSurveyEdit}
-      
       />
-         {/* <Stack.Screen name={RouteName.FAMILY_LIST_TAB} component={FamilyFormList} />
+          {/* <Stack.Screen name={RouteName.FAMILY_LIST_TAB} component={FamilyFormList} />
           <Stack.Screen name={RouteName.VILLAGE_LIST_TAB} component={VillageFormList} /> */}
-        <Stack.Screen
+        {/* <Stack.Screen
           options={{
             headerShown: true,
             title: "All Survey",
@@ -132,9 +141,32 @@ const RootNavigator = props => {
           headerStyle: {
             backgroundColor: Colors.theme_background,
           }
-        }} component={ViewSurveyReportScreen} />
+        }} component={ViewSurveyReportScreen} /> */}
+           {/* <Stack.Screen
+        name={"House Hold Schedule-Migration Survey List"}
+        component={FamilyFormList}
+        options={{
+          ...HeaderArray,
+          headerStyle: {
+            backgroundColor: Colors.theme_background,
+          },
+          headerTitleStyle:{
+            fontWeight:"bold",
+            fontSize:SF(20),
+            color:"white"
+
+          },
+          // headerLeft: () => (
+          //   <HeaderLeftMenuIcon {...props} />
+          // ),
+          // headerRight: () => (
+          //   <ColorPicker />
+          // ),
+        }}
+      /> */}
 
       </Stack.Navigator>
+     
     </NavigationContainer>
   );
 }

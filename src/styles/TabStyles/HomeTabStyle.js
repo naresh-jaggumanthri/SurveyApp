@@ -126,8 +126,8 @@ export default HomeTabStyle = (Colors) => StyleSheet.create({
     flexDirection: 'row',
   },
   Setimagestyles: {
-    width: SW(95),
-    height: SH(95),
+    width: SW(45),
+    height: SH(45),
     borderRadius: SH(10),
   },
   Widthstylestwo: {

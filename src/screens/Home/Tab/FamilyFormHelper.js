@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
-export const HouseHoldFormInitialValues = () => ({
+export const HouseHoldFormInitialValues = (props,loginData) => ({
+    
   householdBasicProfile: {
    district: null,
    block: null,
@@ -27,7 +28,7 @@ export const HouseHoldFormInitialValues = () => ({
    hasLabourCard:null,
    isCoveredUnderNSKY:null,
    geoLocation:null,
-   entryBy:null,
+   entryBy:loginData?.username,
 //    surveyDate:null,
 //    respondentPhoto:null
  },
