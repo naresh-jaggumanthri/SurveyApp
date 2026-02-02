@@ -48,6 +48,7 @@ import {
 import PubSub from 'pubsub-js';
 import Geolocation from '@react-native-community/geolocation';
 import moment from 'moment';
+import Loader from '../../../components/commonComponents/Loader';
 
 const FamilyFormSurveyEdit = props => {
   const {t} = useTranslation();
@@ -66,6 +67,7 @@ const FamilyFormSurveyEdit = props => {
   const [panchayats, setPanchayats] = useState([]);
   const [villages, setVillages] = useState([]);
   const [editData, setEditData] = useState(undefined);
+  const [loading, setLoading] = useState(false);
  
   const formikRef = useRef(null);
   const route = useRoute();
@@ -551,7 +553,7 @@ const FamilyFormSurveyEdit = props => {
     Array(5).fill(Colors.light_gray_text_color),
   ); // Initial background colors for 4 views
   const onSavePress = async values => {
-     
+     setLoading(true);
      const token = loginData?.token;
     // const response = await api.user.saveHouseholdSurveyData(
     //   null,
@@ -565,10 +567,12 @@ const FamilyFormSurveyEdit = props => {
     // return
     // if (response.uniqueId != null && response.uniqueId != undefined) {
     if(response && response.success){
+      setLoading(false);
       setAlertVisible(true);
       // setAlertMessage(t('Survey_Submit_Successfully'));
       setAlertMessage(response.message+' with Id :'+response.uniqueId);
     } else {
+      setLoading(false);
       setAlertVisible(true);
       setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
     }
@@ -822,7 +826,7 @@ const FamilyFormSurveyEdit = props => {
                         {t('Basic Details')}
                       </Text>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('District')}
+                        1. {t('District')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -851,7 +855,7 @@ const FamilyFormSurveyEdit = props => {
                       <Spacing space={SH(15)} />
                       {/* Block */}
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Block')}
+                        2. {t('Block')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -879,7 +883,7 @@ const FamilyFormSurveyEdit = props => {
                       <Spacing space={SH(15)} />
                       {/* Gram Panchayat */}
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Gram Panchayat')}
+                        3. {t('Gram Panchayat')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -907,7 +911,7 @@ const FamilyFormSurveyEdit = props => {
                       <Spacing space={SH(15)} />
                       {/* Revenue Village */}
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Revenue Village')}
+                        4. {t('Revenue Village')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -933,38 +937,43 @@ const FamilyFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t('Hamlet')}
+                        title={'5. '+t('Hamlet')}
                         placeholder={t('Hamlet')}
-                        onChangeText={text =>
-                          setFieldValue('householdBasicProfile.hamlet', text)
-                        }
+                         onChangeText={(text) =>{
+                          const filteredText = text.replace(/[^a-zA-Z\s]/g, '');
+                          setFieldValue('householdBasicProfile.hamlet', filteredText);
+                        }}
                         value={values?.householdBasicProfile?.hamlet}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                        maxLength={20}
+                        maxLength={200}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.hamlet}
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t(
+                        title={'6. '+t(
                           'Name of Head of the Household as per Aadhar Card ?',
                         )}
                         placeholder={t(
                           'Name of Head of the Household as per Aadhar Card ?',
                         )}
-                        onChangeText={text =>
-                          setFieldValue(
-                            'householdBasicProfile.headOfTheHouseholdNameAsPerAadhar',
-                            text,
-                          )
-                        }
+                        // onChangeText={text =>
+                        //   setFieldValue(
+                        //     'householdBasicProfile.headOfTheHouseholdNameAsPerAadhar',
+                        //     text,
+                        //   )
+                        // }
+                         onChangeText={(text) =>{
+                          const filteredText = text.replace(/[^a-zA-Z\s]/g, '');
+                          setFieldValue('householdBasicProfile.headOfTheHouseholdNameAsPerAadhar', filteredText);
+                        }}
                         value={
                           values?.householdBasicProfile
                             ?.headOfTheHouseholdNameAsPerAadhar
                         }
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                        maxLength={100}
+                        maxLength={200}
                       />
                       <Text style={{color: 'red'}}>
                         {
@@ -984,7 +993,7 @@ const FamilyFormSurveyEdit = props => {
                 /> */}
                       <Spacing space={SH(15)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Gender (Head of the Household)')}
+                        7. {t('Gender (Head of the Household)')}
                       </Text>
                       <RadioButton
                         arrayData={genderData}
@@ -1691,14 +1700,40 @@ if (ifscRegex.test(text)) {
                             placeholder={t(
                               'Amount of Land holding under FRA- In Acres',
                             )}
-                            onChangeText={(text) =>{
-                            // Alert.alert("nummmm",JSON.stringify(Number(text)));
-                              setFieldValue(
-                                'householdOccupationAndLand.fra_LandAmountInAcres',
-                                Number(text),
-                              );
-                            }
-                            }
+                            // onChangeText={(text) =>{
+                            // // Alert.alert("nummmm",JSON.stringify(Number(text)));
+                            //   setFieldValue(
+                            //     'householdOccupationAndLand.fra_LandAmountInAcres',
+                            //     Number(text),
+                            //   );
+                            // }
+                            // }
+                            onChangeText={text => {
+    // Allow only numbers and decimal point
+    const filtered = text.replace(/[^0-9.]/g, '');
+
+    // Prevent multiple dots
+    if ((filtered.match(/\./g) || []).length > 1) return;
+
+    const value = Number(filtered);
+
+    // Allow empty input
+    if (filtered === '') {
+      setFieldValue(
+        'householdOccupationAndLand.fra_LandAmountInAcres',
+        ''
+      );
+      return;
+    }
+
+    // Block values > 5
+    if (value > 5) return;
+
+    setFieldValue(
+      'householdOccupationAndLand.fra_LandAmountInAcres',
+      filtered
+    );
+  }}
                             value={
                               values?.householdOccupationAndLand
                                 ?.fra_LandAmountInAcres
@@ -1763,11 +1798,11 @@ if (ifscRegex.test(text)) {
                         {errors?.householdOccupationAndLand?.approximatePrivateLandHolding}
                       </Text>
 
-                      <Spacing space={SH(5)} />
-                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                      {values.householdOccupationAndLand.approximatePrivateLandHolding!='Landless' && <Spacing space={SH(5)} />}
+                      {values.householdOccupationAndLand.approximatePrivateLandHolding!='Landless' && <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         {t('Whether irrigation facility available?')}
-                      </Text>
-                      <RadioButton
+                      </Text>}
+                      {values.householdOccupationAndLand.approximatePrivateLandHolding!='Landless' && <RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setFieldValue(
@@ -1782,11 +1817,11 @@ if (ifscRegex.test(text)) {
                                 .isIrrigationFacilityAvailable
                             : isIrrigationFacilityAvailable
                         }
-                      />
+                      />}
 
-                        <Text style={{color: 'red'}}>
+                        {values.householdOccupationAndLand.approximatePrivateLandHolding!='Landless' && <Text style={{color: 'red'}}>
                         {errors?.householdOccupationAndLand?.isIrrigationFacilityAvailable}
-                      </Text>
+                      </Text>}
 
                       {values?.householdOccupationAndLand
                         ?.isIrrigationFacilityAvailable === true && (
@@ -3147,6 +3182,7 @@ if (ifscRegex.test(text)) {
                                 {t('Cancel')}
                               </Text>
                             </TouchableOpacity>
+                            <Loader visible={loading}/>
             </View>
           </>
         )}
