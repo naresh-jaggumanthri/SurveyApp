@@ -103,7 +103,7 @@ export const HouseHoldFormValidationSchema = (props) =>{
       ifscCodeOrBranch: Yup.string().matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'Invalid IFSC code').required('IFSC Code / Branch is required'),
 
       womenMemberName: Yup.string().required('Women Member Name is required'),
-      womenMemberAge: Yup.number().min(1, 'At least one character is required').typeError('Age must be a number').required('Women Member Age is required'),
+      womenMemberAge: Yup.number().min(12, 'At least one character is required').typeError('Age must be a number').required('Women Member Age is required'),
       womenMemberMaritalStatus: Yup.string().required('Women Member Marital Status is required'),
       womenMemberRelationshipWithHead: Yup.string().required('Relationship with Head is required'),
 
@@ -191,7 +191,12 @@ export const HouseHoldFormValidationSchema = (props) =>{
   }),
       ownsHomesteadPattaLand: requiredBoolean,
       approximatePrivateLandHolding: Yup.string().required('Private Land Holding is required'),
-      isIrrigationFacilityAvailable: requiredBoolean,
+      isIrrigationFacilityAvailable: Yup.boolean().when('approximatePrivateLandHolding', {
+        is: value => value !== 'Landless',
+        then: schema => schema.required('This field is required'),
+        otherwise: schema => schema.notRequired()
+      }),
+      //isIrrigationFacilityAvailable: requiredBoolean,
       sourcesOfIrrigation: Yup.string().when('isIrrigationFacilityAvailable', {
         is:true,
         then: schema => schema.required('Sources of Irrigation is required'),

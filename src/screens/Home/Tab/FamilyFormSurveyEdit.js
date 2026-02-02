@@ -1381,6 +1381,7 @@ if (ifscRegex.test(text)) {
                   {/* Two question start */}
                   {currentQuestion === 2 && (
                     <View>
+                      <Text style={AnalyaticsStyles.TitleStyle}>{t('Basic Details')}</Text>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         {t('Whether the household have Ration Card?')}
                       </Text>

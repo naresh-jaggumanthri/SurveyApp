@@ -5,6 +5,7 @@ import { RouteName } from '../../routes';
 import { ConfirmationAlert, VectorIcon } from '../../components';
 import { Colors, SF } from '../../utils';
 import { useTranslation } from "react-i18next";
+ import Config from "react-native-config";
 
 const CustomSidebarMenu = (props) => {
   const { t } = useTranslation();
@@ -188,6 +189,17 @@ const CustomSidebarMenu = (props) => {
             <Text style={Sidemenu.hometextstyle}>{t("Log_Out")}</Text>
           </TouchableOpacity>
         </View>
+         {/* ===== VERSION FOOTER ===== */}
+      <View style={{
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderTopWidth: 0.5,
+        borderTopColor: '#ddd',
+      }}>
+        <Text style={{ fontSize: 12, color: '#888' }}>
+          Version {Config.VERSION_NAME} ({Config.VERSION_CODE})
+        </Text>
+      </View>
         <ConfirmationAlert
           message={alertMessage}
           modalVisible={alertVisible}

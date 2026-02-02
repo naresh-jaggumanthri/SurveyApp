@@ -4,9 +4,13 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './src/redux/store';
 import RootNavigator from './src/routes/RootNavigator';
 import { PermissionsAndroid } from 'react-native';
+import { AppDataSource } from './src/database/database';
 
 const App = () => {
 useEffect(()=>{
+  
+  AppDataSource.initialize().then(() => console.log('DB initialized')).catch(err => console.log(err));
+
 requestLocationPermission();
 },[]);
    const requestLocationPermission = async () => {

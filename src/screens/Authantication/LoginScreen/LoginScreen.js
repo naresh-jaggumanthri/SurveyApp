@@ -14,6 +14,7 @@ import { APP_NAME, AppOkAlert } from '../../../utils/AlertHelper';
 import DataReducer from '../../../redux/reducers/DataReducer';
 import { login_data_action } from '../../../redux/action/DataAction';
 import { useDispatch } from 'react-redux';
+import Loader from '../../../components/commonComponents/Loader';
 
 const LoginScreen = (props) => {
     const { Colors } = useTheme();
@@ -22,6 +23,7 @@ const LoginScreen = (props) => {
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [passwordVisibility, setpasswordVisibility] = useState(true);
+     const [loading, setLoading] = useState(false);
     const [TextInputPassword, setTextInputPassword] = useState('');
      const dispatch = useDispatch();
     const onChangeText = (text) => {
@@ -33,16 +35,18 @@ const LoginScreen = (props) => {
         navigation.navigate(RouteName.REGISTER_SCREEN);
     }
     const onLoginPress = async (values) => {
-       
+       setLoading(true);
         const res=await api.user.signIn(null,null,{
             username:values.username,
             password:values.password
         },undefined);
         if(res.status=='CODE_ERROR'){
+            setLoading(false);
             AppOkAlert("Login Failed",()=>{},"OK",APP_NAME);
             return;
         }
       if(res.status=='OK'){
+        setLoading(false);
         let finalValues={
             username:values.username,
             password:values.password,
@@ -53,7 +57,7 @@ const LoginScreen = (props) => {
             navigation.navigate(RouteName.HOME_SCREEN)
             return;
         }
-       
+        setLoading(false);
     }
 
     return (
@@ -127,6 +131,7 @@ touched,
                                 // navigation.navigate(RouteName.OTP_VERYFY_SCREEN)
                             }
                         />
+                        <Loader visible={loading} />
                     </View></>)}
 </Formik>
 
