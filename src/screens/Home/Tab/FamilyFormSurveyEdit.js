@@ -49,6 +49,10 @@ import PubSub from 'pubsub-js';
 import Geolocation from '@react-native-community/geolocation';
 import moment from 'moment';
 import Loader from '../../../components/commonComponents/Loader';
+import DeviceHelper from '../../../utils/DeviceHelper';
+import { AppDataSource } from '../../../database/database';
+import { HouseholdSurvey } from '../../../database/entities/HouseholdSurvey';
+import { v4 as uuidv4 } from 'uuid';
 
 const FamilyFormSurveyEdit = props => {
   const {t} = useTranslation();
@@ -552,9 +556,34 @@ const FamilyFormSurveyEdit = props => {
   const [backgroundColors, setBackgroundColors] = useState(
     Array(5).fill(Colors.light_gray_text_color),
   ); // Initial background colors for 4 views
+
+  const saveSurveyOffline = async (values, imagePath) => {
+  const repo = AppDataSource.getRepository(HouseholdSurvey);
+
+  const survey = repo.create({
+    localId: uuidv4(),
+    householdId: values.householdBasicProfile.id || null,
+    surveyJson: JSON.stringify(values),
+    imagePath,
+    status: 'PENDING',
+    createdAt: new Date().toISOString(),
+  });
+
+  await repo.save(survey);
+};
   const onSavePress = async values => {
      setLoading(true);
      const token = loginData?.token;
+      let isConnected = await DeviceHelper.isConnectedToInternet();
+      if(!isConnected){
+        // Save to local database
+        const localId = uuidv4();
+        await saveSurveyOffline(values, imageData.uri);
+        setLoading(false);
+        setAlertVisible(true);
+        setAlertMessage(t('Survey_Submit_Successfully') + ' with Local Id :' + localId);
+        return;
+      }
     // const response = await api.user.saveHouseholdSurveyData(
     //   null,
     //   values,
@@ -1021,7 +1050,7 @@ const FamilyFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t('AADHAR No.')}
+                        title={'8. '+t('AADHAR No.')}
                         placeholder={t('AADHAR No.')}
                         onChangeText={text =>
                           setFieldValue('householdBasicProfile.aadharNo', text)
@@ -1036,7 +1065,7 @@ const FamilyFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Social Category')}
+                        9. {t('Social Category')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -1062,7 +1091,7 @@ const FamilyFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t('Bank Account No')}
+                        title={'10. '+t('Bank Account No')}
                         placeholder={t('Bank Account No')}
                         onChangeText={text =>
                           setFieldValue(
@@ -1080,7 +1109,7 @@ const FamilyFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Bank Name')}
+                        11. {t('Bank Name')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -1107,7 +1136,7 @@ const FamilyFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-  title={t('IFSC code / Branch') + " eg. SBIN0001234"}
+  title={'12. '+t('IFSC code / Branch') + " eg. SBIN0001234"}
   placeholder={t('IFSC code / Branch')}
   maxLength={11}
   autoCapitalize="characters"
@@ -1142,16 +1171,18 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={t('Name of the women member of the Household?')}
+                        title={'13. '+t('Name of the women member of the Household?')}
                         placeholder={t(
                           'Name of the women member of the Household?',
                         )}
-                        onChangeText={text =>
+                         onChangeText={(text) =>{
+                          //  const filteredText = text.replace(/[^a-zA-Z\s]/g, '');
+                           const filteredText = text.replace(/[^a-zA-Z.]/g, '');
                           setFieldValue(
                             'householdBasicProfile.womenMemberName',
-                            text,
-                          )
-                        }
+                            filteredText,
+                          );
+                        }}
                         value={values?.householdBasicProfile?.womenMemberName}
                         // inputType="numeric"
                         maxLength={10}
@@ -1162,7 +1193,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-  title={t('Age of Women Member as per AADHAR?')}
+  title={'14. '+t('Age of Women Member as per AADHAR?')}
   placeholder={t('Age of Women Member as per AADHAR?')}
   // keyboardType="numberic"
    inputType="numeric"
@@ -1200,7 +1231,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Marital Status of the Women Member ?')}
+                        15. {t('Marital Status of the Women Member ?')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -1233,7 +1264,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Relationship with the Head of the Household')}
+                        16. {t('Relationship with the Head of the Household')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -1266,7 +1297,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        17. {t(
                           'Is any Women of the Family covered under Self Help Group(SHG)',
                         )}
                       </Text>
@@ -1292,7 +1323,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        18. {t(
                           'Whether the women  member of the family covered under Subhadra Yojana',
                         )}
                       </Text>
@@ -1321,7 +1352,7 @@ if (ifscRegex.test(text)) {
                       <Spacing space={SH(5)} />
                       <Spacing space={SH(5)} />
                       <Input
-                        title={t('Total Number of Family Members')}
+                        title={'19. '+t('Total Number of Family Members')}
                         placeholder={""+values?.householdBasicProfile?.totalFamilyMembers||familyMemberCount}
                         onChangeText={text => {
                          
@@ -1392,7 +1423,7 @@ if (ifscRegex.test(text)) {
                     <View>
                       <Text style={AnalyaticsStyles.TitleStyle}>{t('Basic Details')}</Text>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Whether the household have Ration Card?')}
+                        20. {t('Whether the household have Ration Card?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1453,7 +1484,7 @@ if (ifscRegex.test(text)) {
 
                       <Spacing space={SH(30)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        21. {t(
                           'What is the source of drinking water for the family?',
                         )}
                       </Text>
@@ -1477,7 +1508,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Whether provided LPG connection under Ujjwala?')}
+                        22. {t('Whether provided LPG connection under Ujjwala?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1500,7 +1531,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Whether the  family having Labour Cards?')}
+                        23. {t('Whether the  family having Labour Cards?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1522,7 +1553,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        24. {t(
                           'Whether the  family covered under Nirman Shramik Kalyan Yojana (NSKY)?',
                         )}
                       </Text>
@@ -1554,7 +1585,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('What is the Primary Occupation of the family?')}
+                        25. {t('What is the Primary Occupation of the family?')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -1614,7 +1645,7 @@ if (ifscRegex.test(text)) {
 
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        26. {t(
                           'Is any family member involved in weaving or handloom work?',
                         )}
                       </Text>
@@ -1638,13 +1669,13 @@ if (ifscRegex.test(text)) {
                         {errors?.householdOccupationAndLand?.isFamilyInvolvedInWeavingOrHandloom}
                       </Text>
 
-                      <Spacing space={SH(5)} />
-                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                      {isFamilyInvolvedInWeavingOrHandloom &&<Spacing space={SH(5)} />}
+                      {isFamilyInvolvedInWeavingOrHandloom &&<Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        27. {t(
                           'Does the family covered under POHI_Looms and Accessories Scheme?',
                         )}
-                      </Text>
-                      <RadioButton
+                      </Text>}
+                      {isFamilyInvolvedInWeavingOrHandloom &&<RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setFieldValue(
@@ -1659,14 +1690,14 @@ if (ifscRegex.test(text)) {
                                 .isFamilyCoveredUnderPOHI_LoomsScheme
                             : isFamilyCoveredUnderPOHI_LoomsScheme
                         }
-                      />
-                        <Text style={{color: 'red'}}>
+                      />}
+                        {isFamilyInvolvedInWeavingOrHandloom && <Text style={{color: 'red'}}>
                         {errors?.householdOccupationAndLand?.isFamilyCoveredUnderPOHI_LoomsScheme}
-                      </Text>
+                      </Text>}
 
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        28. {t(
                           'Amount of Land holding under FRA- In Acres ? (If Not a FRA claimant.. Go to next Qn or else go to next to next Qn.)',
                         )}
                       </Text>
@@ -1694,7 +1725,7 @@ if (ifscRegex.test(text)) {
                         <>
                           <Spacing space={SH(15)} />
                           <Input
-                            title={t(
+                            title={'29. '+t(
                               'Amount of Land holding under FRA- In Acres',
                             )}
                             placeholder={t(
@@ -1750,7 +1781,7 @@ if (ifscRegex.test(text)) {
 
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Whether your family owns Homestead Patta land?')}
+                        30. {t('Whether your family owns Homestead Patta land?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1774,7 +1805,7 @@ if (ifscRegex.test(text)) {
 
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        31. {t(
                           'Approximate private land holding of the Household?',
                         )}
                       </Text>
@@ -1800,7 +1831,7 @@ if (ifscRegex.test(text)) {
 
                       {values.householdOccupationAndLand.approximatePrivateLandHolding!='Landless' && <Spacing space={SH(5)} />}
                       {values.householdOccupationAndLand.approximatePrivateLandHolding!='Landless' && <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Whether irrigation facility available?')}
+                        32. {t('Whether irrigation facility available?')}
                       </Text>}
                       {values.householdOccupationAndLand.approximatePrivateLandHolding!='Landless' && <RadioButton
                         arrayData={selfHelpData}
@@ -1840,7 +1871,7 @@ if (ifscRegex.test(text)) {
                         {errors?.householdOccupationAndLand?.sourcesOfIrrigation}
                       </Text>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Whether involved in livestock activity?')}
+                        33. {t('Whether involved in livestock activity?')}
                       </Text>
                       {renderCheckboxes3()}
                        <Text style={{color: 'red'}}>
@@ -1900,7 +1931,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        34. {t(
                           'Whether covered  under PM Kishan / CM Kishan Scheme?',
                         )}
                       </Text>
@@ -1924,7 +1955,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        35. {t(
                           'Has the family provided house under the Rural Housing Scheme?',
                         )}
                       </Text>
@@ -1949,7 +1980,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Does your family have a Job Card under MGNREGS?')}
+                        36. {t('Does your family have a Job Card under MGNREGS?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1993,7 +2024,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        37. {t(
                           'Whether the Household provided with Individual Household Latrine in past?',
                         )}
                       </Text>
@@ -2018,7 +2049,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Whether the household has electricity connection?')}
+                        38. {t('Whether the household has electricity connection?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -2041,7 +2072,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        39. {t(
                           'Whether Covered under Pradhan Mantri Ayushman  Jan Arogya Yojana?',
                         )}
                       </Text>
@@ -2066,7 +2097,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        40. {t(
                           'Is any household member enrolled under Pradhan Mantri Shram Yogi Maandhan pension scheme?',
                         )}
                       </Text>
@@ -2091,7 +2122,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        41. {t(
                           'Does the household have Pradhan Mantri Jan Dhan Yojana bank account?',
                         )}
                       </Text>
@@ -2116,7 +2147,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        42. {t(
                           'Whether the family members between 18 to 50 years age covered under Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY) ?',
                         )}
                       </Text>
@@ -2140,7 +2171,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        43. {t(
                           'Whether family members between age 18 to 70 years covered under Pradhan Mantri Suraksha Bima Yojana (PMSBY) ?',
                         )}
                       </Text>
@@ -2199,7 +2230,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        44. {t(
                           'Has any family member migrated during the last 3 years?',
                         )}
                       </Text>
@@ -2224,7 +2255,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        45. {t(
                           'Had the family taken any advance from middleman  for migration?',
                         )}
                       </Text>
@@ -2249,7 +2280,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        46. {t(
                           'Whether minor children accompanied during migration?',
                         )}
                       </Text>
@@ -2274,7 +2305,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Whether Women Members Migrated?')}
+                        47. {t('Whether Women Members Migrated?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -2297,7 +2328,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={t('Family contact mobile no.?')}
+                        title={'48. '+t('Family contact mobile no.?')}
                         placeholder={t('Family contact mobile no.?')}
                         value={
                           values?.householdMigrationStatus
@@ -2347,7 +2378,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Identity of the respondent?')}
+                        49. {t('Identity of the respondent?')}
                       </Text>
                       <RadioButton
                         arrayData={respondantData}
@@ -2369,7 +2400,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Capture a photo of the respondent')}
+                        50. {t('Capture a photo of the respondent')}
                       </Text>
                       <Spacing space={SH(10)} />
                       <View style={AnalyaticsStyles.FlexRow}>
@@ -2479,7 +2510,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={t('Surveyor Name')}
+                        title={'51. '+t('Surveyor Name')}
                         placeholder={t('Surveyor Name')}
                         onChangeText={text =>
                           setFieldValue('householdBasicProfile.entryBy', text)
@@ -2503,7 +2534,7 @@ if (ifscRegex.test(text)) {
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 /> */}
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Survey Date and Time')}
+                        52. {t('Survey Date and Time')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DatePicker

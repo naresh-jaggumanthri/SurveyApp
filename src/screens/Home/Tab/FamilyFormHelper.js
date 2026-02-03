@@ -175,7 +175,11 @@ export const HouseHoldFormValidationSchema = (props) =>{
       }),
 
       isFamilyInvolvedInWeavingOrHandloom: requiredBoolean,
-      isFamilyCoveredUnderPOHI_LoomsScheme: requiredBoolean,
+      isFamilyCoveredUnderPOHI_LoomsScheme: Yup.boolean().when('isFamilyInvolvedInWeavingOrHandloom', {
+        is:true,
+        then: schema => schema.required('This field is required'),
+        otherwise: schema => schema.notRequired()
+      }),
 
       fraClaimantStatus: Yup.string().required('FRA Claimant Status is required'),
      fra_LandAmountInAcres: Yup.number()

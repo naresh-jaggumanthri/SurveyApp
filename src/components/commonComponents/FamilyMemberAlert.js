@@ -84,6 +84,18 @@ function FamilyalertModal(props) {
 
     // Add more options as needed
   ]);
+  const [checkboxes2, setCheckboxes2] = useState([
+    {label: t('Brick Kiln'),checked: false},
+    {label: t('Construction Labour'),checked: false},
+    {label: t('Agri Labour'),checked: false},
+    {label: t('Mason'),checked: false},
+    {label: t('Domestic Support'),checked: false},
+    {label: t('Manufacturing'),checked: false},
+    {label: t('Service Sector(Hotel,Hospital,Security)'),checked: false},
+    {label: t('Other'),checked: false},
+
+    // Add more options as needed
+  ]);
    useLayoutEffect(() => {
       var token = PubSub.subscribe('HouseItem', mySubscriber);
       
@@ -188,11 +200,12 @@ function FamilyalertModal(props) {
       <Text style={AnalyaticsStyles.PleaseEnterDate}>
         {t('Nature/Sector of engagement at destination during migration?')}
       </Text>
-      <RadioButton
+      {renderCheckboxes2(index)}
+      {/* <RadioButton
         arrayData={sectorData}
         onChangeText={text => onChange(index, 'SectorOfEngagementDuringMigration', text)}
         value={data.SectorOfEngagementDuringMigration}
-      />
+      /> */}
       <Spacing space={SH(15)} />
       <Text style={AnalyaticsStyles.PleaseEnterDate}>
         {t('Period of migration')}
@@ -320,6 +333,25 @@ const renderForm = () => {
       />
     ));
   };
+
+   const renderCheckboxes2 = ind => {
+    
+    return checkboxes2.map((checkbox, index) => (
+      <CheckBox
+        key={index}
+        title={checkbox.label}
+        iconType="material-community"
+        checkedIcon="checkbox-marked"
+        uncheckedIcon="checkbox-blank-outline"
+        // checked={checkbox.checked}
+        checked={familyMembers[ind]?.SectorOfEngagementDuringMigration.includes(checkbox.label)}
+        onPress={() => {
+            handleCheckboxChange2(index,ind);
+            
+        }}
+      />
+    ));
+  };
 //   const handleCheckboxChange = (index, ind) => {
 //     const updatedCheckboxes = [...checkboxes];
 //         updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
@@ -340,6 +372,35 @@ const renderForm = () => {
       updated[memberIndex].interestInSkillDevelopment = skill;
     }
 
+    return updated;
+  });
+  setCheckboxes(prev => {
+    const updated = [...prev];
+    updated[checkboxIndex].checked = !updated[checkboxIndex].checked;
+    return updated;
+  });
+};
+ const handleCheckboxChange2 = (checkboxIndex, memberIndex) => {
+  
+  setFamilyMembers(prev => {
+    const updated = [...prev];
+    const skill = checkboxes2[checkboxIndex].label;
+
+    if (updated[memberIndex].SectorOfEngagementDuringMigration.includes(skill)) {
+      updated[memberIndex].SectorOfEngagementDuringMigration = updated[memberIndex].SectorOfEngagementDuringMigration.filter(
+        s => s !== skill
+      );
+    } else {
+      updated[memberIndex].SectorOfEngagementDuringMigration = skill;
+    }
+
+    return updated;
+  });
+   setCheckboxes2(prev => {
+   
+    const updated = [...prev];
+    updated[checkboxIndex].checked = !updated[checkboxIndex].checked;
+      // Alert.alert('Checkbox Pressed', `Checkbox ${JSON.stringify(updated)} pressedfff`);
     return updated;
   });
 };

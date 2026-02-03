@@ -36,7 +36,12 @@ const TrendingEvent = (props) => {
               <View style={HomeTabStyles.FlexRowDirection}>
               <Text style={HomeTabStyles.BlackResponce}>{index==0?t("Number of family members"):t("Number of house holds")} : </Text>
               <Text style={HomeTabStyles.BlackResponceOne}>{item.TextThree}</Text>
+             
               </View>
+               <View style={HomeTabStyles.FlexRowDirection}>
+               {item.sync_status!=undefined&&<Text style={HomeTabStyles.BlackResponce}>{t('Status')} : </Text>}
+                {item.sync_status!=undefined&&<Text style={HomeTabStyles.BlackResponceOne}>{item.sync_status === 'PENDING' ? '🟡 Pending' : '🟢 Synced'}</Text>}
+                </View>
               <Spacing space={SH(5)} />
             </View>
           </View>

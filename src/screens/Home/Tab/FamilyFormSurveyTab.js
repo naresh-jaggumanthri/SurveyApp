@@ -49,6 +49,11 @@ import PubSub from 'pubsub-js';
 import Geolocation from '@react-native-community/geolocation';
 import moment from 'moment';
 import Loader from '../../../components/commonComponents/Loader';
+import DeviceHelper from '../../../utils/DeviceHelper';
+import { AppDataSource } from '../../../database/database';
+import { HouseholdSurvey } from '../../../database/entities/HouseholdSurvey';
+import { v4 as uuidv4 } from 'uuid';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const FamilyFormSurveyTab = props => {
   const {t} = useTranslation();
@@ -108,6 +113,8 @@ const FamilyFormSurveyTab = props => {
     useState(null);
   const [sourcesOfIrrigation, setSourcesOfIrrigation] = useState([]);
   const [involvedInLivestockActivity, setInvolvedInLivestockActivity] =
+    useState(null);
+     const [involvedWaterSource, setInvolvedWaterSource] =
     useState(null);
   const [kishanSchemeCoverage, setKishanSchemeCoverage] = useState('');
   const [isCoveredUnderPMSBY, setIsCoveredUnderPMSBY] = useState(null);
@@ -281,7 +288,17 @@ const FamilyFormSurveyTab = props => {
 
     // Add more options as needed
   ]);
+
+  const [checkboxes4, setCheckboxes4] = useState([
+    {label: t('Well'), checked: false},
+    {label: t('Tube Well'), checked: false},
+    {label: t('Piped Water Supply'), checked: false},
+    {label: t('Others'), checked: false},
+
+    // Add more options as needed
+  ]);
   const {loginData} = useSelector(state => state.DataReducer) || {};
+
   const [dateSelectLocal, setDateSelectLocal] = useState(moment(new Date(), "YYYY-MM-DDTHH:mm:ss Z").local().format('DD-MM-YYYY HH:mm'));
   
 
@@ -299,7 +316,11 @@ const FamilyFormSurveyTab = props => {
       const result = data?.item;
     }
   };
- 
+ const oneRef = useRef();
+ const twoRef = useRef();
+ const threeRef = useRef();
+ const fourRef = useRef();
+ const fiveRef = useRef();
   useEffect(() => {
     // getLocation();
     // Alert.alert("hi");
@@ -345,6 +366,17 @@ const FamilyFormSurveyTab = props => {
     //  Alert.alert("updatedCheckboxes",JSON.stringify(result));
     setCheckboxes3(updatedCheckboxes);
   };
+  const handleCheckboxChange4 = index => {
+    const updatedCheckboxes = [...checkboxes4];
+    updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+
+    let result = updatedCheckboxes
+      .filter(checkbox => checkbox.checked)
+      .map(checkbox => checkbox.label);
+    setInvolvedWaterSource(result);
+    //  Alert.alert("updatedCheckboxes",JSON.stringify(result));
+    setCheckboxes4(updatedCheckboxes);
+  };
   const renderCheckboxes = () => {
     return checkboxes.map((checkbox, index) => (
       <CheckBox
@@ -381,6 +413,19 @@ const FamilyFormSurveyTab = props => {
         uncheckedIcon="checkbox-blank-outline"
         checked={checkbox.checked}
         onPress={() => handleCheckboxChange3(index)}
+      />
+    ));
+  };
+   const renderCheckboxes4 = () => {
+    return checkboxes4.map((checkbox, index) => (
+      <CheckBox
+        key={index}
+        title={checkbox.label}
+        iconType="material-community"
+        checkedIcon="checkbox-marked"
+        uncheckedIcon="checkbox-blank-outline"
+        checked={checkbox.checked}
+        onPress={() => handleCheckboxChange4(index)}
       />
     ));
   };
@@ -487,11 +532,28 @@ const FamilyFormSurveyTab = props => {
     setVillages(result);
   };
   const handleNext = () => {
+    
+     if(currentQuestion==1){
+       twoRef.current?.focus()
+      }
+      if(currentQuestion==2){
+       
+       threeRef.current?.focus()
+      }
+       if(currentQuestion==3){
+       
+       fourRef.current?.focus()
+      }
+       if(currentQuestion==4){
+       
+       fiveRef.current?.focus()
+      }
     if (currentQuestion < 5) {
       const updatedColors = [...backgroundColors];
       updatedColors[currentQuestion - 1] = Colors.theme_background; // Change background color of current view
       setBackgroundColors(updatedColors);
       setCurrentQuestion(currentQuestion + 1);
+     
     } else {
       // Navigate to the next screen
       navigation.navigate(RouteName.THANK_YOU_SCREEN);
@@ -500,6 +562,19 @@ const FamilyFormSurveyTab = props => {
 
   // Function to handle previous button click
   const handlePrevious = () => {
+     if(currentQuestion==2){
+       twoRef.current?.focus()
+      }
+       if(currentQuestion==3){
+       threeRef.current?.focus()
+      }
+      if(currentQuestion==4){
+       fourRef.current?.focus()
+      }
+      if(currentQuestion==3){
+       fiveRef.current?.focus()
+      }
+     
     if (currentQuestion > 1) {
       const updatedColors = [...backgroundColors];
       updatedColors[currentQuestion - 2] = Colors.light_gray_text_color; // Reset background color of previous view
@@ -536,9 +611,33 @@ const FamilyFormSurveyTab = props => {
   const [backgroundColors, setBackgroundColors] = useState(
     Array(5).fill(Colors.light_gray_text_color),
   ); // Initial background colors for 4 views
+   const saveSurveyOffline = async (values, imagePath) => {
+    const repo = AppDataSource.getRepository(HouseholdSurvey);
+  
+    const survey = repo.create({
+      localId: uuidv4(),
+      householdId: values.householdBasicProfile.id || null,
+      surveyJson: JSON.stringify(values),
+      imagePath,
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+    });
+  
+    await repo.save(survey);
+  };
   const onSavePress = async values => {
      setLoading(true);
      const token = loginData?.token;
+       let isConnected = await DeviceHelper.isConnectedToInternet();
+           if(!isConnected){
+             // Save to local database
+             const localId = uuidv4();
+             await saveSurveyOffline(values, imageData.uri);
+             setLoading(false);
+             setAlertVisible(true);
+             setAlertMessage(t('Survey_Submit_Successfully') + ' with Local Id :' + localId);
+             return;
+           }
     // const response = await api.user.saveHouseholdSurveyData(
     //   null,
     //   values,
@@ -797,16 +896,16 @@ const FamilyFormSurveyTab = props => {
           setValues,
         }) => (
           <>
-            <ScrollView
+            <KeyboardAwareScrollView
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={Style.ScrollViewStyles}>
-              <KeyboardAvoidingView enabled>
+              {/* <KeyboardAwareScrollView> */}
                 <Spacing space={SH(10)} />
                 <View style={AnalyaticsStyles.MainView}>
                   {currentQuestion === 1 && (
                     <View>
                       {/* District */}
-                      <Text style={AnalyaticsStyles.TitleStyle}>
+                      <Text ref={oneRef} style={AnalyaticsStyles.TitleStyle}>
                         {t('Basic Details')}
                       </Text>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1371,13 +1470,14 @@ if (ifscRegex.test(text)) {
                   {/* Two question start */}
                   {currentQuestion === 2 && (
                     <View>
-                        <Text style={AnalyaticsStyles.TitleStyle}>
+                        <Text  refs={twoRef} style={AnalyaticsStyles.TitleStyle}>
                         {t('Basic Details')}
                       </Text>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         20. {t('Whether the household have Ration Card?')}
                       </Text>
                       <RadioButton
+                       
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setFieldValue(
@@ -1440,7 +1540,8 @@ if (ifscRegex.test(text)) {
                           'What is the source of drinking water for the family?',
                         )}
                       </Text>
-                      <RadioButton
+                      {renderCheckboxes4()}
+                      {/* <RadioButton
                         arrayData={waterSourceData}
                         onChangeText={text => {
                           setFieldValue(
@@ -1454,7 +1555,7 @@ if (ifscRegex.test(text)) {
                             ? values.householdBasicProfile.drinkingWaterSource
                             : drinkingWaterSource
                         }
-                      />
+                      /> */}
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.drinkingWaterSource}
                       </Text>
@@ -1532,7 +1633,7 @@ if (ifscRegex.test(text)) {
                   {/* Three question start */}
                   {currentQuestion === 3 && (
                     <View>
-                      <Text style={AnalyaticsStyles.TitleStyle}>
+                      <Text  refs={threeRef} style={AnalyaticsStyles.TitleStyle}>
                         {t('Occupation & Resources')}
                       </Text>
                       <Spacing space={SH(10)} />
@@ -1541,6 +1642,7 @@ if (ifscRegex.test(text)) {
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
+                      
                         data={occupationDropDownData}
                         dropdownStyle={{marginLeft: SH(10)}}
                         width={SW(345)}
@@ -1621,13 +1723,13 @@ if (ifscRegex.test(text)) {
                         {errors?.householdOccupationAndLand?.isFamilyInvolvedInWeavingOrHandloom}
                       </Text>
 
-                      <Spacing space={SH(5)} />
-                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                      {isFamilyInvolvedInWeavingOrHandloom &&<Spacing space={SH(5)} />}
+                      {isFamilyInvolvedInWeavingOrHandloom &&<Text style={AnalyaticsStyles.PleaseEnterDate}>
                         27. {t(
                           'Does the family covered under POHI_Looms and Accessories Scheme?',
                         )}
-                      </Text>
-                      <RadioButton
+                      </Text>}
+                      {isFamilyInvolvedInWeavingOrHandloom &&<RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setFieldValue(
@@ -1642,10 +1744,10 @@ if (ifscRegex.test(text)) {
                                 .isFamilyCoveredUnderPOHI_LoomsScheme
                             : isFamilyCoveredUnderPOHI_LoomsScheme
                         }
-                      />
-                        <Text style={{color: 'red'}}>
+                      />}
+                        {isFamilyInvolvedInWeavingOrHandloom &&<Text style={{color: 'red'}}>
                         {errors?.householdOccupationAndLand?.isFamilyCoveredUnderPOHI_LoomsScheme}
-                      </Text>
+                      </Text>}
 
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1889,6 +1991,7 @@ if (ifscRegex.test(text)) {
                         )}
                       </Text>
                       <RadioButton
+                      refs={fourRef}
                         arrayData={schemeData}
                         onChangeText={text => {
                           setFieldValue(
@@ -2188,6 +2291,7 @@ if (ifscRegex.test(text)) {
                         )}
                       </Text>
                       <RadioButton
+                      refs={fiveRef}
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setFieldValue(
@@ -2500,8 +2604,8 @@ if (ifscRegex.test(text)) {
                   )}
                   <Spacing space={SH(170)} />
                 </View>
-              </KeyboardAvoidingView>
-            </ScrollView>
+              {/* </KeyboardAwareScrollView> */}
+            </KeyboardAwareScrollView>
             <Modal visible={showConfirmModal} transparent animationType="slide">
               <View
                 style={{
@@ -3130,10 +3234,32 @@ if (ifscRegex.test(text)) {
                         irrigationArray,
                       );
                     }
+                     if (involvedWaterSource?.length > 0) {
+                      let waterArray = '';
+                      involvedWaterSource?.forEach(item => {
+                        waterArray =
+                          involvedWaterSource.length > 1
+                            ? waterArray.concat(item + ', ')
+                            : waterArray.concat(item);
+                      });
+                      //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
+                      setFieldValue(
+                        'householdBasicProfile.drinkingWaterSource',
+                        waterArray,
+                      );
+                       setDrinkingWaterSource(waterArray);
+                    }
+                   
                     // setFieldValue(
                     //   'householdOccupationAndLand.sourcesOfIrrigation',
                     //   sourcesOfIrrigation,
                     // );
+
+                    //  setFieldValue(
+                    //         'householdBasicProfile.drinkingWaterSource',
+                    //         text,
+                    //       );
+                    //       setDrinkingWaterSource(text);
                     
                     setFieldValue('householdBasicProfile.surveyDate', dateSelectLocal);
                      let res=(location ? location.coords.latitude : null)+','+(location ? location.coords.longitude : null);

@@ -13,6 +13,11 @@ import { useSelector } from 'react-redux';
 import api from '../../../api';
 import { Screen } from 'react-native-screens';
 import PubSub from 'pubsub-js';
+import DeviceHelper from '../../../utils/DeviceHelper';
+import { AppDataSource } from '../../../database/database';
+import { HouseholdSurvey } from '../../../database/entities/HouseholdSurvey';
+import Loader from '../../../components/commonComponents/Loader';
+import { v4 as uuidv4 } from 'uuid';
 
 const FamilyFormList = (props) => {
   const { navigation } = props;
@@ -85,14 +90,88 @@ const FamilyFormList = (props) => {
   const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
 
   const [familyList,setFamilyList]=useState([]);
+  const [isConnected, setIsConnected] = useState(true);
+   const [loading, setLoading] = useState(false);
   useEffect(()=>{
 getFamilyList();
   },[]);
- 
+ const getOfflineSurveys = async () => {
+  const repo = AppDataSource.getRepository(HouseholdSurvey);
+  return await repo.find({
+    order: { createdAt: 'DESC' },
+  });
+};
+
+const saveHouseholdsToLocalDB = async (res) => {
+  try {
+    const repository = AppDataSource.getRepository(HouseholdSurvey);
+
+    const entities = res.map(item => {
+      const entity = new HouseholdSurvey();
+
+      entity.localId =
+        item.householdBasicProfile?.id ||
+        `local-${Date.now()}-${Math.random()}`;
+
+      entity.householdId =
+        item.householdBasicProfile?.id || null;
+
+      entity.surveyJson = JSON.stringify(item); // full form data
+      entity.imagePath = null;
+      entity.status = 'SYNCED';
+      entity.createdAt = new Date().toISOString();
+
+      return entity;
+    });
+
+    // ✅ Bulk insert / update
+    // await repository.save(entities);
+
+    await repository
+  .createQueryBuilder()
+  .insert()
+  .orIgnore()
+  .into(HouseholdSurvey)
+  .values(entities)
+  .execute();
+
+    console.log('Household surveys saved locally');
+  } catch (error) {
+    console.error('Local DB insert failed:', error);
+  }
+};
 
   const getFamilyList =async()=>{
     let token=loginData?.token;
-      
+     let isConnected = await DeviceHelper.isConnectedToInternet();
+     setIsConnected(isConnected);
+      if(!isConnected){
+        getOfflineSurveys().then((res)=>{
+          const result=res.map((m)=>{
+            let surveyJson={};
+            try{
+              surveyJson=JSON.parse(m.surveyJson);
+            }catch(e){
+              surveyJson={};
+            }
+            return{
+              text:surveyJson.householdBasicProfile?.headOfTheHouseholdNameAsPerAadhar,
+              imageset: images.home,
+              musicname:surveyJson.householdBasicProfile?.hamlet,
+            //   TextTwo::m.householdBasicProfile.,
+              TextThree:surveyJson.householdBasicProfile?.totalFamilyMembers,
+              id:m.localId,
+              item:surveyJson,
+              sync_status:m.status
+  
+            }
+        
+          });
+          //  Alert.alert("FamilyFormList",JSON.stringify(result));
+          setFamilyList(result);
+        });
+        return;
+      }
         const res=await api.user.getHouseHoldListSurveyData(token);
 
     //      {
@@ -103,7 +182,7 @@ getFamilyList();
     //   TextThree: '144k +',
     // },
 
-   
+   await saveHouseholdsToLocalDB(res);
         
       const result=res.map((m)=>{
         return{
@@ -113,7 +192,9 @@ getFamilyList();
         //   TextTwo::m.householdBasicProfile.,
           TextThree:m.householdBasicProfile?.totalFamilyMembers,
           id:m.householdBasicProfile?.uniqueId,
-          item:m
+          item:m,
+          sync_status:"synced"
+
         }
     
       });
@@ -121,6 +202,83 @@ getFamilyList();
       setFamilyList(result);
 
   };
+
+  const syncPendingSurveys = async () => {
+  const repo = AppDataSource.getRepository(HouseholdSurvey);
+  const pending = await repo.findBy({ status: 'PENDING' });
+
+  for (const item of pending) {
+    try {
+      const formData = new FormData();
+
+      formData.append(
+        'householdJson',
+        JSON.stringify(JSON.parse(item.surveyJson))
+      );
+
+      if (item.imagePath) {
+        formData.append('respondentPhoto', {
+          uri: item.imagePath,
+          name: 'photo.jpg',
+          type: 'image/jpeg',
+        });
+      }
+
+      // Alert.alert("Syncing",JSON.stringify(formData));
+onSavePress(formData);
+      // await fetch(API_URL, {
+      //   method: 'POST',
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   body: formData,
+      // });
+
+      item.status = 'SYNCED';
+      await repo.save(item);
+
+    } catch (e) {
+      item.status = 'FAILED';
+      await repo.save(item);
+    }
+  }
+};
+ const onSavePress = async values => {
+     setLoading(true);
+     const token = loginData?.token;
+      //  let isConnected = await DeviceHelper.isConnectedToInternet();
+      //      if(!isConnected){
+      //        // Save to local database
+      //        const localId = uuidv4();
+      //        await saveSurveyOffline(values, imageData.uri);
+      //        setLoading(false);
+      //        setAlertVisible(true);
+      //        setAlertMessage(t('Survey_Submit_Successfully') + ' with Local Id :' + localId);
+      //        return;
+      //      }
+    // const response = await api.user.saveHouseholdSurveyData(
+    //   null,
+    //   values,
+    //   token,
+    //   false
+    // );
+     const response = await api.user.postHouseholdSurveyDataFilesUpload(values,null,token);
+
+    // Alert.alert("response",JSON.stringify(response));
+    // return
+    // if (response.uniqueId != null && response.uniqueId != undefined) {
+    if(response && response.success){
+      setLoading(false);
+      setAlertVisible(true);
+      // setAlertMessage(t('Survey_Submit_Successfully'));
+      setAlertMessage(response.message+' with Id :'+response.uniqueId);
+    } else {
+       setLoading(false);
+      setAlertVisible(true);
+      setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
+    }
+  };
+
    
   return (
     <View style={Style.BgColorWhiteAll}>
@@ -255,6 +413,18 @@ getFamilyList();
     color="#fff"
   />
 </TouchableOpacity>
+ {isConnected && <TouchableOpacity
+  style={styles.fab2}
+  onPress={() => syncPendingSurveys()}
+>
+  <VectorIcon
+    icon="FontAwesome"
+    name="refresh"
+    size={26}
+    color="#fff"
+  />
+</TouchableOpacity>}
+  <Loader visible={loading}/>
     </View>
   );
 };
@@ -264,6 +434,21 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: SH(25),
+    right: SW(20),
+    width: SH(56),
+    height: SH(56),
+    borderRadius: SH(28),
+    backgroundColor: Colors.theme_background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,           // Android shadow
+    shadowColor: '#000',    // iOS shadow
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  fab2: {
+    position: 'absolute',
+    bottom: SH(85),
     right: SW(20),
     width: SH(56),
     height: SH(56),

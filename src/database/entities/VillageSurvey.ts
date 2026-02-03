@@ -1,13 +1,13 @@
 import { Entity, PrimaryColumn, Column } from 'typeorm';
 
-@Entity('household_survey')
-export class HouseholdSurvey {
+@Entity('village_survey')
+export class VillageSurvey {
 
   @PrimaryColumn({ type: 'text' })
   localId: string;
 
   @Column({ type: 'text' })
-  householdId: string;
+  villageholdId: string;
 
   @Column({ type: 'text' })
   surveyJson: string; // full Formik JSON (JSON.stringify)

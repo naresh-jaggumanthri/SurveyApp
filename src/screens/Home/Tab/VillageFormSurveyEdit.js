@@ -49,6 +49,9 @@ import PubSub from 'pubsub-js';
 import Geolocation from '@react-native-community/geolocation';
 import moment from 'moment';
 import { BackHandler } from 'react-native';
+import Loader from '../../../components/commonComponents/Loader';
+import DeviceHelper from '../../../utils/DeviceHelper';
+import { v4 as uuidv4 } from 'uuid';
 // import { VillageFormSurveyTab } from '.';
 
 const VillageFormSurveyEdit = props => {
@@ -72,6 +75,7 @@ const VillageFormSurveyEdit = props => {
   const [districts, setDistrict] = useState([]);
   const [panchayats, setPanchayats] = useState([]);
   const [villages, setVillages] = useState([]);
+   const [loading, setLoading] = useState(false);
   const dropDownData = [
     {label: 'Item 1', value: '1'},
     {label: 'Item 2', value: '2'},
@@ -538,9 +542,33 @@ const VillageFormSurveyEdit = props => {
     //Alert.alert("Villages",JSON.stringify(result));
     setVillages(result);
   };
-
+const saveSurveyOffline = async (values, imagePath) => {
+    const repo = AppDataSource.getRepository(VillageSurvey);
+  
+    const survey = repo.create({
+      localId: uuidv4(),
+      householdId: values.id || null,
+      surveyJson: JSON.stringify(values),
+      imagePath,
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+    });
+  
+    await repo.save(survey);
+  };
   const onSavePress = async values => {
+     setLoading(true);
     const token = loginData?.token;
+      let isConnected = await DeviceHelper.isConnectedToInternet();
+                   if(!isConnected){
+                     // Save to local database
+                     const localId = uuidv4();
+                     await saveSurveyOffline(values, imageData.uri);
+                     setLoading(false);
+                     setAlertVisible(true);
+                     setAlertMessage(t('Survey_Submit_Successfully') + ' with Local Id :' + localId);
+                     return;
+                   }
     const response = await api.user.saveMigrationSurveyData(
       null,
       values,
@@ -680,7 +708,7 @@ const VillageFormSurveyEdit = props => {
                         {t('Basic Details')}
                       </Text>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('District')}
+                        1. {t('District')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -701,7 +729,7 @@ const VillageFormSurveyEdit = props => {
                       <Spacing space={SH(15)} />
                       {/* Block */}
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Block')}
+                        2. {t('Block')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -721,7 +749,7 @@ const VillageFormSurveyEdit = props => {
                       <Spacing space={SH(15)} />
                       {/* Gram Panchayat */}
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Gram Panchayat')}
+                        3. {t('Gram Panchayat')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -745,7 +773,7 @@ const VillageFormSurveyEdit = props => {
                       <Spacing space={SH(15)} />
                       {/* Revenue Village */}
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Revenue Village')}
+                        4. {t('Revenue Village')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DropDown
@@ -767,7 +795,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t('Total number of households')}
+                        title={'5. '+t('Total number of households')}
                         placeholder={t('Total number of households')}
                         onChangeText={text =>
                           setFieldValue('TotalHouseholds', text)
@@ -782,7 +810,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t('Male')}
+                        title={'6. '+t('Male')}
                         placeholder={t('Male')}
                         onChangeText={text =>{
     setFieldValue('MalePopulation', Number(text) || 0);
@@ -801,7 +829,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t('Female')}
+                        title={'7. '+t('Female')}
                         placeholder={t('Female')}
                        onChangeText={text =>{
     setFieldValue('FemalePopulation', Number(text) || 0);
@@ -820,7 +848,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t('Total Population')}
+                        title={'8. '+t('Total Population')}
                         placeholder={String(values?.TotalPopulation ?? 0)}
                         value={String(values?.TotalPopulation ?? 0)}
                         inputType={'numeric'}
@@ -837,7 +865,7 @@ const VillageFormSurveyEdit = props => {
                         {t('Basic Infrastructure & Amenities')}
                       </Text>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Are internal village roads pucca (concrete)?')}
+                        9. {t('Are internal village roads pucca (concrete)?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -855,7 +883,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        10. {t(
                           'If No or Partially, requirement of internal village pucca roads (in RMT)?',
                         )}
                       </Text>
@@ -875,7 +903,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Are internal drains available?')}
+                        11. {t('Are internal drains available?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -905,7 +933,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Is the village electrified?')}
+                        12. {t('Is the village electrified?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -920,7 +948,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Is street lighting available?')}
+                        13. {t('Is street lighting available?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -935,7 +963,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('What type of street lighting is provided?')}
+                        14. {t('What type of street lighting is provided?')}
                       </Text>
                       <RadioButton
                         arrayData={electricityData}
@@ -950,7 +978,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        15. {t(
                           'Is the village connected to the GP headquarters by an all weather road?',
                         )}
                       </Text>
@@ -967,7 +995,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t(
+                        title={'16. '+t(
                           'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
                         )}
                         placeholder={t(
@@ -983,7 +1011,7 @@ const VillageFormSurveyEdit = props => {
 
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        17. {t(
                           'Is the GP head quarter connected to any PWD road or State highway or Nation Highway by an all weather road?',
                         )}
                       </Text>
@@ -1000,7 +1028,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t(
+                        title={'18. '+t(
                           'What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
                         )}
                         placeholder={t(
@@ -1025,7 +1053,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={t('No of men currently in migration?')}
+                        title={'19. '+t('No of men currently in migration?')}
                         placeholder={t('No of men currently in migration?')}
                         onChangeText={text => {
                           setFieldValue('MenInMigration', Number(text) || 0);
@@ -1048,7 +1076,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={t('No of women currently in migration?')}
+                        title={'20. '+t('No of women currently in migration?')}
                         inputType={'numeric'}
                         maxLength={6}
                         placeholder={t('No of women currently in migration?')}
@@ -1071,7 +1099,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={t(
+                        title={'21. '+t(
                           'No of minor children below 18 yrs age currently in migration?',
                         )}
                         placeholder={t(
@@ -1098,7 +1126,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t('Total No. of person currently in migration?')}
+                        title={'22. '+t('Total No. of person currently in migration?')}
                         placeholder={String(values?.TotalPersonsInMigration??0)}
                         onChangeText={text => {
                           setFieldValue(
@@ -1118,7 +1146,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Main source of drinking water?')}
+                        23. {t('Main source of drinking water?')}
                       </Text>
                       <RadioButton
                         arrayData={waterSourceData}
@@ -1133,7 +1161,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Are all households having toilets?')}
+                        24. {t('Are all households having toilets?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1152,7 +1180,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Is there a functioning Anganwadi Centre?')}
+                        25. {t('Is there a functioning Anganwadi Centre?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1167,7 +1195,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Is Primary school available within the village?')}
+                        26. {t('Is Primary school available within the village?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1182,7 +1210,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Is Secondary school within 3 km distance?')}
+                        27. {t('Is Secondary school within 3 km distance?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1197,7 +1225,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Is there a Sub Health Centre in the village?')}
+                        28. {t('Is there a Sub Health Centre in the village?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1215,7 +1243,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Community Centre available?')}
+                        29. {t('Community Centre available?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1230,7 +1258,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Common shed for WSHG available?')}
+                        30. {t('Common shed for WSHG available?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1245,7 +1273,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Availability of playground in the village?')}
+                        31. {t('Availability of playground in the village?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1260,7 +1288,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={t(
+                        title={'32. '+t(
                           'No. of community tanks available in the village?',
                         )}
                         placeholder={t(
@@ -1283,7 +1311,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Is mobile network coverage available?')}
+                        33. {t('Is mobile network coverage available?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1298,7 +1326,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        34. {t(
                           'Is Digital last mile connectivity (internet facility) available?',
                         )}
                       </Text>
@@ -1315,7 +1343,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Is there a drying yard available?')}
+                        35. {t('Is there a drying yard available?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1328,7 +1356,7 @@ const VillageFormSurveyEdit = props => {
                       <Text style={{color: 'red'}}>{errors?.DryingYard}</Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Is there a PDS (ration shop) in the village?')}
+                        36. {t('Is there a PDS (ration shop) in the village?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1362,7 +1390,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        37. {t(
                           'Whether banking or post office or KIOSK or mini bank services are available within 3 km distance from the village?',
                         )}
                       </Text>
@@ -1396,7 +1424,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        38. {t(
                           'Is water from any mega, medium or minor irrigation project available to the village?',
                         )}
                       </Text>
@@ -1413,7 +1441,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        39. {t(
                           'If Yes, Whether repair or construction of a new distribution canal is required?',
                         )}
                       </Text>
@@ -1456,7 +1484,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        40. {t(
                           'Is there functional lift irrigation project available?',
                         )}
                       </Text>
@@ -1473,7 +1501,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Scope of new lift irrigation project?')}
+                        41. {t('Scope of new lift irrigation project?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1488,7 +1516,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        42. {t(
                           'Availability of functional Check Dams in the village?',
                         )}
                       </Text>
@@ -1505,7 +1533,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Scope of new Check Dams in the village?')}
+                        43. {t('Scope of new Check Dams in the village?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1519,7 +1547,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t(
+                        44. {t(
                           'Availability of functional distribution canal in the village in RMT?',
                         )}
                       </Text>
@@ -1537,7 +1565,7 @@ const VillageFormSurveyEdit = props => {
                       <Spacing space={SH(5)} />
                       {values.FunctionalDistributionCanal == true && (
                         <Input
-                          title={t(
+                          title={'45. '+t(
                             'If Yes, Scope of new distribution canal in the village in RMT?',
                           )}
                           placeholder={t(
@@ -1588,7 +1616,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={t('Respondent Name')}
+                        title={'46. '+t('Respondent Name')}
                         placeholder={t('Respondent Name')}
                         onChangeText={text => {
                           setFieldValue('RespondentName', text);
@@ -1602,7 +1630,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Identity')}
+                        47. {t('Identity')}
                       </Text>
                       <RadioButton
                         arrayData={identityData}
@@ -1615,7 +1643,7 @@ const VillageFormSurveyEdit = props => {
                       <Text style={{color: 'red'}}>{errors?.IdentityRole}</Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Process Adopted for Survey')}
+                        48. {t('Process Adopted for Survey')}
                       </Text>
                       <RadioButton
                         arrayData={processAdoptedData}
@@ -1630,7 +1658,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={t('Respondent contact mobile no.?')}
+                        title={'49. '+t('Respondent contact mobile no.?')}
                         placeholder={t('Respondent contact mobile no.?')}
                         onChangeText={text => {
                           setFieldValue('RespondentMobile', text);
@@ -1645,7 +1673,7 @@ const VillageFormSurveyEdit = props => {
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Capture a photo of the meeting/FGD')}
+                        50. {t('Capture a photo of the meeting/FGD')}
                       </Text>
                       <Spacing space={SH(10)} />
                       <View style={AnalyaticsStyles.FlexRow}>
@@ -1740,7 +1768,7 @@ const VillageFormSurveyEdit = props => {
                       </View>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={t('Enumerator Name')}
+                        title={'51. '+t('Enumerator Name')}
                         placeholder={t('Enumerator Name')}
                         onChangeText={text =>
                           setFieldValue('EnumeratorName', text)
@@ -1763,7 +1791,7 @@ const VillageFormSurveyEdit = props => {
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 /> */}
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('Survey Date and Time')}
+                        52. {t('Survey Date and Time')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <DatePicker
@@ -2324,6 +2352,7 @@ const VillageFormSurveyEdit = props => {
         iconVisible={true}
         buttonText={t('Ok')}
       />
+       <Loader visible={loading} />
     </View>
   );
 };

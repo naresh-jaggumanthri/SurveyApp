@@ -12,6 +12,11 @@ import { ScrollView } from 'react-native-virtualized-view';
 import { useSelector } from 'react-redux';
 import api from '../../../api';
 import PubSub from 'pubsub-js';
+import DeviceHelper from '../../../utils/DeviceHelper';
+import Loader from '../../../components/commonComponents/Loader';
+import { AppDataSource } from '../../../database/database';
+import { VillageSurvey } from '../../../database/entities/VillageSurvey';
+import { v4 as uuidv4 } from 'uuid';
 
 const VillageFormList = (props) => {
   const { navigation } = props;
@@ -83,8 +88,83 @@ const VillageFormList = (props) => {
   const { Colors } = useTheme();
   const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
    const [villageList,setVillageList]=useState([]);
+    const [isConnected, setIsConnected] = useState(true);
+      const [loading, setLoading] = useState(false);
+       const getOfflineSurveys = async () => {
+        const repo = AppDataSource.getRepository(VillageSurvey);
+        return await repo.find({
+          order: { createdAt: 'DESC' },
+        });
+      };
+      const saveVillageholdsToLocalDB = async (res) => {
+        try {
+          const repository = AppDataSource.getRepository(VillageSurvey);
+      
+          const entities = res.map(item => {
+            const entity = new VillageSurvey();
+      
+            entity.localId =
+              item?.id ||
+              `local-${Date.now()}-${Math.random()}`;
+      
+            entity.villageholdId =
+              item?.id || null;
+      
+            entity.surveyJson = JSON.stringify(item); // full form data
+            entity.imagePath = null;
+            entity.status = 'SYNCED';
+            entity.createdAt = new Date().toISOString();
+      
+            return entity;
+          });
+      
+          // ✅ Bulk insert / update
+          // await repository.save(entities);
+      
+          await repository
+        .createQueryBuilder()
+        .insert()
+        .orIgnore()
+        .into(VillageSurvey)
+        .values(entities)
+        .execute();
+      
+          console.log('Household surveys saved locally');
+        } catch (error) {
+          console.error('Local DB insert failed:', error);
+        }
+      };
     const getVillageList =async()=>{
        let token=loginData?.token;
+       let isConnected = await DeviceHelper.isConnectedToInternet();
+            setIsConnected(isConnected);
+             if(!isConnected){
+               getOfflineSurveys().then((res)=>{
+                 const result=res.map((m)=>{
+                   let surveyJson={};
+                   try{
+                     surveyJson=JSON.parse(m.surveyJson);
+                   }catch(e){
+                     surveyJson={};
+                   }
+                   return{
+                     text:surveyJson.respondentName,
+                    imageset: images.village,
+                     musicname:surveyJson.identityRole,
+                   //   TextTwo::m.householdBasicProfile.,
+                     TextThree:surveyJson.totalHouseholds,
+                     id:surveyJson.localId,
+                     item:surveyJson,
+                     sync_status:surveyJson.status
+         
+                   }
+               
+                 });
+                  // Alert.alert("FamilyFormList",JSON.stringify(result));
+                 setVillageList(result);
+               });
+               return;
+             }
          
            const res=await api.user.getMigrationListSurveyData(token);
    
@@ -96,7 +176,7 @@ const VillageFormList = (props) => {
        //   TextThree: '144k +',
        // },
    
-      
+       await saveVillageholdsToLocalDB(res);
            
          const result=res.map((m)=>{
            return{
@@ -105,13 +185,54 @@ const VillageFormList = (props) => {
              musicname:m.identityRole,
            //   TextTwo::m.householdBasicProfile.,
              TextThree:m.totalHouseholds,
-             item:m
+             item:m,
+             sync_status:"synced",
            }
        
          });
        //    Alert.alert("FamilyFormList",JSON.stringify(result));
          setVillageList(result);
    
+     };
+      const syncPendingSurveys = async () => {
+       const repo = AppDataSource.getRepository(VillageSurvey);
+       const pending = await repo.findBy({ status: 'PENDING' });
+     
+       for (const item of pending) {
+         try {
+           const formData = new FormData();
+     
+           formData.append(
+             'householdJson',
+             JSON.stringify(JSON.parse(item.surveyJson))
+           );
+     
+           if (item.imagePath) {
+             formData.append('respondentPhoto', {
+               uri: item.imagePath,
+               name: 'photo.jpg',
+               type: 'image/jpeg',
+             });
+           }
+     
+           // Alert.alert("Syncing",JSON.stringify(formData));
+     onSavePress(formData);
+           // await fetch(API_URL, {
+           //   method: 'POST',
+           //   headers: {
+           //     Authorization: `Bearer ${token}`,
+           //   },
+           //   body: formData,
+           // });
+     
+           item.status = 'SYNCED';
+           await repo.save(item);
+     
+         } catch (e) {
+           item.status = 'FAILED';
+           await repo.save(item);
+         }
+       }
      };
   return (
     <View style={Style.BgColorWhiteAll}>
@@ -237,6 +358,18 @@ const VillageFormList = (props) => {
           color="#fff"
         />
       </TouchableOpacity>
+       {isConnected && <TouchableOpacity
+        style={styles.fab2}
+        onPress={() => syncPendingSurveys()}
+      >
+        <VectorIcon
+          icon="FontAwesome"
+          name="refresh"
+          size={26}
+          color="#fff"
+        />
+      </TouchableOpacity>}
+       <Loader visible={loading}/>
     </View>
   );
 };
@@ -244,6 +377,21 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: SH(25),
+    right: SW(20),
+    width: SH(56),
+    height: SH(56),
+    borderRadius: SH(28),
+    backgroundColor: Colors.theme_background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,           // Android shadow
+    shadowColor: '#000',    // iOS shadow
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+  },
+   fab2: {
+    position: 'absolute',
+    bottom: SH(85),
     right: SW(20),
     width: SH(56),
     height: SH(56),
