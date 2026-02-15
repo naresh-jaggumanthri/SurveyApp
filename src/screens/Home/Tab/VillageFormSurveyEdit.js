@@ -48,10 +48,10 @@ import {useSelector} from 'react-redux';
 import PubSub from 'pubsub-js';
 import Geolocation from '@react-native-community/geolocation';
 import moment from 'moment';
-import { BackHandler } from 'react-native';
+import {BackHandler} from 'react-native';
 import Loader from '../../../components/commonComponents/Loader';
 import DeviceHelper from '../../../utils/DeviceHelper';
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 // import { VillageFormSurveyTab } from '.';
 
 const VillageFormSurveyEdit = props => {
@@ -75,7 +75,7 @@ const VillageFormSurveyEdit = props => {
   const [districts, setDistrict] = useState([]);
   const [panchayats, setPanchayats] = useState([]);
   const [villages, setVillages] = useState([]);
-   const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const dropDownData = [
     {label: 'Item 1', value: '1'},
     {label: 'Item 2', value: '2'},
@@ -143,7 +143,7 @@ const VillageFormSurveyEdit = props => {
     {label: t('more than 2.5Acr'), value: 'more than 2.5Acr'},
   ];
   const waterSourceData = [
-     {label: t('Yes'), value: 'true'},
+    {label: t('Yes'), value: 'true'},
     {label: t('No'), value: 'false'},
     {label: t('Partially'), value: 'Partially'},
     // {label: t('Well'), value: t('Well')},
@@ -151,19 +151,17 @@ const VillageFormSurveyEdit = props => {
     // {label: t('Piped Water Supply'), value: t('Piped Water Supply')},
     // {label: t('Others'), value: t('Others')},
   ];
-   const identityData = [
-     {label: t('Village Head'), value: 'Village Head'},
+  const identityData = [
+    {label: t('Village Head'), value: 'Village Head'},
     {label: t('Ward Member'), value: 'Ward Member'},
     {label: t('Sarpanch'), value: 'Sarpanch'},
     {label: t('SHG Leader'), value: t('SHG Leader')},
-    
   ];
   const processAdoptedData = [
-     {label: t('FGD'), value: 'FGD'},
+    {label: t('FGD'), value: 'FGD'},
     {label: t('Individual Interview'), value: 'Individual Interview'},
     {label: t('Meeting With PRI member'), value: 'Meeting With PRI member'},
     {label: t('Community Meeting'), value: t('Community Meeting')},
-    
   ];
   const schemeData = [
     {label: t('PM Kishan'), value: t('PM Kishan')},
@@ -191,7 +189,11 @@ const VillageFormSurveyEdit = props => {
     {label: t('Head of the household'), value: t('Head of the household')},
   ];
 
-  const [dateSelectLocal, setDateSelectLocal] = useState(moment(new Date(), "YYYY-MM-DDTHH:mm:ss Z").local().format('DD-MM-YYYY HH:mm'));
+  const [dateSelectLocal, setDateSelectLocal] = useState(
+    moment(new Date(), 'YYYY-MM-DDTHH:mm:ss Z')
+      .local()
+      .format('DD-MM-YYYY HH:mm'),
+  );
 
   const [checkboxes, setCheckboxes] = useState([
     {label: t('Survey_Title_24'), checked: false},
@@ -335,7 +337,7 @@ const VillageFormSurveyEdit = props => {
       setCurrentQuestion(currentQuestion - 1);
     }
   };
-  const handleCancel=()=>{
+  const handleCancel = () => {
     //Alert.alert("hello");
     navigation.goBack();
   };
@@ -542,9 +544,9 @@ const VillageFormSurveyEdit = props => {
     //Alert.alert("Villages",JSON.stringify(result));
     setVillages(result);
   };
-const saveSurveyOffline = async (values, imagePath) => {
+  const saveSurveyOffline = async (values, imagePath) => {
     const repo = AppDataSource.getRepository(VillageSurvey);
-  
+
     const survey = repo.create({
       localId: uuidv4(),
       householdId: values.id || null,
@@ -553,27 +555,29 @@ const saveSurveyOffline = async (values, imagePath) => {
       status: 'PENDING',
       createdAt: new Date().toISOString(),
     });
-  
+
     await repo.save(survey);
   };
   const onSavePress = async values => {
-     setLoading(true);
+    setLoading(true);
     const token = loginData?.token;
-      let isConnected = await DeviceHelper.isConnectedToInternet();
-                   if(!isConnected){
-                     // Save to local database
-                     const localId = uuidv4();
-                     await saveSurveyOffline(values, imageData.uri);
-                     setLoading(false);
-                     setAlertVisible(true);
-                     setAlertMessage(t('Survey_Submit_Successfully') + ' with Local Id :' + localId);
-                     return;
-                   }
+    let isConnected = await DeviceHelper.isConnectedToInternet();
+    if (!isConnected) {
+      // Save to local database
+      const localId = uuidv4();
+      await saveSurveyOffline(values, imageData.uri);
+      setLoading(false);
+      setAlertVisible(true);
+      setAlertMessage(
+        t('Survey_Submit_Successfully') + ' with Local Id :' + localId,
+      );
+      return;
+    }
     const response = await api.user.saveMigrationSurveyData(
       null,
       values,
       token,
-      false
+      false,
     );
     //Alert.alert("response",JSON.stringify(response));
     //return
@@ -586,20 +590,18 @@ const saveSurveyOffline = async (values, imagePath) => {
     }
   };
 
-  const getLocation = async() => {
-    
+  const getLocation = async () => {
     const result = requestLocationPermission();
-      
-    result.then(res => {
 
+    result.then(res => {
       console.log('res is:', res);
       if (res) {
-        
         try {
-          Geolocation.getCurrentPosition(position => {
+          Geolocation.getCurrentPosition(
+            position => {
               const {latitude, longitude} = position.coords;
               console.log(latitude, longitude);
-            
+
               setLocation(position);
             },
             error => {
@@ -607,7 +609,7 @@ const saveSurveyOffline = async (values, imagePath) => {
               console.log(error.message);
             },
             {
-              enableHighAccuracy:false,
+              enableHighAccuracy: false,
               timeout: 30000,
               maximumAge: 10000,
             },
@@ -795,7 +797,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={'5. '+t('Total number of households')}
+                        title={'5. ' + t('Total number of households')}
                         placeholder={t('Total number of households')}
                         onChangeText={text =>
                           setFieldValue('TotalHouseholds', text)
@@ -810,15 +812,23 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={'6. '+t('Male')}
+                        title={'6. ' + t('Male')}
                         placeholder={t('Male')}
-                        onChangeText={text =>{
-    setFieldValue('MalePopulation', Number(text) || 0);
-    const male = Number(text) || 0;
-  const female = Number(values?.FemalePopulation) || 0;
-
-  setFieldValue('TotalPopulation', male + female);
-  }}
+                        onChangeText={(text) => {
+                          const filtered = text.replace(/[^0-9]/g, '');
+                          // Allow empty (while typing)
+                          if (filtered === '') {
+                            setFieldValue('MalePopulation', '');
+                            return;
+                          }
+                          const number = Number(filtered);
+                          // Block 0 and values > 1500
+                          if (number < 1 || number > 4000) return;
+                          const male = number || 0;
+                          setFieldValue('MalePopulation', number || 0);
+                          const female = Number(values?.FemalePopulation) || 0;
+                          setFieldValue('TotalPopulation', male + female);
+                        }}
                         value={String(values?.MalePopulation ?? '')}
                         inputType={'numeric'}
                         maxLength={8}
@@ -829,15 +839,24 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={'7. '+t('Female')}
+                        title={'7. ' + t('Female')}
                         placeholder={t('Female')}
-                       onChangeText={text =>{
-    setFieldValue('FemalePopulation', Number(text) || 0);
-    const male = Number(values?.MalePopulation) || 0;
-  const female = Number(text) || 0;
+                        onChangeText={text => {
+                          // Allow only digits
+                          const filtered = text.replace(/[^0-9]/g, '');
+                          if (filtered === '') {
+                            setFieldValue('FemalePopulation', '');
+                            return;
+                          }
+                          const number = Number(filtered);
+                          if (number < 1 || number > 4000) return;
 
-  setFieldValue('TotalPopulation', male + female);
-  }}
+                          setFieldValue('FemalePopulation', number || 0);
+                          const male = Number(values?.MalePopulation) || 0;
+                          const female = number || 0;
+
+                          setFieldValue('TotalPopulation', male + female);
+                        }}
                         value={String(values?.FemalePopulation ?? '')}
                         inputType={'numeric'}
                         maxLength={8}
@@ -848,7 +867,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={'8. '+t('Total Population')}
+                        title={'8. ' + t('Total Population')}
                         placeholder={String(values?.TotalPopulation ?? 0)}
                         value={String(values?.TotalPopulation ?? 0)}
                         inputType={'numeric'}
@@ -861,7 +880,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                   {/* Two question start */}
                   {currentQuestion === 2 && (
                     <View>
-                      <Text style={AnalyaticsStyles.TitleStyle}>
+                      {/* <Text style={AnalyaticsStyles.TitleStyle}>
                         {t('Basic Infrastructure & Amenities')}
                       </Text>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -873,8 +892,12 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('InternalVillageRoads', text);
                           setIsConcreteRoads(text);
                         }}
-                        value={editData!=undefined?values?.InternalVillageRoads:isConcreteRoads}
-                      />
+                        value={
+                          editData != undefined
+                            ? values?.InternalVillageRoads
+                            : isConcreteRoads
+                        }
+                      /> */}
                       {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_39")}</Text>
                 {renderCheckboxes()} */}
                       {/* <Spacing space={SH(5)} /> */}
@@ -883,7 +906,8 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        10. {t(
+                        10.{' '}
+                        {t(
                           'If No or Partially, requirement of internal village pucca roads (in RMT)?',
                         )}
                       </Text>
@@ -896,7 +920,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           );
                           setInternalVillageRoadsRequirement(text);
                         }}
-                        value={editData!=undefined?values?.InternalVillageRoadsRequirement:InternalVillageRoadsRequirement}
+                        value={
+                          editData != undefined
+                            ? values?.InternalVillageRoadsRequirement
+                            : InternalVillageRoadsRequirement
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.InternalVillageRoadsRequirement}
@@ -911,26 +939,34 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('InternalDrainsAvailable', text);
                           setInternalDrainsAvailable(text);
                         }}
-                        value={editData!=undefined?values?.InternalDrainsAvailable:InternalDrainsAvailable}
+                        value={
+                          editData != undefined
+                            ? values?.InternalDrainsAvailable
+                            : InternalDrainsAvailable
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.InternalDrainsAvailable}
                       </Text>
-                      <Spacing space={SH(5)} />
-                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                      {(values?.InternalDrainsAvailable||InternalDrainsAvailable)&&<Spacing space={SH(5)} />}
+                      {(values?.InternalDrainsAvailable||InternalDrainsAvailable)&&<Text style={AnalyaticsStyles.PleaseEnterDate}>
                         {t('If Yes, Are drains properly functional?')}
-                      </Text>
-                      <RadioButton
+                      </Text>}
+                      {(values?.InternalDrainsAvailable||InternalDrainsAvailable)&&<RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setDrainsProperlyFunctional(text);
                           setFieldValue('DrainsProperlyFunctional', text);
                         }}
-                        value={editData!=undefined?values?.DrainsProperlyFunctional:DrainsProperlyFunctional}
-                      />
-                      <Text style={{color: 'red'}}>
+                        value={
+                          editData != undefined
+                            ? values?.DrainsProperlyFunctional
+                            : DrainsProperlyFunctional
+                        }
+                      />}
+                      {(values?.InternalDrainsAvailable||InternalDrainsAvailable)&&<Text style={{color: 'red'}}>
                         {errors?.DrainsProperlyFunctional}
-                      </Text>
+                      </Text>}
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         12. {t('Is the village electrified?')}
@@ -941,7 +977,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setIsElectrified(text);
                           setFieldValue('IsElectrified', text);
                         }}
-                        value={editData!=undefined?values?.IsElectrified:IsElectrified}
+                        value={
+                          editData != undefined
+                            ? values?.IsElectrified
+                            : IsElectrified
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.IsElectrified}
@@ -956,29 +996,38 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setStreetLightingAvailable(text);
                           setFieldValue('StreetLightingAvailable', text);
                         }}
-                        value={editData!=undefined?values?.StreetLightingAvailable:StreetLightingAvailable}
+                        value={
+                          editData != undefined
+                            ? values?.StreetLightingAvailable
+                            : StreetLightingAvailable
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.StreetLightingAvailable}
                       </Text>
-                      <Spacing space={SH(5)} />
-                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        14. {t('What type of street lighting is provided?')}
-                      </Text>
-                      <RadioButton
+                      {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<Spacing space={SH(5)} />}
+                       {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<Text style={AnalyaticsStyles.PleaseEnterDate}>
+                                              {t('What type of street lighting is provided?')}
+                                            </Text>}
+                      {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<RadioButton
                         arrayData={electricityData}
                         onChangeText={text => {
                           setStreetLightingType(text);
                           setFieldValue('StreetLightingType', text);
                         }}
-                        value={editData!=undefined?values?.StreetLightingType:StreetLightingType}
-                      />
-                      <Text style={{color: 'red'}}>
+                        value={
+                          editData != undefined
+                            ? values?.StreetLightingType
+                            : StreetLightingType
+                        }
+                      />}
+                      {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<Text style={{color: 'red'}}>
                         {errors?.StreetLightingType}
-                      </Text>
+                      </Text>}
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        15. {t(
+                        14.{' '}
+                        {t(
                           'Is the village connected to the GP headquarters by an all weather road?',
                         )}
                       </Text>
@@ -988,16 +1037,21 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setVillageConnectedToGP(text);
                           setFieldValue('VillageConnectedToGP', text);
                         }}
-                        value={editData!=undefined?values?.VillageConnectedToGP:VillageConnectedToGP}
+                        value={
+                          editData != undefined
+                            ? values?.VillageConnectedToGP
+                            : VillageConnectedToGP
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.VillageConnectedToGP}
                       </Text>
-                      <Spacing space={SH(15)} />
-                      <Input
-                        title={'16. '+t(
-                          'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
-                        )}
+                      {(!values?.VillageConnectedToGP||values?.VillageConnectedToGP=="Partially") && <Spacing space={SH(15)} />}
+                      {(!values?.VillageConnectedToGP||values?.VillageConnectedToGP=="Partially") && <Input
+                        title={t(
+                            'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
+                          )
+                        }
                         placeholder={t(
                           'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
                         )}
@@ -1006,12 +1060,13 @@ const saveSurveyOffline = async (values, imagePath) => {
                         }}
                         value={values?.LengthAllWeatherRoadToGP}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                      />
+                      />}
                       {/* <Text style={{color: 'red'}}>{errors?.LengthAllWeatherRoadToGP}</Text> */}
 
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        17. {t(
+                        15.{' '}
+                        {t(
                           'Is the GP head quarter connected to any PWD road or State highway or Nation Highway by an all weather road?',
                         )}
                       </Text>
@@ -1021,16 +1076,23 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setGPConnectedToPWDOrHighway(text);
                           setFieldValue('GPConnectedToPWDOrHighway', text);
                         }}
-                        value={editData!=undefined?values.GPConnectedToPWDOrHighway:GPConnectedToPWDOrHighway}
+                        value={
+                          editData != undefined
+                            ? values.GPConnectedToPWDOrHighway
+                            : GPConnectedToPWDOrHighway
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.GPConnectedToPWDOrHighway}
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={'18. '+t(
-                          'What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
-                        )}
+                        title={
+                          '16. ' +
+                          t(
+                            'What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
+                          )
+                        }
                         placeholder={t(
                           'What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
                         )}
@@ -1053,7 +1115,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={'19. '+t('No of men currently in migration?')}
+                        title={'17. ' + t('No of men currently in migration?')}
                         placeholder={t('No of men currently in migration?')}
                         onChangeText={text => {
                           setFieldValue('MenInMigration', Number(text) || 0);
@@ -1064,7 +1126,10 @@ const saveSurveyOffline = async (values, imagePath) => {
 
                           const total = men + women + children;
 
-                          setFieldValue('TotalPersonsInMigration',JSON.stringify(total));
+                          setFieldValue(
+                            'TotalPersonsInMigration',
+                            JSON.stringify(total),
+                          );
                         }}
                         value={values?.MenInMigration}
                         inputType={'numeric'}
@@ -1076,7 +1141,9 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={'20. '+t('No of women currently in migration?')}
+                        title={
+                          '18. ' + t('No of women currently in migration?')
+                        }
                         inputType={'numeric'}
                         maxLength={6}
                         placeholder={t('No of women currently in migration?')}
@@ -1089,7 +1156,10 @@ const saveSurveyOffline = async (values, imagePath) => {
 
                           const total = men + women + children;
 
-                          setFieldValue('TotalPersonsInMigration',JSON.stringify(total));
+                          setFieldValue(
+                            'TotalPersonsInMigration',
+                            JSON.stringify(total),
+                          );
                         }}
                         value={values?.WomenInMigration}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -1099,22 +1169,30 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={'21. '+t(
-                          'No of minor children below 18 yrs age currently in migration?',
-                        )}
+                        title={
+                          '19. ' +
+                          t(
+                            'No of minor children below 18 yrs age currently in migration?',
+                          )
+                        }
                         placeholder={t(
                           'No of minor children below 18 yrs age currently in migration?',
                         )}
                         onChangeText={text => {
-                        
-                          setFieldValue('MinorChildrenInMigration', Number(text) || 0);
-                         const men = Number(values?.MenInMigration) || 0;
+                          setFieldValue(
+                            'MinorChildrenInMigration',
+                            Number(text) || 0,
+                          );
+                          const men = Number(values?.MenInMigration) || 0;
                           const women = Number(values?.WomenInMigration) || 0;
                           const children = Number(text) || 0;
 
                           const total = men + women + children;
 
-                          setFieldValue('TotalPersonsInMigration',JSON.stringify(total));
+                          setFieldValue(
+                            'TotalPersonsInMigration',
+                            JSON.stringify(total),
+                          );
                         }}
                         value={values?.MinorChildrenInMigration}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -1126,8 +1204,13 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={'22. '+t('Total No. of person currently in migration?')}
-                        placeholder={String(values?.TotalPersonsInMigration??0)}
+                        title={
+                          '20. ' +
+                          t('Total No. of person currently in migration?')
+                        }
+                        placeholder={String(
+                          values?.TotalPersonsInMigration ?? 0,
+                        )}
                         onChangeText={text => {
                           setFieldValue(
                             'TotalPersonsInMigration',
@@ -1146,7 +1229,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        23. {t('Main source of drinking water?')}
+                        21. {t('Main source of drinking water?')}
                       </Text>
                       <RadioButton
                         arrayData={waterSourceData}
@@ -1154,14 +1237,18 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('DrinkingWaterSource', text);
                           setDrinkingWaterSource(text);
                         }}
-                        value={editData!=undefined?values?.DrinkingWaterSource:DrinkingWaterSource}
+                        value={
+                          editData != undefined
+                            ? values?.DrinkingWaterSource
+                            : DrinkingWaterSource
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.DrinkingWaterSource}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        24. {t('Are all households having toilets?')}
+                        22. {t('Are all households having toilets?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1169,7 +1256,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setAllHouseholdsWithToilets(text);
                           setFieldValue('AllHouseholdsWithToilets', text);
                         }}
-                        value={editData!=undefined?values?.AllHouseholdsWithToilets:AllHouseholdsWithToilets}
+                        value={
+                          editData != undefined
+                            ? values?.AllHouseholdsWithToilets
+                            : AllHouseholdsWithToilets
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.AllHouseholdsWithToilets}
@@ -1180,7 +1271,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        25. {t('Is there a functioning Anganwadi Centre?')}
+                        23. {t('Is there a functioning Anganwadi Centre?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1188,14 +1279,19 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('AnganwadiCentre', text);
                           setAnganwadiCentre(text);
                         }}
-                        value={editData!=undefined?values?.AnganwadiCentre:AnganwadiCentre}
+                        value={
+                          editData != undefined
+                            ? values?.AnganwadiCentre
+                            : AnganwadiCentre
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.AnganwadiCentre}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        26. {t('Is Primary school available within the village?')}
+                        24.{' '}
+                        {t('Is Primary school available within the village?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1203,14 +1299,18 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('PrimarySchoolAvailable', text);
                           setPrimarySchoolAvailable(text);
                         }}
-                        value={editData!=undefined?values?.PrimarySchoolAvailable:PrimarySchoolAvailable}
+                        value={
+                          editData != undefined
+                            ? values?.PrimarySchoolAvailable
+                            : PrimarySchoolAvailable
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.PrimarySchoolAvailable}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        27. {t('Is Secondary school within 3 km distance?')}
+                        25. {t('Is Secondary school within 3 km distance?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1218,14 +1318,18 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('SecondarySchoolWithin3km', text);
                           setSecondarySchoolWithin3km(text);
                         }}
-                        value={editData!=undefined?values?.SecondarySchoolWithin3km:SecondarySchoolWithin3km}
+                        value={
+                          editData != undefined
+                            ? values?.SecondarySchoolWithin3km
+                            : SecondarySchoolWithin3km
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.SecondarySchoolWithin3km}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        28. {t('Is there a Sub Health Centre in the village?')}
+                        26. {t('Is there a Sub Health Centre in the village?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1233,7 +1337,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('SubHealthCentre', text);
                           setSubHealthCentre(text);
                         }}
-                        value={editData!=undefined?values?.SubHealthCentre:SubHealthCentre}
+                        value={
+                          editData != undefined
+                            ? values?.SubHealthCentre
+                            : SubHealthCentre
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.SubHealthCentre}
@@ -1243,7 +1351,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        29. {t('Community Centre available?')}
+                        27. {t('Community Centre available?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1251,14 +1359,18 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('CommunityCentreAvailable', text);
                           setCommunityCentreAvailable(text);
                         }}
-                        value={editData!=undefined?values?.CommunityCentreAvailable:CommunityCentreAvailable}
+                        value={
+                          editData != undefined
+                            ? values?.CommunityCentreAvailable
+                            : CommunityCentreAvailable
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.CommunityCentreAvailable}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        30. {t('Common shed for WSHG available?')}
+                        28. {t('Common shed for WSHG available?')}
                       </Text>
                       <RadioButton
                         arrayData={selfHelpData}
@@ -1266,7 +1378,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('CommonShedForWSHG', text);
                           setCommonShedForWSHG(text);
                         }}
-                        value={editData!=undefined?values?.CommonShedForWSHG:CommonShedForWSHG}
+                        value={
+                          editData != undefined
+                            ? values?.CommonShedForWSHG
+                            : CommonShedForWSHG
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.CommonShedForWSHG}
@@ -1281,16 +1397,21 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('PlaygroundAvailable', text);
                           setPlaygroundAvailable(text);
                         }}
-                        value={editData!=undefined?values?.PlaygroundAvailable:PlaygroundAvailable}
+                        value={
+                          editData != undefined
+                            ? values?.PlaygroundAvailable
+                            : PlaygroundAvailable
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.PlaygroundAvailable}
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
-                        title={'32. '+t(
-                          'No. of community tanks available in the village?',
-                        )}
+                        title={
+                          '32. ' +
+                          t('No. of community tanks available in the village?')
+                        }
                         placeholder={t(
                           'No. of community tanks available in the village?',
                         )}
@@ -1319,14 +1440,19 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setMobileNetworkCoverage(text);
                           setFieldValue('MobileNetworkCoverage', text);
                         }}
-                        value={editData!=undefined?values.MobileNetworkCoverage:MobileNetworkCoverage}
+                        value={
+                          editData != undefined
+                            ? values.MobileNetworkCoverage
+                            : MobileNetworkCoverage
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.MobileNetworkCoverage}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        34. {t(
+                        34.{' '}
+                        {t(
                           'Is Digital last mile connectivity (internet facility) available?',
                         )}
                       </Text>
@@ -1336,7 +1462,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setDigitalConnectivity(text);
                           setFieldValue('DigitalConnectivity', text);
                         }}
-                        value={editData!=undefined?values.DigitalConnectivity:DigitalConnectivity}
+                        value={
+                          editData != undefined
+                            ? values.DigitalConnectivity
+                            : DigitalConnectivity
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.DigitalConnectivity}
@@ -1351,7 +1481,9 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setDryingYard(text);
                           setFieldValue('DryingYard', text);
                         }}
-                        value={editData!=undefined?values.DryingYard:DryingYard}
+                        value={
+                          editData != undefined ? values.DryingYard : DryingYard
+                        }
                       />
                       <Text style={{color: 'red'}}>{errors?.DryingYard}</Text>
                       <Spacing space={SH(5)} />
@@ -1364,7 +1496,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setPDSAvailable(text);
                           setFieldValue('PDSAvailable', text);
                         }}
-                        value={editData!=undefined?values?.PDSAvailable:PDSAvailable}
+                        value={
+                          editData != undefined
+                            ? values?.PDSAvailable
+                            : PDSAvailable
+                        }
                       />
                       <Text style={{color: 'red'}}>{errors?.PDSAvailable}</Text>
                       <Spacing space={SH(15)} />
@@ -1390,7 +1526,8 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        37. {t(
+                        37.{' '}
+                        {t(
                           'Whether banking or post office or KIOSK or mini bank services are available within 3 km distance from the village?',
                         )}
                       </Text>
@@ -1400,7 +1537,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setBankingPostOfficeNearby(text);
                           setFieldValue('BankingPostOfficeNearby', text);
                         }}
-                        value={editData!=undefined?values?.BankingPostOfficeNearby:BankingPostOfficeNearby}
+                        value={
+                          editData != undefined
+                            ? values?.BankingPostOfficeNearby
+                            : BankingPostOfficeNearby
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.BankingPostOfficeNearby}
@@ -1424,7 +1565,8 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        38. {t(
+                        38.{' '}
+                        {t(
                           'Is water from any mega, medium or minor irrigation project available to the village?',
                         )}
                       </Text>
@@ -1434,14 +1576,19 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('WaterFromIrrigationProject', text);
                           setWaterFromIrrigationProject(text);
                         }}
-                        value={editData!=undefined?values?.WaterFromIrrigationProject:WaterFromIrrigationProject}
+                        value={
+                          editData != undefined
+                            ? values?.WaterFromIrrigationProject
+                            : WaterFromIrrigationProject
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.WaterFromIrrigationProject}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        39. {t(
+                        39.{' '}
+                        {t(
                           'If Yes, Whether repair or construction of a new distribution canal is required?',
                         )}
                       </Text>
@@ -1454,7 +1601,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           );
                           setRepairOrNewDistributionCanalRequired(text);
                         }}
-                        value={editData!=undefined?values?.RepairOrNewDistributionCanalRequired:RepairOrNewDistributionCanalRequired}
+                        value={
+                          editData != undefined
+                            ? values?.RepairOrNewDistributionCanalRequired
+                            : RepairOrNewDistributionCanalRequired
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.RepairOrNewDistributionCanalRequired}
@@ -1484,7 +1635,8 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        40. {t(
+                        40.{' '}
+                        {t(
                           'Is there functional lift irrigation project available?',
                         )}
                       </Text>
@@ -1494,7 +1646,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('FunctionalLiftIrrigation', text);
                           setFunctionalLiftIrrigation(text);
                         }}
-                        value={editData!=undefined?values?.FunctionalLiftIrrigation:FunctionalLiftIrrigation}
+                        value={
+                          editData != undefined
+                            ? values?.FunctionalLiftIrrigation
+                            : FunctionalLiftIrrigation
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.FunctionalLiftIrrigation}
@@ -1509,14 +1665,19 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('ScopeOfNewLiftIrrigation', text);
                           setScopeOfNewLiftIrrigation(text);
                         }}
-                        value={editData!=undefined?values?.ScopeOfNewLiftIrrigation:ScopeOfNewLiftIrrigation}
+                        value={
+                          editData != undefined
+                            ? values?.ScopeOfNewLiftIrrigation
+                            : ScopeOfNewLiftIrrigation
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.ScopeOfNewLiftIrrigation}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        42. {t(
+                        42.{' '}
+                        {t(
                           'Availability of functional Check Dams in the village?',
                         )}
                       </Text>
@@ -1526,7 +1687,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('FunctionalCheckDams', text);
                           setFunctionalCheckDams(text);
                         }}
-                        value={editData!=undefined?values?.FunctionalCheckDams:FunctionalCheckDams}
+                        value={
+                          editData != undefined
+                            ? values?.FunctionalCheckDams
+                            : FunctionalCheckDams
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.FunctionalCheckDams}
@@ -1541,13 +1706,19 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('ScopeOfNewCheckDams', text);
                           setScopeOfNewCheckDams(text);
                         }}
-                        value={editData!=undefined?values?.ScopeOfNewCheckDams:ScopeOfNewCheckDams}/>
+                        value={
+                          editData != undefined
+                            ? values?.ScopeOfNewCheckDams
+                            : ScopeOfNewCheckDams
+                        }
+                      />
                       <Text style={{color: 'red'}}>
                         {errors?.ScopeOfNewCheckDams}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        44. {t(
+                        44.{' '}
+                        {t(
                           'Availability of functional distribution canal in the village in RMT?',
                         )}
                       </Text>
@@ -1557,7 +1728,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('FunctionalDistributionCanal', text);
                           setFunctionalDistributionCanal(text);
                         }}
-                        value={editData!=undefined?values?.FunctionalDistributionCanal:FunctionalDistributionCanal}
+                        value={
+                          editData != undefined
+                            ? values?.FunctionalDistributionCanal
+                            : FunctionalDistributionCanal
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.FunctionalDistributionCanal}
@@ -1565,9 +1740,12 @@ const saveSurveyOffline = async (values, imagePath) => {
                       <Spacing space={SH(5)} />
                       {values.FunctionalDistributionCanal == true && (
                         <Input
-                          title={'45. '+t(
-                            'If Yes, Scope of new distribution canal in the village in RMT?',
-                          )}
+                          title={
+                            '45. ' +
+                            t(
+                              'If Yes, Scope of new distribution canal in the village in RMT?',
+                            )
+                          }
                           placeholder={t(
                             'If Yes, Scope of new distribution canal in the village in RMT?',
                           )}
@@ -1616,7 +1794,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={'46. '+t('Respondent Name')}
+                        title={'46. ' + t('Respondent Name')}
                         placeholder={t('Respondent Name')}
                         onChangeText={text => {
                           setFieldValue('RespondentName', text);
@@ -1638,7 +1816,11 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('IdentityRole', text);
                           setIdentityRole(text);
                         }}
-                        value={editData!=undefined?values?.IdentityRole:IdentityRole}
+                        value={
+                          editData != undefined
+                            ? values?.IdentityRole
+                            : IdentityRole
+                        }
                       />
                       <Text style={{color: 'red'}}>{errors?.IdentityRole}</Text>
                       <Spacing space={SH(5)} />
@@ -1651,14 +1833,18 @@ const saveSurveyOffline = async (values, imagePath) => {
                           setFieldValue('SurveyProcess', text);
                           setSurveyProcess(text);
                         }}
-                        value={editData!=undefined?values?.SurveyProcess:SurveyProcess}
+                        value={
+                          editData != undefined
+                            ? values?.SurveyProcess
+                            : SurveyProcess
+                        }
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.SurveyProcess}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={'49. '+t('Respondent contact mobile no.?')}
+                        title={'49. ' + t('Respondent contact mobile no.?')}
                         placeholder={t('Respondent contact mobile no.?')}
                         onChangeText={text => {
                           setFieldValue('RespondentMobile', text);
@@ -1768,7 +1954,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                       </View>
                       <Spacing space={SH(5)} />
                       <Input
-                        title={'51. '+t('Enumerator Name')}
+                        title={'51. ' + t('Enumerator Name')}
                         placeholder={t('Enumerator Name')}
                         onChangeText={text =>
                           setFieldValue('EnumeratorName', text)
@@ -2284,7 +2470,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                   {t('Survey_Title_47')}
                 </Text>
               </TouchableOpacity>
-             
+
               {currentQuestion < 5 && (
                 <TouchableOpacity
                   style={AnalyaticsStyles.PreviousButton}
@@ -2301,9 +2487,12 @@ const saveSurveyOffline = async (values, imagePath) => {
                     setFieldValue('SurveyDate', dateSelectLocal);
                     // Alert.alert("errors",JSON.stringify(dateSelectLocal));
                     // return;
-                    let res=(location ? location.coords.latitude : null)+','+(location ? location.coords.longitude : null);
-                    setFieldValue('GeoLocation',res);
-                    
+                    let res =
+                      (location ? location.coords.latitude : null) +
+                      ',' +
+                      (location ? location.coords.longitude : null);
+                    setFieldValue('GeoLocation', res);
+
                     let finalValuesPreview = {
                       ...values,
                       SurveyDate: dateSelectLocal,
@@ -2318,7 +2507,7 @@ const saveSurveyOffline = async (values, imagePath) => {
                   </Text>
                 </TouchableOpacity>
               )}
-                <TouchableOpacity
+              <TouchableOpacity
                 style={AnalyaticsStyles.CancelButton}
                 onPress={handleCancel}>
                 <Text style={AnalyaticsStyles.PreviousTextStyle}>
@@ -2352,7 +2541,7 @@ const saveSurveyOffline = async (values, imagePath) => {
         iconVisible={true}
         buttonText={t('Ok')}
       />
-       <Loader visible={loading} />
+      <Loader visible={loading} />
     </View>
   );
 };

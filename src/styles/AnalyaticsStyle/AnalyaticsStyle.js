@@ -127,7 +127,7 @@ export default AnalyaticsStyle = (Colors) => StyleSheet.create({
     width: '100%'
   },
   BackgroundView: {
-    width: widthPercent(15),
+    width: widthPercent(8),
     height: SH(7),
     backgroundColor: Colors.theme_background,
     borderRadius: 300,
