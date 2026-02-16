@@ -76,6 +76,8 @@ const VillageFormSurveyTab = props => {
   const [panchayats, setPanchayats] = useState([]);
   const [villages, setVillages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [involvedWaterSource, setInvolvedWaterSource] =
+      useState(null);
 
   const dropDownData = [
     {label: 'Item 1', value: '1'},
@@ -227,11 +229,43 @@ const VillageFormSurveyTab = props => {
 
     // Add more options as needed
   ]);
+   const [checkboxes4, setCheckboxes4] = useState([
+      {label: t('Well'), checked: false},
+      {label: t('Tube Well'), checked: false},
+      {label: t('Piped Water Supply'), checked: false},
+      {label: t('Others'), checked: false},
+  
+      // Add more options as needed
+    ]);
   const handleCheckboxChange = index => {
     const updatedCheckboxes = [...checkboxes];
     updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
     setCheckboxes(updatedCheckboxes);
   };
+  const handleCheckboxChange4 = index => {
+    const updatedCheckboxes = [...checkboxes4];
+    updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+
+    let result = updatedCheckboxes
+      .filter(checkbox => checkbox.checked)
+      .map(checkbox => checkbox.label);
+    setInvolvedWaterSource(result);
+    //  Alert.alert("updatedCheckboxes",JSON.stringify(result));
+    setCheckboxes4(updatedCheckboxes);
+  };
+   const renderCheckboxes4 = () => {
+      return checkboxes4.map((checkbox, index) => (
+        <CheckBox
+          key={index}
+          title={checkbox.label}
+          iconType="material-community"
+          checkedIcon="checkbox-marked"
+          uncheckedIcon="checkbox-blank-outline"
+          checked={checkbox.checked}
+          onPress={() => handleCheckboxChange4(index)}
+        />
+      ));
+    };
   const renderCheckboxes = () => {
     return checkboxes.map((checkbox, index) => (
       <CheckBox
@@ -1270,7 +1304,8 @@ const VillageFormSurveyTab = props => {
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         18. {t('Main source of drinking water?')}
                       </Text>
-                      <RadioButton
+                       {renderCheckboxes4()}
+                      {/* <RadioButton
                         arrayData={waterSourceData}
                         onChangeText={text => {
                           setFieldValue('DrinkingWaterSource', text);
@@ -1281,7 +1316,7 @@ const VillageFormSurveyTab = props => {
                             ? values?.DrinkingWaterSource
                             : DrinkingWaterSource
                         }
-                      />
+                      /> */}
                       <Text style={{color: 'red'}}>
                         {errors?.DrinkingWaterSource}
                       </Text>
@@ -2540,6 +2575,22 @@ const VillageFormSurveyTab = props => {
 
                     setPreviewData(finalValuesPreview);
                     setShowConfirmModal(true);
+                       if (involvedWaterSource?.length > 0) {
+                      let waterArray = '';
+                      involvedWaterSource?.forEach(item => {
+                        waterArray =
+                          involvedWaterSource.length > 1
+                            ? waterArray.concat(item + ', ')
+                            : waterArray.concat(item);
+                      });
+                      //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
+                      setFieldValue(
+                        'DrinkingWaterSource',
+                        waterArray,
+                      );
+                       setDrinkingWaterSource(waterArray);
+                    }
+                   
                     // handleSubmit();
                   }}>
                   <Text style={AnalyaticsStyles.PreviousTextStyle}>

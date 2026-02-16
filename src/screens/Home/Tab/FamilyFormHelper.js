@@ -7,6 +7,7 @@ export const HouseHoldFormInitialValues = (props,loginData) => ({
    gramPanchayat: null,
    revenueVillage: null,
    hamlet: null,
+   nearestLandmark: null,
    headOfTheHouseholdNameAsPerAadhar: null,
    headOfTheHouseholdGender:null,
    aadharNo: null,

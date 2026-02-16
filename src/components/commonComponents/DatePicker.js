@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import DateTimePicker from "react-native-modal-datetime-picker";
 import { Style } from '../../styles';
@@ -10,6 +10,11 @@ function DatePicker(props) {
     const {dateselcetLocal, setdateselcetLocal}=props;
     const [dateselcet, setdateselcet] = useState('Select Date');
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+    useEffect(() => {
+       
+            setdateselcet(moment(new Date(), "YYYY-MM-DDTHH:mm:ss Z").local().format('DD-MM-YYYY HH:mm'));
+        
+    }, [dateselcetLocal]);
 
     const showDateTimePicker = () => {
         setDatePickerVisibility(true);
