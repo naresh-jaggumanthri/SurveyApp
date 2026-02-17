@@ -1119,6 +1119,7 @@ const FamilyFormSurveyTab = props => {
                   maxLength={10}
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 /> */}
+               
                  <Spacing space={SH(15)} />
                       <Input
                         title={'8. '+t('AADHAR No.')}
@@ -1135,7 +1136,7 @@ const FamilyFormSurveyTab = props => {
                         {errors?.householdBasicProfile?.aadharNo}
                       </Text>
 
-                      <Spacing space={SH(15)} />
+                        <Spacing space={SH(15)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         9. {t('Gender (Head of the Household)')}
                       </Text>
@@ -1163,6 +1164,8 @@ const FamilyFormSurveyTab = props => {
                             ?.headOfTheHouseholdGender
                         }
                       </Text>
+
+                     
                      
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
