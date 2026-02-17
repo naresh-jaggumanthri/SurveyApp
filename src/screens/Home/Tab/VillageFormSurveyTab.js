@@ -1101,7 +1101,7 @@ const VillageFormSurveyTab = props => {
                       </Text>
                       {(VillageConnectedToGP=="false"||values?.VillageConnectedToGP=="Partially")&&<Spacing space={SH(2)} />}
                       {(VillageConnectedToGP=="false"||values?.VillageConnectedToGP=="Partially")&&<Input
-                        title={t(
+                        title={'12. ' +t(
                             'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
                           )
                         }
@@ -1116,7 +1116,7 @@ const VillageFormSurveyTab = props => {
                       />}
                       {/* <Text style={{color: 'red'}}>{errors?.LengthAllWeatherRoadToGP}</Text> */}
 
-                      <Spacing space={SH(9)} />
+                      {/* <Spacing space={SH(9)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         12.{' '}
                         {t(
@@ -1137,7 +1137,7 @@ const VillageFormSurveyTab = props => {
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.GPConnectedToPWDOrHighway}
-                      </Text>
+                      </Text> */}
                       <Spacing space={SH(15)} />
                       <Input
                         title={
@@ -2139,13 +2139,13 @@ const VillageFormSurveyTab = props => {
                       {previewData?.TotalPopulation}
                     </Text>
 
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Are internal village roads pucca (concrete)?')}:
                       </Text>{' '}
                       {previewData?.InternalVillageRoads}
-                    </Text>
-                    <Text>
+                    </Text> */}
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'If No or Partially, requirement of internal village pucca roads (in RMT)?',
@@ -2153,19 +2153,19 @@ const VillageFormSurveyTab = props => {
                         :
                       </Text>{' '}
                       {previewData?.InternalVillageRoadsRequirement}
-                    </Text>
-                    <Text>
+                    </Text> */}
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Are internal drains available?')}:
                       </Text>{' '}
                       {previewData?.InternalDrainsAvailable}
-                    </Text>
-                    <Text>
+                    </Text> */}
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('If Yes, Are drains properly functional?')}:
                       </Text>{' '}
                       {previewData?.DrainsProperlyFunctional}
-                    </Text>
+                    </Text> */}
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Is the village electrified?')}:
@@ -2332,12 +2332,12 @@ const VillageFormSurveyTab = props => {
                     <Text style={AnalyaticsStyles.TitleStyle}>
                       {t('Livelihood & Service Infrastructure')}
                     </Text>
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Is mobile network coverage available?')}:
                       </Text>{' '}
                       {previewData?.MobileNetworkCoverage}
-                    </Text>
+                    </Text> */}
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
@@ -2347,12 +2347,12 @@ const VillageFormSurveyTab = props => {
                       </Text>{' '}
                       {previewData?.DigitalConnectivity}
                     </Text>
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Is there a drying yard available?')}:
                       </Text>{' '}
                       {previewData?.DryingYard}
-                    </Text>
+                    </Text> */}
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Is there a PDS (ration shop) in the village?')}:
@@ -2393,7 +2393,7 @@ const VillageFormSurveyTab = props => {
                       </Text>{' '}
                       {previewData?.WaterFromIrrigationProject}
                     </Text>
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'If Yes, Whether repair or construction of a new distribution canal is required?',
@@ -2401,8 +2401,8 @@ const VillageFormSurveyTab = props => {
                         :
                       </Text>{' '}
                       {previewData?.RepairOrNewDistributionCanalRequired}
-                    </Text>
-                    <Text>
+                    </Text> */}
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'If Yes, Length of distribution canal requiring repair or new construction in RMT?',
@@ -2410,8 +2410,8 @@ const VillageFormSurveyTab = props => {
                         :
                       </Text>{' '}
                       {previewData?.LengthOfDistributionCanal}
-                    </Text>
-                    <Text>
+                    </Text> */}
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'Is there functional lift irrigation project available?',
@@ -2419,13 +2419,13 @@ const VillageFormSurveyTab = props => {
                         :
                       </Text>{' '}
                       {previewData?.FunctionalLiftIrrigation}
-                    </Text>
-                    <Text>
+                    </Text> */}
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Scope of new lift irrigation project?')}:
                       </Text>{' '}
                       {previewData?.ScopeOfNewLiftIrrigation}
-                    </Text>
+                    </Text> */}
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
@@ -2435,12 +2435,12 @@ const VillageFormSurveyTab = props => {
                       </Text>{' '}
                       {previewData?.FunctionalCheckDams}
                     </Text>
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Scope of new Check Dams in the village?')}:
                       </Text>{' '}
                       {previewData?.ScopeOfNewCheckDams}
-                    </Text>
+                    </Text> */}
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
@@ -2474,12 +2474,12 @@ const VillageFormSurveyTab = props => {
                       <Text style={{fontWeight: 'bold'}}>{t('Identity')}:</Text>{' '}
                       {previewData?.IdentityRole}
                     </Text>
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Process Adopted for Survey')}:
                       </Text>{' '}
                       {previewData?.SurveyProcess}
-                    </Text>
+                    </Text> */}
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Respondent contact mobile no.?')}:

@@ -1545,7 +1545,7 @@ if (ifscRegex.test(text)) {
                         {errors?.householdBasicProfile?.hasRationCard}
                       </Text>
                       {values.householdBasicProfile.hasRationCard && <Input
-                        title={t('Ration Card number?')}
+                        title={'18. '+t('Ration Card number?')}
                         placeholder={t('Ration Card number?')}
                         onChangeText={text => {
 
