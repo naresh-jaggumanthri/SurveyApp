@@ -4,7 +4,7 @@ import {Alert} from 'react-native';
 //export const APP_NAME = 'UK TM Doctor';
 
 // export const APP_NAME=Config.APP_NAME;
-export const APP_NAME = 'PanchayatiRaj Survey App';
+export const APP_NAME = 'DALKHAI';
 
 export const AppOkAlert = (
   msg,

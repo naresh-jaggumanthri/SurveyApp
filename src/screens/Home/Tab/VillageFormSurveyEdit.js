@@ -226,6 +226,15 @@ const VillageFormSurveyEdit = props => {
 
     // Add more options as needed
   ]);
+
+   const [checkboxes4, setCheckboxes4] = useState([
+      {label: t('Well'), checked: false},
+      {label: t('Tube Well'), checked: false},
+      {label: t('Piped Water Supply'), checked: false},
+      {label: t('Others'), checked: false},
+  
+      // Add more options as needed
+    ]);
   const handleCheckboxChange = index => {
     const updatedCheckboxes = [...checkboxes];
     updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
@@ -359,7 +368,7 @@ const VillageFormSurveyEdit = props => {
   const AnalyaticsStyles = useMemo(() => AnalyaticsStyle(Colors), [Colors]);
   const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
   const [backgroundColors, setBackgroundColors] = useState(
-    Array(5).fill(Colors.light_gray_text_color),
+    Array(9).fill(Colors.light_gray_text_color),
   ); // Initial background colors for 4 views
   const [isConcreteRoads, setIsConcreteRoads] = useState(null);
   const [InternalVillageRoadsRequirement, setInternalVillageRoadsRequirement] =
@@ -655,6 +664,31 @@ const VillageFormSurveyEdit = props => {
       return false;
     }
   };
+
+   const handleCheckboxChange4 = index => {
+      const updatedCheckboxes = [...checkboxes4];
+      updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+  
+      let result = updatedCheckboxes
+        .filter(checkbox => checkbox.checked)
+        .map(checkbox => checkbox.label);
+      setInvolvedWaterSource(result);
+      //  Alert.alert("updatedCheckboxes",JSON.stringify(result));
+      setCheckboxes4(updatedCheckboxes);
+    };
+    const renderCheckboxes4 = () => {
+      return checkboxes4.map((checkbox, index) => (
+        <CheckBox
+          key={index}
+          title={checkbox.label}
+          iconType="material-community"
+          checkedIcon="checkbox-marked"
+          uncheckedIcon="checkbox-blank-outline"
+          checked={checkbox.checked}
+          onPress={() => handleCheckboxChange4(index)}
+        />
+      ));
+    };
 
   return (
     <View style={Style.BgColorWhiteAll}>
@@ -2537,6 +2571,131 @@ const VillageFormSurveyEdit = props => {
                       SurveyDate: dateSelectLocal,
                     };
 
+                    if (errors && errors?.District) {
+                                          AppOkAlert(errors.District, () => {});
+                                          return;
+                                        }
+                    
+                                        if (errors && errors?.Block) {
+                                          AppOkAlert(errors.Block, () => {});
+                                          return;
+                                        }
+                    
+                                        if (errors && errors?.GramPanchayat) {
+                                          AppOkAlert(errors.GramPanchayat, () => {});
+                                          return;
+                                        }
+                    
+                                        if (errors && errors?.RevenueVillage) {
+                                          AppOkAlert(errors.RevenueVillage, () => {});
+                                          return;
+                                        }
+                    
+                                        if (errors && errors?.TotalHouseholds) {
+                                          AppOkAlert(errors.TotalHouseholds, () => {});
+                                          return;
+                                        }
+                    
+                                        if (errors && errors?.MalePopulation) {
+                                          AppOkAlert(errors.MalePopulation, () => {});
+                                          return;
+                                        }
+                    
+                                        if (errors && errors?.FemalePopulation) {
+                                          AppOkAlert(errors.FemalePopulation, () => {});
+                                          return;
+                                        }
+                    
+                                        if (
+                                          values?.InternalVillageRoads === false &&
+                                          errors &&
+                                          errors?.InternalVillageRoadsRequirement
+                                        ) {
+                                          AppOkAlert(
+                                            errors.InternalVillageRoadsRequirement,
+                                            () => {},
+                                          );
+                                          return;
+                                        }
+                    
+                                        if (
+                                          values?.VillageConnectedToGP === false &&
+                                          errors &&
+                                          errors?.LengthAllWeatherRoadToGP
+                                        ) {
+                                          AppOkAlert(errors.LengthAllWeatherRoadToGP, () => {});
+                                          return;
+                                        }
+                    
+                                        if (
+                                          values?.GPConnectedToPWDOrHighway === true &&
+                                          errors &&
+                                          errors?.LengthAllWeatherRoadToHighway
+                                        ) {
+                                          AppOkAlert(
+                                            errors.LengthAllWeatherRoadToHighway,
+                                            () => {},
+                                          );
+                                          return;
+                                        }
+                    
+                                        // if (errors && errors?.DrinkingWaterSource) {
+                                        //   AppOkAlert(errors.DrinkingWaterSource, () => {});
+                                        //   return;
+                                        // }
+                    
+                                        if (
+                                          values?.PDSAvailable === false &&
+                                          errors &&
+                                          errors?.DistanceOfPDS
+                                        ) {
+                                          AppOkAlert(errors.DistanceOfPDS, () => {});
+                                          return;
+                                        }
+                    
+                                        if (
+                                          values?.WaterFromIrrigationProject === true &&
+                                          errors &&
+                                          errors?.LengthOfDistributionCanal
+                                        ) {
+                                          AppOkAlert(errors.LengthOfDistributionCanal, () => {});
+                                          return;
+                                        }
+                    
+                                        if (
+                                          values?.WaterFromIrrigationProject === true &&
+                                          errors &&
+                                          errors?.ScopeOfNewDistributionCanal
+                                        ) {
+                                          AppOkAlert(errors.ScopeOfNewDistributionCanal, () => {});
+                                          return;
+                                        }
+                    
+                                        if (errors && errors?.RespondentName) {
+                                          AppOkAlert(errors.RespondentName, () => {});
+                                          return;
+                                        }
+                    
+                                        if (errors && errors?.IdentityRole) {
+                                          AppOkAlert(errors.IdentityRole, () => {});
+                                          return;
+                                        }
+                    
+                                        // if (errors && errors?.SurveyProcess) {
+                                        //   AppOkAlert(errors.SurveyProcess, () => {});
+                                        //   return;
+                                        // }
+                    
+                                        if (errors && errors?.RespondentMobile) {
+                                          AppOkAlert(errors.RespondentMobile, () => {});
+                                          return;
+                                        }
+                                        if (errors && errors?.EnumeratorName) {
+                                          AppOkAlert(errors.EnumeratorName, () => {});
+                                          return;
+                                        }
+                    
+
                     setPreviewData(finalValuesPreview);
                     setShowConfirmModal(true);
                     // handleSubmit();
@@ -2569,7 +2728,7 @@ const VillageFormSurveyEdit = props => {
         buttonText={t('Ok')}
         buttonminview={Style.ButtonCenter}
       />
-      <FamilyMemberAlert
+      {/* <FamilyMemberAlert
         message={alertMessage}
         modalVisible={familyAlertVisible}
         setModalVisible={setFamilyAlertVisible}
@@ -2579,7 +2738,7 @@ const VillageFormSurveyEdit = props => {
         buttonminview={Style.ButtonCenter}
         iconVisible={true}
         buttonText={t('Ok')}
-      />
+      /> */}
       <Loader visible={loading} />
     </View>
   );

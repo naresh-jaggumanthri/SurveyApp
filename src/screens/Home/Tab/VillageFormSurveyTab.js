@@ -52,6 +52,7 @@ import DeviceHelper from '../../../utils/DeviceHelper';
 import Loader from '../../../components/commonComponents/Loader';
 import {v4 as uuidv4} from 'uuid';
 import {VillageSurvey} from '../../../database/entities/VillageSurvey';
+import {AppOkAlert} from '../../../utils/AlertHelper';
 // import { VillageFormSurveyTab } from '.';
 
 const VillageFormSurveyTab = props => {
@@ -76,8 +77,7 @@ const VillageFormSurveyTab = props => {
   const [panchayats, setPanchayats] = useState([]);
   const [villages, setVillages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [involvedWaterSource, setInvolvedWaterSource] =
-      useState(null);
+  const [involvedWaterSource, setInvolvedWaterSource] = useState(null);
 
   const dropDownData = [
     {label: 'Item 1', value: '1'},
@@ -229,14 +229,14 @@ const VillageFormSurveyTab = props => {
 
     // Add more options as needed
   ]);
-   const [checkboxes4, setCheckboxes4] = useState([
-      {label: t('Well'), checked: false},
-      {label: t('Tube Well'), checked: false},
-      {label: t('Piped Water Supply'), checked: false},
-      {label: t('Others'), checked: false},
-  
-      // Add more options as needed
-    ]);
+  const [checkboxes4, setCheckboxes4] = useState([
+    {label: t('Well'), checked: false},
+    {label: t('Tube Well'), checked: false},
+    {label: t('Piped Water Supply'), checked: false},
+    {label: t('Others'), checked: false},
+
+    // Add more options as needed
+  ]);
   const handleCheckboxChange = index => {
     const updatedCheckboxes = [...checkboxes];
     updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
@@ -253,19 +253,19 @@ const VillageFormSurveyTab = props => {
     //  Alert.alert("updatedCheckboxes",JSON.stringify(result));
     setCheckboxes4(updatedCheckboxes);
   };
-   const renderCheckboxes4 = () => {
-      return checkboxes4.map((checkbox, index) => (
-        <CheckBox
-          key={index}
-          title={checkbox.label}
-          iconType="material-community"
-          checkedIcon="checkbox-marked"
-          uncheckedIcon="checkbox-blank-outline"
-          checked={checkbox.checked}
-          onPress={() => handleCheckboxChange4(index)}
-        />
-      ));
-    };
+  const renderCheckboxes4 = () => {
+    return checkboxes4.map((checkbox, index) => (
+      <CheckBox
+        key={index}
+        title={checkbox.label}
+        iconType="material-community"
+        checkedIcon="checkbox-marked"
+        uncheckedIcon="checkbox-blank-outline"
+        checked={checkbox.checked}
+        onPress={() => handleCheckboxChange4(index)}
+      />
+    ));
+  };
   const renderCheckboxes = () => {
     return checkboxes.map((checkbox, index) => (
       <CheckBox
@@ -866,7 +866,7 @@ const VillageFormSurveyTab = props => {
                       <Input
                         title={'6. ' + t('Male')}
                         placeholder={t('Male')}
-                        onChangeText={(text) => {
+                        onChangeText={text => {
                           const filtered = text.replace(/[^0-9]/g, '');
                           // Allow empty (while typing)
                           if (filtered === '') {
@@ -893,15 +893,15 @@ const VillageFormSurveyTab = props => {
                       <Input
                         title={'7. ' + t('Female')}
                         placeholder={t('Female')}
-                        onChangeText={(text) => {
-                            // Allow only digits
+                        onChangeText={text => {
+                          // Allow only digits
                           const filtered = text.replace(/[^0-9]/g, '');
-                            if (filtered === '') {
+                          if (filtered === '') {
                             setFieldValue('FemalePopulation', '');
                             return;
                           }
-                           const number = Number(filtered);
-                             if (number < 1 || number > 4000) return;
+                          const number = Number(filtered);
+                          if (number < 1 || number > 4000) return;
 
                           setFieldValue('FemalePopulation', number || 0);
                           const male = Number(values?.MalePopulation) || 0;
@@ -1057,25 +1057,35 @@ const VillageFormSurveyTab = props => {
                       <Text style={{color: 'red'}}>
                         {errors?.StreetLightingAvailable}
                       </Text>
-                      {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<Spacing space={SH(5)} />}
-                       {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('What type of street lighting is provided?')}
-                      </Text>}
-                      {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<RadioButton
-                        arrayData={electricityData}
-                        onChangeText={text => {
-                          setStreetLightingType(text);
-                          setFieldValue('StreetLightingType', text);
-                        }}
-                        value={
-                          editData != undefined
-                            ? values?.StreetLightingType
-                            : StreetLightingType
-                        }
-                      />}
-                      {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<Text style={{color: 'red'}}>
-                        {errors?.StreetLightingType}
-                      </Text>}
+                      {(values?.StreetLightingAvailable ||
+                        StreetLightingAvailable) && <Spacing space={SH(5)} />}
+                      {(values?.StreetLightingAvailable ||
+                        StreetLightingAvailable) && (
+                        <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                          {t('What type of street lighting is provided?')}
+                        </Text>
+                      )}
+                      {(values?.StreetLightingAvailable ||
+                        StreetLightingAvailable) && (
+                        <RadioButton
+                          arrayData={electricityData}
+                          onChangeText={text => {
+                            setStreetLightingType(text);
+                            setFieldValue('StreetLightingType', text);
+                          }}
+                          value={
+                            editData != undefined
+                              ? values?.StreetLightingType
+                              : StreetLightingType
+                          }
+                        />
+                      )}
+                      {(values?.StreetLightingAvailable ||
+                        StreetLightingAvailable) && (
+                        <Text style={{color: 'red'}}>
+                          {errors?.StreetLightingType}
+                        </Text>
+                      )}
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         11.{' '}
@@ -1099,21 +1109,29 @@ const VillageFormSurveyTab = props => {
                       <Text style={{color: 'red'}}>
                         {errors?.VillageConnectedToGP}
                       </Text>
-                      {(VillageConnectedToGP=="false"||values?.VillageConnectedToGP=="Partially")&&<Spacing space={SH(2)} />}
-                      {(VillageConnectedToGP=="false"||values?.VillageConnectedToGP=="Partially")&&<Input
-                        title={'12. ' +t(
+                      {(VillageConnectedToGP == 'false' ||
+                        values?.VillageConnectedToGP == 'Partially') && (
+                        <Spacing space={SH(2)} />
+                      )}
+                      {(VillageConnectedToGP == 'false' ||
+                        values?.VillageConnectedToGP == 'Partially') && (
+                        <Input
+                          title={
+                            '12. ' +
+                            t(
+                              'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
+                            )
+                          }
+                          placeholder={t(
                             'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
-                          )
-                        }
-                        placeholder={t(
-                          'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
-                        )}
-                        onChangeText={text => {
-                          setFieldValue('LengthAllWeatherRoadToGP', text);
-                        }}
-                        value={values?.LengthAllWeatherRoadToGP}
-                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                      />}
+                          )}
+                          onChangeText={text => {
+                            setFieldValue('LengthAllWeatherRoadToGP', text);
+                          }}
+                          value={values?.LengthAllWeatherRoadToGP}
+                          titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                        />
+                      )}
                       {/* <Text style={{color: 'red'}}>{errors?.LengthAllWeatherRoadToGP}</Text> */}
 
                       {/* <Spacing space={SH(9)} />
@@ -1277,15 +1295,6 @@ const VillageFormSurveyTab = props => {
                         maxLength={6}
                       />
 
-                      
-
-                      
-
-
-                      
-
-                      
-
                       {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("What are the sources of Irrigation?")}</Text>
                 {renderCheckboxes2()}
                 {<Spacing space={SH(5)}/>}
@@ -1296,15 +1305,16 @@ const VillageFormSurveyTab = props => {
                 {<Spacing space={SH(5)}/>} */}
                     </View>
                   )}
-                  {currentQuestion === 4 && (<View>
-                    <Text style={AnalyaticsStyles.TitleStyle}>
+                  {currentQuestion === 4 && (
+                    <View>
+                      <Text style={AnalyaticsStyles.TitleStyle}>
                         {t('Water Supply & Sanitation')}
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         18. {t('Main source of drinking water?')}
                       </Text>
-                       {renderCheckboxes4()}
+                      {renderCheckboxes4()}
                       {/* <RadioButton
                         arrayData={waterSourceData}
                         onChangeText={text => {
@@ -1339,9 +1349,11 @@ const VillageFormSurveyTab = props => {
                       <Text style={{color: 'red'}}>
                         {errors?.AllHouseholdsWithToilets}
                       </Text>
-                  </View>)}
-                   {currentQuestion === 5 && (<View>
-                    <Text style={AnalyaticsStyles.TitleStyle}>
+                    </View>
+                  )}
+                  {currentQuestion === 5 && (
+                    <View>
+                      <Text style={AnalyaticsStyles.TitleStyle}>
                         {t('Education & Health Facilities')}
                       </Text>
                       <Spacing space={SH(5)} />
@@ -1421,8 +1433,10 @@ const VillageFormSurveyTab = props => {
                       <Text style={{color: 'red'}}>
                         {errors?.SubHealthCentre}
                       </Text>
-                   </View>)}
-                    {currentQuestion === 6 && (<View>
+                    </View>
+                  )}
+                  {currentQuestion === 6 && (
+                    <View>
                       <Text style={AnalyaticsStyles.TitleStyle}>
                         {t('Community & Social Infrastructure')}
                       </Text>
@@ -1503,14 +1517,15 @@ const VillageFormSurveyTab = props => {
                       <Text style={{color: 'red'}}>
                         {errors?.CommunityTanks}
                       </Text>
-
-                    </View>)}
-                     {currentQuestion === 7 &&  (<View>
+                    </View>
+                  )}
+                  {currentQuestion === 7 && (
+                    <View>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.TitleStyle}>
                         {t('Livelihood & Service Infrastructure')}
                       </Text>
-                     {/* <Spacing space={SH(5)} />
+                      {/* <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         33. {t('Is mobile network coverage available?')}
                       </Text>
@@ -1626,10 +1641,8 @@ const VillageFormSurveyTab = props => {
                       <Text style={{color: 'red'}}>
                         {errors?.BankingPostOfficeNearby}
                       </Text>
-
-
-                     </View>)}
-                     
+                    </View>
+                  )}
 
                   {/* Four question start */}
                   {currentQuestion === 8 && (
@@ -1991,9 +2004,9 @@ const VillageFormSurveyTab = props => {
                 </View> */}
                       <Spacing space={SH(5)} />
                       <View style={AnalyaticsStyles.PaddingHori}>
-                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        36. {t('Click on the icon to capture GEO location')}
-                      </Text>
+                        <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                          36. {t('Click on the icon to capture GEO location')}
+                        </Text>
                         <View style={Style.FlexEditView}>
                           <TouchableOpacity
                             onPress={() =>
@@ -2572,10 +2585,136 @@ const VillageFormSurveyTab = props => {
                       ...values,
                       SurveyDate: dateSelectLocal,
                     };
+                    if (errors && errors?.District) {
+                      AppOkAlert(errors.District, () => {});
+                      return;
+                    }
+
+                    if (errors && errors?.Block) {
+                      AppOkAlert(errors.Block, () => {});
+                      return;
+                    }
+
+                    if (errors && errors?.GramPanchayat) {
+                      AppOkAlert(errors.GramPanchayat, () => {});
+                      return;
+                    }
+
+                    if (errors && errors?.RevenueVillage) {
+                      AppOkAlert(errors.RevenueVillage, () => {});
+                      return;
+                    }
+
+                    if (errors && errors?.TotalHouseholds) {
+                      AppOkAlert(errors.TotalHouseholds, () => {});
+                      return;
+                    }
+
+                    if (errors && errors?.MalePopulation) {
+                      AppOkAlert(errors.MalePopulation, () => {});
+                      return;
+                    }
+
+                    if (errors && errors?.FemalePopulation) {
+                      AppOkAlert(errors.FemalePopulation, () => {});
+                      return;
+                    }
+
+                    if (
+                      values?.InternalVillageRoads === false &&
+                      errors &&
+                      errors?.InternalVillageRoadsRequirement
+                    ) {
+                      AppOkAlert(
+                        errors.InternalVillageRoadsRequirement,
+                        () => {},
+                      );
+                      return;
+                    }
+
+                    if (
+                      values?.VillageConnectedToGP === false &&
+                      errors &&
+                      errors?.LengthAllWeatherRoadToGP
+                    ) {
+                      AppOkAlert(errors.LengthAllWeatherRoadToGP, () => {});
+                      return;
+                    }
+
+                    if (
+                      values?.GPConnectedToPWDOrHighway === true &&
+                      errors &&
+                      errors?.LengthAllWeatherRoadToHighway
+                    ) {
+                      AppOkAlert(
+                        errors.LengthAllWeatherRoadToHighway,
+                        () => {},
+                      );
+                      return;
+                    }
+
+                    // if (errors && errors?.DrinkingWaterSource) {
+                    //   AppOkAlert(errors.DrinkingWaterSource, () => {});
+                    //   return;
+                    // }
+
+                    if (
+                      values?.PDSAvailable === false &&
+                      errors &&
+                      errors?.DistanceOfPDS
+                    ) {
+                      AppOkAlert(errors.DistanceOfPDS, () => {});
+                      return;
+                    }
+
+                    if (
+                      values?.WaterFromIrrigationProject === true &&
+                      errors &&
+                      errors?.LengthOfDistributionCanal
+                    ) {
+                      AppOkAlert(errors.LengthOfDistributionCanal, () => {});
+                      return;
+                    }
+
+                    if (
+                      values?.WaterFromIrrigationProject === true &&
+                      errors &&
+                      errors?.ScopeOfNewDistributionCanal
+                    ) {
+                      AppOkAlert(errors.ScopeOfNewDistributionCanal, () => {});
+                      return;
+                    }
+
+                    if (errors && errors?.RespondentName) {
+                      AppOkAlert(errors.RespondentName, () => {});
+                      return;
+                    }
+
+                    if (errors && errors?.IdentityRole) {
+                      AppOkAlert(errors.IdentityRole, () => {});
+                      return;
+                    }
+
+                    // if (errors && errors?.SurveyProcess) {
+                    //   AppOkAlert(errors.SurveyProcess, () => {});
+                    //   return;
+                    // }
+
+                    if (errors && errors?.RespondentMobile) {
+                      AppOkAlert(errors.RespondentMobile, () => {});
+                      return;
+                    }
+                    if (errors && errors?.EnumeratorName) {
+                      AppOkAlert(errors.EnumeratorName, () => {});
+                      return;
+                    }
+
+                    // Alert.alert('errors', JSON.stringify(errors));
+                    // return;
 
                     setPreviewData(finalValuesPreview);
                     setShowConfirmModal(true);
-                       if (involvedWaterSource?.length > 0) {
+                    if (involvedWaterSource?.length > 0) {
                       let waterArray = '';
                       involvedWaterSource?.forEach(item => {
                         waterArray =
@@ -2584,13 +2723,10 @@ const VillageFormSurveyTab = props => {
                             : waterArray.concat(item);
                       });
                       //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
-                      setFieldValue(
-                        'DrinkingWaterSource',
-                        waterArray,
-                      );
-                       setDrinkingWaterSource(waterArray);
+                      setFieldValue('DrinkingWaterSource', waterArray);
+                      setDrinkingWaterSource(waterArray);
                     }
-                   
+
                     // handleSubmit();
                   }}>
                   <Text style={AnalyaticsStyles.PreviousTextStyle}>
@@ -2598,6 +2734,7 @@ const VillageFormSurveyTab = props => {
                   </Text>
                 </TouchableOpacity>
               )}
+              <Loader visible={loading} />
             </View>
           </>
         )}
@@ -2614,7 +2751,7 @@ const VillageFormSurveyTab = props => {
         buttonText={t('Ok')}
         buttonminview={Style.ButtonCenter}
       />
-      <FamilyMemberAlert
+      {/* <FamilyMemberAlert
         message={alertMessage}
         modalVisible={familyAlertVisible}
         setModalVisible={setFamilyAlertVisible}
@@ -2624,8 +2761,7 @@ const VillageFormSurveyTab = props => {
         buttonminview={Style.ButtonCenter}
         iconVisible={true}
         buttonText={t('Ok')}
-      />
-      <Loader visible={loading} />
+      /> */}
     </View>
   );
 };

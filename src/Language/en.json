@@ -408,6 +408,7 @@
 "Survey_Submit_Successfully": "House Hold Survey Submitted Successfully",
 "Number of family members":"Total",
 "Number of house holds":"Total",
-"Survey_Submit_Successfully_village":"Village Survey Submitted Successfully"
+"Survey_Submit_Successfully_village":"Village Survey Submitted Successfully",
+"Name_must_be_at_least_3_characters_long":"Name must be at least 3 characters long"
   }
 }

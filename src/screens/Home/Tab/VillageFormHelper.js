@@ -68,20 +68,20 @@ export const VillageFormValidationSchema = (props)=>{
   TotalHouseholds: Yup.number().typeError('Total Households must be a number').required('Total Households is required'),
   MalePopulation: Yup.number().typeError('Male Population must be a number').required('Male Population is required'),
   FemalePopulation: Yup.number().typeError('Female Population must be a number').required('Female Population is required'),
-  InternalVillageRoadsRequirement: Yup.string().when('InternalVillageRoads', {
-    is: false,
-    then: schema => schema.required('Internal Village Roads Requirement is required'),
-    otherwise: schema => schema.notRequired()
-  }),
+  // InternalVillageRoadsRequirement: Yup.string().when('InternalVillageRoads', {
+  //   is: false,
+  //   then: schema => schema.required('Internal Village Roads Requirement is required'),
+  //   otherwise: schema => schema.notRequired()
+  // }),
 //   LengthAllWeatherRoadToGP: Yup.number().typeError('Length to GP must be a number').required('Length to GP is required'),
   LengthAllWeatherRoadToHighway: Yup.number().typeError('Length to Highway must be a number').required('Length to Highway is required'),
-  DrinkingWaterSource: Yup.string().required('Drinking Water Source is required'),
+  // DrinkingWaterSource: Yup.string().required('Drinking Water Source is required'),
 //   DistanceOfPDS: Yup.number().typeError('Distance of PDS must be a number').required('Distance of PDS is required'),
 //   LengthOfDistributionCanal: Yup.number().typeError('Length of Distribution Canal must be a number').required('Length of Distribution Canal is required'),
 //   ScopeOfNewDistributionCanal: Yup.number().typeError('Scope of New Distribution Canal must be a number').required('Scope of New Distribution Canal is required'),
   RespondentName: Yup.string().required('Respondent Name is required'),
   IdentityRole: Yup.string().required('Identity / Role is required'),
-  SurveyProcess: Yup.string().required('Survey Process is required'),
+  // SurveyProcess: Yup.string().required('Survey Process is required'),
   RespondentMobile: Yup.string()
     .matches(/^\d{10}$/, 'Mobile Number must be 10 digits')
     .required('Respondent Mobile is required'),

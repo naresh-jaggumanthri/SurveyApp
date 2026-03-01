@@ -42,15 +42,16 @@ function FamilyalertModal(props) {
     familyMembers,
     setFamilyMembers,
     handleMemberChange,
-    editable
+    editable,
   } = props;
+  // Alert.alert('familyMembers',JSON.stringify(count));
   const {t} = useTranslation();
   const [state, setState] = useState({});
   const AnalyaticsStyles = useMemo(() => AnalyaticsStyle(Colors), [Colors]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const genderData = [
-    {label: t('Male'), value: t('Male')},
-    {label: t('Female'), value: t('Female')},
+    {label: t('mMale'), value: t('mMale')},
+    {label: t('fFemale'), value: t('fFemale')},
     {label: t('Others'), value: t('Others')},
   ];
   const selfHelpData = [
@@ -85,238 +86,286 @@ function FamilyalertModal(props) {
     // Add more options as needed
   ]);
   const [checkboxes2, setCheckboxes2] = useState([
-    {label: t('Brick Kiln'),checked: false},
-    {label: t('Construction Labour'),checked: false},
-    {label: t('Agri Labour'),checked: false},
-    {label: t('Mason'),checked: false},
-    {label: t('Domestic Support'),checked: false},
-    {label: t('Manufacturing'),checked: false},
-    {label: t('Service Sector(Hotel,Hospital,Security)'),checked: false},
-    {label: t('Other'),checked: false},
+    {label: t('Brick Kiln'), checked: false},
+    {label: t('Construction Labour'), checked: false},
+    {label: t('Agri Labour'), checked: false},
+    {label: t('Mason'), checked: false},
+    {label: t('Domestic Support'), checked: false},
+    {label: t('Manufacturing'), checked: false},
+    {label: t('Service Sector(Hotel,Hospital,Security)'), checked: false},
+    {label: t('Other'), checked: false},
 
     // Add more options as needed
   ]);
-   useLayoutEffect(() => {
-      var token = PubSub.subscribe('HouseItem', mySubscriber);
-      
-      
-    }, []);
-   var mySubscriber = function (msg, data) {    
-      const members=data?.item?.householdFamilyMember;
-      setFamilyMembers(members);
-    };
+  useLayoutEffect(() => {
+    var token = PubSub.subscribe('HouseItem', mySubscriber);
+  }, []);
+  var mySubscriber = function (msg, data) {
+    const members = data?.item?.householdFamilyMember;
+    setFamilyMembers(members);
+  };
   useEffect(() => {
     //  Alert.alert("familyMembers",JSON.stringify(familyMembers));
     if (count > 0) {
-      if(editable){
-       
-//  setFamilyMembers(familyMembers);
-      }else{
-      setFamilyMembers(
-        Array.from({length: count}, () => ({
-          name: '',
-          age: 0,
-          gender: '',
-          educationalQualification: '',
-          migratedInLast3Years: false,
-          DestinationState: '',
-          SectorOfEngagementDuringMigration: '',
-          periodOfMigration: '',
-          monthlyRemittanceDuringMigration:0,
-          interestInSkillDevelopment: '',
-        })),
-      );
-    }
+      if (editable) {
+        let existingCount = familyMembers?.length || 0;
+        let newCount = count - existingCount;
+        setFamilyMembers([
+          ...familyMembers,
+          Array.from({length: newCount}, () => ({
+            name: '',
+            age: 0,
+            gender: '',
+            educationalQualification: '',
+            migratedInLast3Years: false,
+            destinationState: '',
+            sectorOfEngagementDuringMigration: '',
+            periodOfMigration: '',
+            monthlyRemittanceDuringMigration: 0,
+            interestInSkillDevelopment: '',
+          })),
+        ]);
+      } else {
+        setFamilyMembers(
+          Array.from({length: count}, () => ({
+            name: '',
+            age: 0,
+            gender: '',
+            educationalQualification: '',
+            migratedInLast3Years: false,
+            destinationState: '',
+            sectorOfEngagementDuringMigration: '',
+            periodOfMigration: '',
+            monthlyRemittanceDuringMigration: 0,
+            interestInSkillDevelopment: '',
+          })),
+        );
+      }
     }
   }, [count]);
-  //  const handleMemberChange = (index, key, value) => {
-  //   const updatedMembers = [...familyMembers];
-  //   updatedMembers[index][key] = value;
-  //   setFamilyMembers(updatedMembers);
-  // };
-  const FamilyMemberForm = ({index, data, onChange}) => (
-    <View>
-      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-        {t('Family Member')} {index + 1}
-      </Text>
-      <Spacing space={SH(5)} />
-      <Input
+  //  const handleMemberChange = async(index, key, value) => {
+  //     const updatedMembers = [...familyMembers];
+  //     updatedMembers[index][key] = value;
+  //     await setFamilyMembers([...updatedMembers]);
+  //   };
+
+  const renderForm = () => {
+    if (!familyMembers || familyMembers.length === 0) return null;
+    const FamilyMemberForm = ({index, data, onChange}) => {
+      const [nameError, setNameError] = useState('');
+      return (
+        <View>
+          <Text style={AnalyaticsStyles.PleaseEnterDate}>
+            {t('Family Member')} {index + 1}
+          </Text>
+          <Spacing space={SH(5)} />
+          {/* <Input
         title={t('Name of the Family Member')}
         placeholder={t('Name of the Family Member')}
         onChangeText={text => onChange(index, 'name', text)}
         value={data.name}
         inputType="text"
         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-      />
+      /> */}
+          <Input
+            title={t('Name of the Family Member')}
+            placeholder={t('Name of the Family Member')}
+            value={data.name}
+            inputType="text"
+            titleStyle={AnalyaticsStyles.PleaseEnterDate}
+            onChangeText={text => {
+              const cleaned = text.replace(/[^a-zA-Z\s]/g, '');
 
-      <Spacing space={SH(5)} />
-      <Input
-        title={t('Age')}
-        placeholder={t('Age')}
-        onChangeText={text => onChange(index, 'age', text)}
-        value={data.age}
-        inputType="numeric"
-        maxLength={10}
-        titleStyle={AnalyaticsStyles.PleaseEnterDate}
-      />
+              // if (cleaned.length > 0 && cleaned.trim().length < 3) {
+              //   setNameError('Minimum 3 characters required');
+              // } else {
+              //   setNameError('');
+              // }
 
-      <Spacing space={SH(15)} />
-      <Text style={AnalyaticsStyles.PleaseEnterDate}>{t('Gender')}</Text>
-      <RadioButton
-        arrayData={genderData}
-        onChangeText={text => onChange(index, 'gender', text)}
-        value={data.gender}
-      />
-      <Spacing space={SH(5)} />
-      <Input
-        title={t('Education Qualification')}
-        placeholder={t('Education Qualification')}
-        onChangeText={text => onChange(index, 'educationalQualification', text)}
-        value={data.educationalQualification}
-        inputType="text"
-        maxLength={10}
-        titleStyle={AnalyaticsStyles.PleaseEnterDate}
-      />
-      <Spacing space={SH(15)} />
-      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-        {t('Whether Migrated in last three years')}
-      </Text>
-      <RadioButton
-        arrayData={selfHelpData}
-        onChangeText={text => onChange(index, 'migratedInLast3Years', text)}
-        value={data.migratedInLast3Years}
-      />
-      <Spacing space={SH(5)} />
-      <Input
-        title={t('Destination State')}
-        placeholder={t('Destination State')}
-        onChangeText={text => onChange(index, 'DestinationState', text)}
-        value={data.DestinationState}
-        inputType="text"
-        maxLength={10}
-        titleStyle={AnalyaticsStyles.PleaseEnterDate}
-      />
-      <Spacing space={SH(15)} />
-      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-        {t('Nature/Sector of engagement at destination during migration?')}
-      </Text>
-      {renderCheckboxes2(index)}
-      {/* <RadioButton
+              onChange(index, 'name', cleaned);
+            }}
+            onEndEditing={() => {
+              if (data.name.trim().length < 3) {
+                setNameError('Minimum 3 characters required');
+              } else {
+                setNameError('');
+              }
+            }}
+          />
+
+          {nameError ? (
+            <Text style={{color: 'red', fontSize: 12}}>{nameError}</Text>
+          ) : null}
+
+          <Spacing space={SH(5)} />
+          <Input
+            title={t('Age')}
+            placeholder={t('Age')}
+            onChangeText={text => onChange(index, 'age', text)}
+            value={data.age}
+            inputType="numeric"
+            maxLength={10}
+            titleStyle={AnalyaticsStyles.PleaseEnterDate}
+          />
+
+          <Spacing space={SH(15)} />
+          <Text style={AnalyaticsStyles.PleaseEnterDate}>{t('Gender')}</Text>
+          <RadioButton
+            arrayData={genderData}
+            onChangeText={text => onChange(index, 'gender', text)}
+            value={data.gender}
+          />
+          <Spacing space={SH(5)} />
+          <Input
+            title={t('Education Qualification')}
+            placeholder={t('Education Qualification')}
+            onChangeText={text =>
+              onChange(index, 'educationalQualification', text)
+            }
+            value={data.educationalQualification}
+            inputType="text"
+            maxLength={10}
+            titleStyle={AnalyaticsStyles.PleaseEnterDate}
+          />
+          <Spacing space={SH(15)} />
+          <Text style={AnalyaticsStyles.PleaseEnterDate}>
+            {t('Whether Migrated in last three years')}
+          </Text>
+          <RadioButton
+            arrayData={selfHelpData}
+            onChangeText={text => onChange(index, 'migratedInLast3Years', text)}
+            value={data.migratedInLast3Years}
+          />
+          <Spacing space={SH(5)} />
+          <Input
+            title={t('Destination State')}
+            placeholder={t('Destination State')}
+            onChangeText={text => onChange(index, 'destinationState', text)}
+            value={data.destinationState}
+            inputType="text"
+            maxLength={10}
+            titleStyle={AnalyaticsStyles.PleaseEnterDate}
+          />
+          <Spacing space={SH(15)} />
+          <Text style={AnalyaticsStyles.PleaseEnterDate}>
+            {t('Nature/Sector of engagement at destination during migration?')}
+          </Text>
+          {renderCheckboxes2(index)}
+          {/* <RadioButton
         arrayData={sectorData}
         onChangeText={text => onChange(index, 'SectorOfEngagementDuringMigration', text)}
         value={data.SectorOfEngagementDuringMigration}
       /> */}
-      <Spacing space={SH(15)} />
-      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-        {t('Period of migration')}
-      </Text>
-      <RadioButton
-        arrayData={migrationData}
-        onChangeText={text => onChange(index, 'periodOfMigration', text)}
-        value={data.periodOfMigration}
-      />
-      <Spacing space={SH(5)} />
-      <Input
-        title={t('What was the monthly remittance during migration(in Rs.)')}
-        placeholder={t(
-          'What was the monthly remittance during migration(in Rs.)',
-        )}
-        onChangeText={text => onChange(index, 'monthlyRemittanceDuringMigration', text)}
-        value={data.monthlyRemittanceDuringMigration}
-        inputType="numeric"
-        maxLength={10}
-        titleStyle={AnalyaticsStyles.PleaseEnterDate}
-      />
-      <Spacing space={SH(5)} />
-      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-        {t('Whether interested for skill development under')}
-      </Text>
-      {renderCheckboxes(index)}
-    </View>
-  );
- 
-  const handleSubmitAllMembers=(index, key, value)=>{
-const updatedMembers = [...familyMembers];
-    updatedMembers[index][key] = value;
-    setFamilyMembers(updatedMembers);
-  }
-//   const renderForm = () => {
-//     return familyMembers?.map((member, index) => (
-//       <FamilyMemberForm
-//         key={index}
-//         index={index}
-//         data={member}
-//         onChange={handleMemberChange}
-//       />
-//     ));
-//   };
-
-
-const renderForm = () => {
-  if (!familyMembers || familyMembers.length === 0) return null;
-
-  return (
-    <View style={styles.card}>
-      <FamilyMemberForm
-        index={currentIndex}
-        data={familyMembers[currentIndex]}
-        onChange={handleMemberChange}
-      />
-
-      <View style={styles.buttonRow}>
-        {/* Previous */}
-        {currentIndex > 0 && (
-          <Button
-            title="Previous Member"
-            onPress={() => setCurrentIndex(i => i - 1)}
-            buttonStyle={{width:SH(130)}}
-        
+          <Spacing space={SH(15)} />
+          <Text style={AnalyaticsStyles.PleaseEnterDate}>
+            {t('Period of migration')}
+          </Text>
+          <RadioButton
+            arrayData={migrationData}
+            onChangeText={text => onChange(index, 'periodOfMigration', text)}
+            value={data.periodOfMigration}
           />
-        )}
-
-        {/* Next */}
-        {currentIndex < familyMembers.length - 1 && (
-          <Button
-            title="Next Member"
-            onPress={() => setCurrentIndex(i => i + 1)}
-            buttonStyle={{width:SH(130)}}
+          <Spacing space={SH(5)} />
+          <Input
+            title={t(
+              'What was the monthly remittance during migration(in Rs.)',
+            )}
+            placeholder={t(
+              'What was the monthly remittance during migration(in Rs.)',
+            )}
+            onChangeText={text =>
+              onChange(index, 'monthlyRemittanceDuringMigration', text)
+            }
+            value={data.monthlyRemittanceDuringMigration}
+            inputType="numeric"
+            maxLength={10}
+            titleStyle={AnalyaticsStyles.PleaseEnterDate}
           />
-        )}
+          <Spacing space={SH(5)} />
+          <Text style={AnalyaticsStyles.PleaseEnterDate}>
+            {t('Whether interested for skill development under')}
+          </Text>
+          {renderCheckboxes(index)}
+        </View>
+      );
+    };
 
-        {/* Finish */}
-        {/* {currentIndex === familyMembers.length - 1 && (
+    return (
+      <View style={styles.card}>
+        <FamilyMemberForm
+          index={currentIndex}
+          data={familyMembers[currentIndex]}
+          onChange={handleMemberChange}
+        />
+
+        <View style={styles.buttonRow}>
+          {/* Previous */}
+          {currentIndex > 0 && (
+            <Button
+              title="Previous Member"
+              onPress={() => setCurrentIndex(i => i - 1)}
+              buttonStyle={{width: SH(130)}}
+            />
+          )}
+
+          {/* Next */}
+          {currentIndex < familyMembers.length - 1 && (
+            <Button
+              title="Next Member"
+              onPress={() => setCurrentIndex(i => i + 1)}
+              buttonStyle={{width: SH(130)}}
+            />
+          )}
+
+          {/* Finish */}
+          {/* {currentIndex === familyMembers.length - 1 && (
           <Button
             title="Finish"
             onPress={handleSubmitAllMembers}
           />
         )} */}
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  };
 
-//   const renderForm = () => {
-// //   return familyMembers?.map((member, index) => (
-//     <View key={index} style={styles.card}>
-//       {/* <Text style={styles.title}>
-//         Family Member {index + 1}
-//       </Text> */}
+  const handleSubmitAllMembers = (index, key, value) => {
+    const updatedMembers = [...familyMembers];
+    updatedMembers[index][key] = value;
+    setFamilyMembers(updatedMembers);
+  };
+  //   const renderForm = () => {
+  //     return familyMembers?.map((member, index) => (
+  //       <FamilyMemberForm
+  //         key={index}
+  //         index={index}
+  //         data={member}
+  //         onChange={handleMemberChange}
+  //       />
+  //     ));
+  //   };
 
-//       <FamilyMemberForm
-//       index={currentIndex}
-//         // index={index}
-//         data={familyMembers[currentIndex]}
-//         onChange={handleMemberChange}
-//       />
-//       {currentIndex<familyMembers.size() &&<Button
-//   title="Next"
-//   onPress={() => setCurrentIndex(i => i + 1)}
-// />}
-//     </View>
-// //   ));
-// };
+  //   const renderForm = () => {
+  // //   return familyMembers?.map((member, index) => (
+  //     <View key={index} style={styles.card}>
+  //       {/* <Text style={styles.title}>
+  //         Family Member {index + 1}
+  //       </Text> */}
+
+  //       <FamilyMemberForm
+  //       index={currentIndex}
+  //         // index={index}
+  //         data={familyMembers[currentIndex]}
+  //         onChange={handleMemberChange}
+  //       />
+  //       {currentIndex<familyMembers.size() &&<Button
+  //   title="Next"
+  //   onPress={() => setCurrentIndex(i => i + 1)}
+  // />}
+  //     </View>
+  // //   ));
+  // };
   const renderCheckboxes = ind => {
-    
     return checkboxes.map((checkbox, index) => (
       <CheckBox
         key={index}
@@ -325,17 +374,18 @@ const renderForm = () => {
         checkedIcon="checkbox-marked"
         uncheckedIcon="checkbox-blank-outline"
         // checked={checkbox.checked}
-        checked={familyMembers[ind]?.interestInSkillDevelopment.includes(checkbox.label)}
+        checked={familyMembers[ind]?.interestInSkillDevelopment?.includes(
+          checkbox.label,
+        )||false}
         onPress={() => {
-            handleCheckboxChange(index,ind);
-            // Alert.alert('Checkbox Pressed', `Checkbox ${ind} pressed`);
+          handleCheckboxChange(index, ind);
+          // Alert.alert('Checkbox Pressed', `Checkbox ${ind} pressed`);
         }}
       />
     ));
   };
 
-   const renderCheckboxes2 = ind => {
-    
+  const renderCheckboxes2 = ind => {
     return checkboxes2.map((checkbox, index) => (
       <CheckBox
         key={index}
@@ -344,66 +394,67 @@ const renderForm = () => {
         checkedIcon="checkbox-marked"
         uncheckedIcon="checkbox-blank-outline"
         // checked={checkbox.checked}
-        checked={familyMembers[ind]?.SectorOfEngagementDuringMigration.includes(checkbox.label)}
+        checked={familyMembers[ind]?.sectorOfEngagementDuringMigration?.includes(
+          checkbox.label,
+        )||false}
         onPress={() => {
-            handleCheckboxChange2(index,ind);
-            
+          handleCheckboxChange2(index, ind);
         }}
       />
     ));
   };
-//   const handleCheckboxChange = (index, ind) => {
-//     const updatedCheckboxes = [...checkboxes];
-//         updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
-//         updatedCheckboxes[index].mainIndex = ind;
-//     setCheckboxes(updatedCheckboxes);
-//   };
+  //   const handleCheckboxChange = (index, ind) => {
+  //     const updatedCheckboxes = [...checkboxes];
+  //         updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+  //         updatedCheckboxes[index].mainIndex = ind;
+  //     setCheckboxes(updatedCheckboxes);
+  //   };
 
   const handleCheckboxChange = (checkboxIndex, memberIndex) => {
-  setFamilyMembers(prev => {
-    const updated = [...prev];
-    const skill = checkboxes[checkboxIndex].label;
+    setFamilyMembers(prev => {
+      const updated = [...prev];
+      const skill = checkboxes[checkboxIndex].label;
 
-    if (updated[memberIndex].interestInSkillDevelopment.includes(skill)) {
-      updated[memberIndex].interestInSkillDevelopment = updated[memberIndex].interestInSkillDevelopment.filter(
-        s => s !== skill
-      );
-    } else {
-      updated[memberIndex].interestInSkillDevelopment = skill;
-    }
+      if (updated[memberIndex].interestInSkillDevelopment.includes(skill)) {
+        updated[memberIndex].interestInSkillDevelopment = updated[
+          memberIndex
+        ].interestInSkillDevelopment.filter(s => s !== skill);
+      } else {
+        updated[memberIndex].interestInSkillDevelopment = skill;
+      }
 
-    return updated;
-  });
-  setCheckboxes(prev => {
-    const updated = [...prev];
-    updated[checkboxIndex].checked = !updated[checkboxIndex].checked;
-    return updated;
-  });
-};
- const handleCheckboxChange2 = (checkboxIndex, memberIndex) => {
-  
-  setFamilyMembers(prev => {
-    const updated = [...prev];
-    const skill = checkboxes2[checkboxIndex].label;
+      return updated;
+    });
+    setCheckboxes(prev => {
+      const updated = [...prev];
+      updated[checkboxIndex].checked = !updated[checkboxIndex].checked;
+      return updated;
+    });
+  };
+  const handleCheckboxChange2 = (checkboxIndex, memberIndex) => {
+    setFamilyMembers(prev => {
+      const updated = [...prev];
+      const skill = checkboxes2[checkboxIndex].label;
 
-    if (updated[memberIndex].SectorOfEngagementDuringMigration.includes(skill)) {
-      updated[memberIndex].SectorOfEngagementDuringMigration = updated[memberIndex].SectorOfEngagementDuringMigration.filter(
-        s => s !== skill
-      );
-    } else {
-      updated[memberIndex].SectorOfEngagementDuringMigration = skill;
-    }
+      if (
+        updated[memberIndex].sectorOfEngagementDuringMigration.includes(skill)
+      ) {
+        updated[memberIndex].sectorOfEngagementDuringMigration = updated[
+          memberIndex
+        ].sectorOfEngagementDuringMigration.filter(s => s !== skill);
+      } else {
+        updated[memberIndex].sectorOfEngagementDuringMigration = skill;
+      }
 
-    return updated;
-  });
-   setCheckboxes2(prev => {
-   
-    const updated = [...prev];
-    updated[checkboxIndex].checked = !updated[checkboxIndex].checked;
+      return updated;
+    });
+    setCheckboxes2(prev => {
+      const updated = [...prev];
+      updated[checkboxIndex].checked = !updated[checkboxIndex].checked;
       // Alert.alert('Checkbox Pressed', `Checkbox ${JSON.stringify(updated)} pressedfff`);
-    return updated;
-  });
-};
+      return updated;
+    });
+  };
   //Alert.alert('' + count);
   return (
     <Modal
@@ -435,7 +486,7 @@ const renderForm = () => {
 
                   {renderForm()}
 
-                  <Text style={Style.settext}>{message}</Text>
+                  {/* <Text style={Style.settext}>{message}</Text> */}
                 </View>
               </KeyboardAvoidingView>
 
@@ -455,7 +506,7 @@ const renderForm = () => {
                 {true ? (
                   <View style={Style.setokbutton}>
                     <Button
-                      title={"Cancel"}
+                      title={'Cancel'}
                       onPress={() => {
                         onPressCancel();
                       }}
@@ -495,7 +546,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     elevation: 3, // Android shadow
     shadowColor: '#000', // iOS shadow
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
@@ -505,13 +556,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: '#333',
   },
-  
+
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 16,
   },
 });
-
 
 export default FamilyalertModal;

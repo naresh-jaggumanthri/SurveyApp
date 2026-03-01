@@ -55,6 +55,8 @@ import { HouseholdSurvey } from '../../../database/entities/HouseholdSurvey';
 import { v4 as uuidv4 } from 'uuid';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { AppOkAlert } from '../../../utils/AlertHelper';
+import { err } from 'react-native-svg';
 
 const FamilyFormSurveyTab = props => {
   const {t} = useTranslation();
@@ -242,8 +244,8 @@ const FamilyFormSurveyTab = props => {
     {label: t('Both'), value: t('Both')},
   ];
   const genderData = [
-    {label: t('mMale'), value: t('Men')},
-    {label: t('fFemale'), value: t('Women')},
+    {label: t('mMale'), value: t('mMale')},
+    {label: t('fFemale'), value: t('fFemale')},
     {label: t('Others'), value: t('Others')},
   ];
 
@@ -693,7 +695,8 @@ const FamilyFormSurveyTab = props => {
     } else {
        setLoading(false);
       setAlertVisible(true);
-      setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
+       setAlertMessage(response.message);
+     // setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
     }
   };
    const getLocation = () => {
@@ -759,11 +762,32 @@ const FamilyFormSurveyTab = props => {
     return false;
   }
 };
-//  PubSub.unsubscribe(token);
- const handleMemberChange = (index, key, value) => {
-    const updatedMembers = [...familyMembers];
-    updatedMembers[index][key] = value;
-    setFamilyMembers(updatedMembers);
+  // PubSub.unsubscribe(token);
+//  const handleMemberChange = (index, key, value) => {
+//     const updatedMembers = [...familyMembers];
+//     updatedMembers[index][key] = value;
+//     setFamilyMembers(updatedMembers);
+//   };
+  const handleMemberChange = (index, key, value) => {
+  //   if (key === 'name' && value.trim().length < 3) {
+  //   AppOkAlert(t('Name_must_be_at_least_3_characters_long'),() => {});
+  //     return; // prevent update
+  // }
+   setFamilyMembers(prevMembers =>
+      prevMembers.map((member, i) =>
+        i === index
+          ? { ...member, [key]: value }
+          : member
+      )
+    );
+  setTimeout(() => {
+    // if (key === 'name' && value.trim().length < 3) {
+    //   AppOkAlert(t('Name_must_be_at_least_3_characters_long'), () => {});
+    //   return; // prevent update
+    // }
+    
+  }, 3000);
+   
   };
   return (
     <View style={Style.BgColorWhiteAll}>
@@ -805,16 +829,16 @@ const FamilyFormSurveyTab = props => {
             ...values,
             householdFamilyMember: finalFamilyMembers,
           };
-
+        
          
 
 
           const formData=new FormData();
-            formData.append('respondentPhoto', {
-      uri: imageData.uri,
-      type: imageData.type || 'image/jpeg',
-      name: imageData.fileName || 'upload.jpg',
-    });
+    //         formData.append('respondentPhoto', {
+    //   uri: "https://example.com/photos/respondent.jpg",//imageData.uri,
+    //   type: 'image/jpeg',//imageData.type || 'image/jpeg',
+    //   name: 'upload.jpg',//</View>imageData.fileName || 'upload.jpg',
+    // });
     //formData.append("householdJson",JSON.stringify(finalValues));
 //     const samplePayload={
 // "householdBasicProfile": {
@@ -910,7 +934,7 @@ const FamilyFormSurveyTab = props => {
 
 //     };
      formData.append("householdJson",JSON.stringify(finalValues));
-  //  Alert.alert("hell",JSON.stringify(formData));
+    
   console.log("hello>>>",JSON.stringify(formData));
   //  return;
                 
@@ -1079,7 +1103,7 @@ const FamilyFormSurveyTab = props => {
                         }}
                         value={values?.householdBasicProfile?.nearestLandmark}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                        maxLength={200}
+                        maxLength={400}
                       />
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.nearestLandmark}
@@ -1295,7 +1319,7 @@ if (ifscRegex.test(text)) {
     const numericText = text.replace(/[^0-9]/g, '');
 
     // Convert to number
-    const age = parseInt(numericText, 10);
+    const age = parseInt(numericText==''?'0':numericText, 10);
 
     // Optional: Age range validation (1–120)
     if (!numericText) {
@@ -1304,7 +1328,7 @@ if (ifscRegex.test(text)) {
       setFieldValue('householdBasicProfile.totalFamilyMembers', age);
     }
       try {
-                            setFamilyMemberCount(parseInt(text));
+                            setFamilyMemberCount(age);
                           } catch (e) {}
                          
                           // setFieldValue(
@@ -1312,9 +1336,7 @@ if (ifscRegex.test(text)) {
                           //   text,
                           // );
                         }}
-                        value={
-                          values?.householdBasicProfile?.totalFamilyMembers||familyMemberCount
-                        }
+                        value={values?.householdBasicProfile?.totalFamilyMembers||familyMemberCount.toString()}
                         inputType="numeric"
                         maxLength={3}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -1720,7 +1742,7 @@ if (ifscRegex.test(text)) {
                         }
                         value={values?.householdEntitlement?.fullJobCardNumber}
                         inputType="numeric"
-                        maxLength={10}
+                        maxLength={100}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />}
                         <Text style={{color: 'red'}}>
@@ -2085,7 +2107,7 @@ if (ifscRegex.test(text)) {
 
     setFieldValue(
       'householdOccupationAndLand.fra_LandAmountInAcres',
-      filtered
+      value
     );
   }}
                             // onChangeText={(text) =>{
@@ -2414,30 +2436,30 @@ if (ifscRegex.test(text)) {
                           if (digitsOnly.length === 0) {
                             setFieldValue(
                               'householdMigrationStatus.minorChildrenAccompaniedMigration',
-                              digitsOnly,
+                              Number(digitsOnly),
                             );
                             return;
                           }
-                          if (
-                            digitsOnly.length === 1 &&
-                            !/^[6-9]/.test(digitsOnly)
-                          ) {
-                            Alert.alert(
-                              'Invalid Mobile Number',
-                              'Mobile number must start with 6, 7, 8 or 9',
-                            );
-                          }
+                          // if (
+                          //   digitsOnly.length === 1 &&
+                          //   !/^[6-9]/.test(digitsOnly)
+                          // ) {
+                          //   Alert.alert(
+                          //     'Invalid Mobile Number',
+                          //     'Mobile number must start with 6, 7, 8 or 9',
+                          //   );
+                          // }
 
-                          if (/^[6-9]/.test(digitsOnly)) {
+                          // if (/^[6-9]/.test(digitsOnly)) {
                             setFieldValue(
                               'householdMigrationStatus.minorChildrenAccompaniedMigration',
-                              digitsOnly,
+                               Number(digitsOnly),
                             );
-                          }
+                          // }
                           // else: ignore invalid starting digit (1–5,0)
                         }}
                         inputType="numeric"
-                        maxLength={10}
+                        maxLength={5}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
 
@@ -2501,7 +2523,7 @@ if (ifscRegex.test(text)) {
                         placeholder={t('Household contact mobile no.?')}
                         value={
                           values?.householdMigrationStatus
-                            ?.minorChildrenAccompaniedMigration
+                            ?.familyContactMobileNo
                         }
                         keyboardType="number-pad"
                         onChangeText={text => {
@@ -2511,7 +2533,7 @@ if (ifscRegex.test(text)) {
                           // allow first digit only if 6-9
                           if (digitsOnly.length === 0) {
                             setFieldValue(
-                              'householdMigrationStatus.minorChildrenAccompaniedMigration',
+                              'householdMigrationStatus.familyContactMobileNo',
                               digitsOnly,
                             );
                             return;
@@ -2774,6 +2796,15 @@ if (ifscRegex.test(text)) {
                       <Text style={{fontWeight: 'bold'}}>{t('Hamlet')}:</Text>{' '}
                       {previewData?.householdBasicProfile?.hamlet}
                     </Text>
+                     <Text>
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('Nearest Landmark')}:
+                      </Text>{' '}
+                      {
+                        previewData?.householdBasicProfile
+                          ?.nearestLandmark
+                      }
+                    </Text>
 
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -2825,19 +2856,19 @@ if (ifscRegex.test(text)) {
                       </Text>{' '}
                       {previewData?.householdBasicProfile?.ifscCodeOrBranch}
                     </Text>
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Name of the women member of the Household')}:
                       </Text>{' '}
                       {previewData?.householdBasicProfile?.womenMemberName}
-                    </Text>
-                    <Text>
+                    </Text> */}
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Age of Women Member as per AADHAR?')}:
                       </Text>{' '}
                       {previewData?.householdBasicProfile?.womenMemberAge}
-                    </Text>
-                    <Text>
+                    </Text> */}
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Marital Status of the Women Member ?')}:
                       </Text>{' '}
@@ -2845,8 +2876,8 @@ if (ifscRegex.test(text)) {
                         previewData?.householdBasicProfile
                           ?.womenMemberMaritalStatus
                       }
-                    </Text>
-                    <Text>
+                    </Text> */}
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Relationship with the Head of the Household')}:
                       </Text>{' '}
@@ -2854,7 +2885,7 @@ if (ifscRegex.test(text)) {
                         previewData?.householdBasicProfile
                           ?.womenMemberRelationshipWithHead
                       }
-                    </Text>
+                    </Text> */}
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {' '}
@@ -2925,12 +2956,12 @@ if (ifscRegex.test(text)) {
                           ?.hasUjjwalaLPGConnection
                       }
                     </Text>
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Whether the  family having Labour Cards?')}:
                       </Text>{' '}
                       {previewData?.householdBasicProfile?.hasLabourCard}
-                    </Text>
+                    </Text> */}
                     {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
@@ -3039,7 +3070,7 @@ if (ifscRegex.test(text)) {
                       <Text style={{fontWeight: 'bold'}}>
                         {t('What are the sources of Irrigation?')}:
                       </Text>{' '}
-                      {previewData?.householdOccupationAndLand?.hasLabourCard}
+                      {previewData?.householdOccupationAndLand?.sourcesOfIrrigation}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -3319,8 +3350,7 @@ if (ifscRegex.test(text)) {
                 <TouchableOpacity
                   style={AnalyaticsStyles.SubmitButton}
                   onPress={() => {
-                      // Alert.alert("errors",JSON.stringify(values));
-                      // return;
+                     
                     if (involvedInLivestockActivity?.length > 0) {
                       let livestockArray = '';
                       involvedInLivestockActivity?.forEach(item => {
@@ -3401,7 +3431,178 @@ if (ifscRegex.test(text)) {
                       ...values,
                       householdFamilyMember:familyMembers,
                     };
+                   
+                     
+                        if(errors && errors?.householdBasicProfile?.district){
+                          AppOkAlert(errors.householdBasicProfile.district,() => {});
+                       return;
+                    }
+                    if(errors && errors?.householdBasicProfile?.block){
+                          AppOkAlert(errors.householdBasicProfile.block,() => {});
+                       return;
+                    }
+                    if(errors && errors?.householdBasicProfile?.gramPanchayat){
+                          AppOkAlert(errors.householdBasicProfile.gramPanchayat,() => {});
+                       return;
+                    }
+                    if(errors && errors?.householdBasicProfile?.revenueVillage){
+                          AppOkAlert(errors.householdBasicProfile.revenueVillage,() => {});
+                       return;
+                    }
+
+                      if(errors && errors?.householdBasicProfile?.hamlet){
+                          AppOkAlert(errors.householdBasicProfile.hamlet,() => {});
+                       return;
+                    }
+                    
+                    if(errors && errors?.householdBasicProfile?.headOfTheHouseholdNameAsPerAadhar){
+                          AppOkAlert(errors.householdBasicProfile.headOfTheHouseholdNameAsPerAadhar,() => {});
+                       return;
+                    }
+                    if(errors && errors?.householdBasicProfile?.headOfTheHouseholdGender){
+                          AppOkAlert(errors.householdBasicProfile.headOfTheHouseholdGender,() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdBasicProfile?.aadharNo){
+                          AppOkAlert(errors.householdBasicProfile.aadharNo,() => {});
+                       return;
+                    }
+                      if(errors && errors?.householdBasicProfile?.socialCategory){
+                          AppOkAlert(errors.householdBasicProfile.socialCategory,() => {});
+                       return;
+                    }
+                    
+                    if(errors && errors?.householdBasicProfile?.bankAccountNumber){
+                          AppOkAlert(errors.householdBasicProfile.bankAccountNumber,() => {});
+                       return;
+                    }
+                    if(errors && errors?.householdBasicProfile?.bankName){
+                          AppOkAlert(errors.householdBasicProfile.bankName,() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdBasicProfile?.ifscCodeOrBranch){
+                          AppOkAlert(errors.householdBasicProfile.ifscCodeOrBranch,() => {});
+                       return;
+                    }
+                      
+                    
+                    if(errors && errors?.householdBasicProfile?.isWomenCoveredUnderSHG){ 
+                          AppOkAlert(errors.householdBasicProfile.isWomenCoveredUnderSHG,() => {});
+                       return;
+                    }
+                    
+                    if(errors && errors?.householdBasicProfile?.isWomenCoveredUnderSubhadraYojana){ 
+                          AppOkAlert(errors.householdBasicProfile.isWomenCoveredUnderSubhadraYojana,() => {});
+                       return;
+                    }
+                    
+                    if(errors && errors?.householdBasicProfile?.totalFamilyMembers){
+                          AppOkAlert(errors.householdBasicProfile.totalFamilyMembers,() => {});
+                       return;
+                    }
+                      if(errors && errors?.householdBasicProfile?.hasRationCard === false){
+                          AppOkAlert("Please select if the household has a ration card",() => {});
+                       return;
+                    }
+                    
+                    if(errors && errors?.householdBasicProfile?.rationCardNumber){
+                          AppOkAlert(errors.householdBasicProfile.rationCardNumber,() => {});
+                       return;
+                    }
+                      if(errors && errors?.householdBasicProfile?.drinkingWaterSource){
+                          AppOkAlert(errors.householdBasicProfile.drinkingWaterSource,() => {});
+                       return;
+                    }
+                    
+                    if(errors && errors?.householdBasicProfile?.hasUjjwalaLPGConnection === false){
+                          AppOkAlert("Please select if the household has Ujjwala LPG Connection",() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdEntitlement?.hasRuralHousingSchemeHouse){
+                          AppOkAlert("Please select if the household has Rural Housing Scheme House",() => {});
+                       return;
+                    }
+                    if(errors && errors?.householdEntitlement?.hasRuralHousingSchemeHouse){
+                          AppOkAlert("Please select if the household has Rural Housing Scheme House",() => {});
+                       return;
+                    }
+                      if(errors && errors?.householdEntitlement?.hasIndividualHouseholdLatrine){
+                          AppOkAlert("Please select if the household has Individual Household Latrine",() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdEntitlement?.hasElectricityConnection){
+                          AppOkAlert("Please select if the household has Electricity Connection",() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdEntitlement?.hasMGNREGSJobCard){
+                          AppOkAlert("Please select if the household has MGNREGS Job Card",() => {});
+                       return;
+                    }
+                     if(values?.householdEntitlement?.hasMGNREGSJobCard && errors && errors?.householdEntitlement?.fullJobCardNumber){
+                          AppOkAlert(errors.householdEntitlement.fullJobCardNumber,() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdEntitlement?.hasJanDhanYojanaAccount){
+                          AppOkAlert("Please select if the household has Jan Dhan Yojana Account",() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdEntitlement?.isCoveredUnderAyushmanBharat === false){
+                          AppOkAlert("Please select if the household is covered under Ayushman Bharat",() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdEntitlement?.isEnrolledUnderShramYogiMaandhan === false){
+                          AppOkAlert("Please select if the household is enrolled under Shram Yogi Maandhan",() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdMigrationStatus?.takenAdvanceForMigrationFromMiddleman === false){
+                          AppOkAlert("Please select if the household has taken advance for migration from middleman",() => {});
+                       return;
+                    }
+                    
+                      if(errors && errors?.householdMigrationStatus?.minorChildrenAccompaniedMigration){
+                          AppOkAlert("Please select Minor Children Accompanied Migration",() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdMigrationStatus?.familyContactMobileNo){
+                          AppOkAlert(errors?.householdMigrationStatus?.familyContactMobileNo,() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdMigrationStatus?.respondentIdentity){
+                          AppOkAlert("Please enter Respondent Identity",() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdOccupationAndLand?.primaryOccupationOfTheFamily){
+                          AppOkAlert("Please enter Primary Occupation of the Family",() => {});
+                       return;
+                    }
+                      if(errors && errors?.householdOccupationAndLand?.fraClaimantStatus){
+                          AppOkAlert("Please enter FRA Claimant Status",() => {});
+                       return;
+                    }
+                      if(values?.householdOccupationAndLand?.fraClaimantStatus === 'FRA Claimant' && errors && errors?.householdOccupationAndLand?.fra_LandAmountInAcres){
+                          AppOkAlert(errors.householdOccupationAndLand.fra_LandAmountInAcres,() => {});
+                       return;
+                    }
+                      if(errors && errors?.householdOccupationAndLand?.ownsHomesteadPattaLand){
+                          AppOkAlert("Please select if the family owns Homestead Patta Land",() => {});
+                       return;
+                    }
+                     if(errors && errors?.householdOccupationAndLand?.approximatePrivateLandHolding){
+                          AppOkAlert("Please enter Approximate Private Land Holding",() => {});
+                       return;
+                    }
+                      if(values?.householdOccupationAndLand?.approximatePrivateLandHolding !== 'Landless' && errors && errors?.householdOccupationAndLand?.isIrrigationFacilityAvailable){
+                          AppOkAlert("Please select if the irrigation facility is available",() => {});
+                       return;
+                    }
+                           
+                   
+                         
+                        
+                         
+                    
  
+                     
                     setPreviewData(finalValuesPreview);
                     setShowConfirmModal(true);
                    
@@ -3432,7 +3633,7 @@ if (ifscRegex.test(text)) {
         buttonminview={Style.ButtonCenter}
       />
       <FamilyMemberAlert
-        message={alertMessage}
+        message={''}
         modalVisible={familyAlertVisible}
         setModalVisible={setFamilyAlertVisible}
         onPress={() => {

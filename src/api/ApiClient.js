@@ -671,7 +671,7 @@ export default class ApiClient {
       // let res = await fetch(urlWithQuery, init);
       try {
   const response = await fetch(urlWithQuery, init);
-
+ console.log('API DATA:', response);
   // if (!response.ok) {
   //   throw new Error(`HTTP error! Status: ${response.status}`);
   // }
@@ -923,7 +923,7 @@ export default class ApiClient {
       // let res = await fetch(urlWithQuery, init);
         //  try {
   const responses = await fetch(urlWithQuery, init);
-
+ console.log('API DATA:', responses);
   // if (!response.ok) {
   //   throw new Error(`HTTP error! Status: ${response.status}`);
   // }
