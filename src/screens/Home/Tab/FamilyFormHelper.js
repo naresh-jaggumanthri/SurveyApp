@@ -45,8 +45,12 @@ export const HouseHoldFormInitialValues = (props,loginData) => ({
    hasJanDhanYojanaAccount:null,
    isCoveredUnderAyushmanBharat:null,
    isEnrolledUnderShramYogiMaandhan:null,
-  //  isCoveredUnderPMJJBY:null,
-  //  isCoveredUnderPMSBY:null,
+   isCoveredUnderPMJJBY:null,
+   isCoveredUnderPMSBY:null,
+   isOldAgePension:null,
+   isWidowPension:null,
+   isAtalPensionYojana:null,
+   isDisabilityPension:null
  },
 
 

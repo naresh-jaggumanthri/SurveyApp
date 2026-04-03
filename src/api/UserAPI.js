@@ -2082,6 +2082,64 @@ export default class UserAPI extends Base {
     );
   };
 
+  /* BANK IFSC code 
+
+  GET BANK IFSC CODE BY BANK NAME : 
+URL : https://demo2.itmaniacs.co.in/api/BankifsCode/name/ALLAHABAD BANK
+Method : GET
+Authorization : Barrier Token
+Response : 
+[
+   {
+       "id": 2,
+       "bankName": "ALLAHABAD BANK",
+       "branchName": "AGARPADA",
+       "ifsCode": "ALLA0210790",
+       "entryDate": "2026-01-10T17:38:53.07"
+   },
+….
+]
+*/
+
+  getBankIfscCodeByBankName(bankName, token) {
+    return this.apiClient.get(
+      null,
+      `api/BankifsCode/name/${bankName}`,
+      {},
+      token
+    );
+  };
+  
+  
+  /*GET BANK DETAILS BY IFSC CODE :
+URL : https://demo2.itmaniacs.co.in/api/BankifsCode/ifsc/ALLA0210790
+Method : GET
+Authorization : Barrier Token
+Response : 
+[
+   {
+       "id": 2,
+       "bankName": "ALLAHABAD BANK",
+       "branchName": "AGARPADA",
+       "ifsCode": "ALLA0210790",
+       "entryDate": "2026-01-10T17:38:53.07"
+   }
+]
+   */
+
+  getBankDetailsByIfscCode(ifscCode, token) {
+    return this.apiClient.get(
+      null,
+      `api/BankifsCode/ifsc/${ifscCode}`,
+      {},
+      token
+    );
+   };
+   
+
+
+   
+
  
 }
 

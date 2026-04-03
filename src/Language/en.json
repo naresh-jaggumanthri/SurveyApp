@@ -322,8 +322,8 @@
 "Whether Covered under Pradhan Mantri Ayushman  Jan Arogya Yojana?":"Whether Covered under Pradhan Mantri Ayushman  Jan Arogya Yojana ? *",
 "Is any household member enrolled under Pradhan Mantri Shram Yogi Maandhan pension scheme?":"Is any household member enrolled under Pradhan Mantri Shram Yogi Maandhan pension scheme ? *",
 "Does the household have Pradhan Mantri Jan Dhan Yojana bank account?":"Does the household have Pradhan Mantri Jan Dhan Yojana bank account ? *",
-"Whether the family members between 18 to 50 years age covered under Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY) ?":"Whether the family members between 18 to 50 years age covered under Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY) ? *",
-"Whether family members between age 18 to 70 years covered under Pradhan Mantri Suraksha Bima Yojana (PMSBY) ?":"Whether family members between age 18 to 70 years covered under Pradhan Mantri Suraksha Bima Yojana (PMSBY) ? *",
+"Whether the family members between 18 to 50 years age covered under Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY) ?":"Whether the Household members between 18 to 50 years age covered under Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY) ? *",
+"Whether family members between age 18 to 70 years covered under Pradhan Mantri Suraksha Bima Yojana (PMSBY) ?":"Whether Household members between age 18 to 70 years covered under Pradhan Mantri Suraksha Bima Yojana (PMSBY) ? *",
 "Entitlement":"Entitlement",
 "Migration Status":"Migration Status",
 "Has any family member migrated during the last 3 years?":"Has any family member migrated during the last 3 years ? *",
@@ -409,6 +409,10 @@
 "Number of family members":"Total",
 "Number of house holds":"Total",
 "Survey_Submit_Successfully_village":"Village Survey Submitted Successfully",
-"Name_must_be_at_least_3_characters_long":"Name must be at least 3 characters long"
+"Name_must_be_at_least_3_characters_long":"Name must be at least 3 characters long",
+"Whether all eligible Household members are covered under Atal Pension Yojana?":"Whether all eligible Household members are covered under Atal Pension Yojana ? *",
+"Whether all eligible member above the age of 60 are getting oldage pension ?":"Whether all eligible member above the age of 60 are getting oldage pension ?",
+"Whether all eligible member are getting widow pension ?":"Whether all eligible member are getting widow pension ?",
+"Whether all eligible person with diability are getting pension ?":"Whether all eligible person with diability are getting pension ?"
   }
 }

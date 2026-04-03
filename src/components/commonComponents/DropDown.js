@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import React, { useMemo ,useState} from 'react';
+import { Alert, StyleSheet, View ,Text} from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Colors, SF, SH, SW } from '../../utils';
 import { VectorIcon } from '../../components';
@@ -68,8 +68,23 @@ function DropdownComponent({
         [dropdownStyle, labelStyle, placeholder, selectedTextStyle]
     )
 
+    // const [value, setValue] = useState(null);
+    const [isFocus, setIsFocus] = useState(false);
+
+    const renderLabel = () => {
+      if (value || isFocus) {
+        return (
+          <Text style={[styles.label, isFocus && { color: 'blue' }]}>
+            Dropdown label
+          </Text>
+        );
+      }
+      return null;
+    };
+
     return (
         <View style={styles.container}>
+           
             <Dropdown
                 style={styles.dropdownStyle}
                 placeholderStyle={styles.placeholderStyle}
@@ -77,6 +92,7 @@ function DropdownComponent({
                 inputSearchStyle={styles.inputSearchStyle}
                 IconStyle={styles.IconStyle}
                 data={data}
+                search
                 searchPlaceholder={searchPlaceholder}
                 maxHeight={maxHeight}
                 renderRightIcon={() => (
