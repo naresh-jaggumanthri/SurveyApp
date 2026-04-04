@@ -277,6 +277,7 @@
     "Gram Panchayat":"Gram Panchayat *",
     "Revenue Village":"Revenue Village *",
     "Hamlet":"Hamlet *",
+    "Nearest Landmark":"Nearest Landmark *",
     "Name of Head of the Household as per Aadhar Card ?":"Name of Head of the Household as per Aadhar Card ? *",
 "Gender (Head of the Household)":"Gender (Head of the Household) *",
 "AADHAR No.":"AADHAR No. *",
@@ -413,6 +414,8 @@
 "Whether all eligible Household members are covered under Atal Pension Yojana?":"Whether all eligible Household members are covered under Atal Pension Yojana ? *",
 "Whether all eligible member above the age of 60 are getting oldage pension ?":"Whether all eligible member above the age of 60 are getting oldage pension ?",
 "Whether all eligible member are getting widow pension ?":"Whether all eligible member are getting widow pension ?",
-"Whether all eligible person with diability are getting pension ?":"Whether all eligible person with diability are getting pension ?"
+"Whether all eligible person with diability are getting pension ?":"Whether all eligible person with diability are getting pension ?",
+"Demographic Profile":"Demographic Profile",
+"Bank Account Details of Head of Household":"Bank Account Details of head of household"
   }
 }

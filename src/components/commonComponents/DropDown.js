@@ -93,7 +93,7 @@ function DropdownComponent({
                 IconStyle={styles.IconStyle}
                 data={data}
                 search
-                searchPlaceholder={searchPlaceholder}
+                searchPlaceholder={"Search..."}
                 maxHeight={maxHeight}
                 renderRightIcon={() => (
                     <VectorIcon

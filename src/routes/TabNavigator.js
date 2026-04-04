@@ -14,6 +14,7 @@ import FamilyFormList from '../screens/Home/Tab/FamilyFormList';
 import VillageFormList from '../screens/Home/Tab/VillageFormList';
 import FamilyFormSurveyEdit from '../screens/Home/Tab/FamilyFormSurveyEdit';
 import VillageFormSurveyEdit from '../screens/Home/Tab/VillageFormSurveyEdit';
+import { AddFamilyScreen } from '../screens/AddFamilyScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -291,6 +292,35 @@ function VillageSurveyFormScreenStack(props) {
     </Stack.Navigator>
   );
 }
+function AddFamilyScreenStack(props) {
+  const { t } = useTranslation();
+  return (
+    <Stack.Navigator initialRouteName="Offers">
+      <Stack.Screen
+        name={t("Add family Member")}
+        component={AddFamilyScreen}
+        options={{
+          ...HeaderArray,
+          headerStyle: {
+            backgroundColor: Colors.theme_background,
+          },
+          headerTitleStyle:{
+            fontWeight:"bold",
+            fontSize:SF(20),
+            color:"white"
+
+          },
+          headerLeft: () => (
+            <HeaderLeftMenuIcon {...props} />
+          ),
+          headerRight: () => (
+            <ColorPicker />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
 function ProfileScreenStack(props) {
   const { t } = useTranslation();
   return (
@@ -408,28 +438,24 @@ export function HomeScsreenTabAll() {
            tabBarButton: () => null,
         }}
       />
-      {/* <Tab.Screen
-        name={RouteName.PROFILE_TAB}
-        component={ProfileScreenStack}
+       <Tab.Screen
+        name={RouteName.ADD_FAMILY_SCREEN}
+        component={AddFamilyScreenStack}
         options={{
-          tabBarLabel: t("Profile_Text"),
+          // tabBarLabel: t("HH Survey List"),
+         
+          tabBarButton: () => null,
+        
           tabBarIcon: ({ focused }) => (
             <VectorIcon
               color={focused ? Colors.theme_background : Colors.gray_text_color}
-              name="user-circle"
+              name="list"
               icon="FontAwesome"
-              size={SF(20)}
+              size={SF(25)}
             />
           ),
         }}
-      /> */}
-      {/* <Tab.Screen
-  name="HiddenScreen"
-  component={FamilyEditScreenStack}
-  options={{
-    tabBarButton: () => null, // hides tab
-  }}
-/> */}
+      /> 
     </Tab.Navigator>
   )
 }

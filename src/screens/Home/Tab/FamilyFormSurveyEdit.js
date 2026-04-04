@@ -149,7 +149,10 @@ const FamilyFormSurveyEdit = props => {
   ] = useState(null);
   const [womenMembersMigrated, setWomenMembersMigrated] = useState(null);
   const [respondentIdentity, setRespondentIdentity] = useState('');
+ 
   const [bankList, setBankList] = useState([]);
+    const [ifscCode, setIfscCode] = useState(null);
+    const [ifscCodeList, setIfscCodeList] = useState([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   const [imageData, setImageData] = useState(null);
@@ -780,6 +783,24 @@ const FamilyFormSurveyEdit = props => {
   }, 3000);
    
   };
+  const getBankIfscCodeByBankName = async(bankName,setFieldValue) => {
+    let token = loginData?.token;
+    const res = await api.user.getBankIfscCodeByBankName(bankName, token);
+
+    const result = res?.map(m => {
+      return {
+        label: m.ifsCode,
+        value: m.ifsCode,
+        ifscCode: m.ifsCode,
+      };
+    });
+    setIfscCodeList(result);
+    // Alert.alert("IFSC Codes",JSON.stringify(result));
+
+    setIfscCode(result[0]?.ifscCode || null);
+    setFieldValue('householdBasicProfile.ifscCodeOrBranch',ifscCode);
+  };
+   
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(10)} />
@@ -1227,24 +1248,35 @@ const FamilyFormSurveyEdit = props => {
                         11. {t('Bank Name')}
                       </Text>
                       <Spacing space={SH(5)} />
-                      <DropDown
-                        data={bankList}
-                        dropdownStyle={{marginLeft: SH(10)}}
-                        width={SW(345)}
-                        labelField="label"
-                        valueField="value"
-                        value={values?.householdBasicProfile?.bankName}
-                        placeholder={
-                          values?.householdBasicProfile?.bankName ||
-                          t('Select Bank Name')
-                        }
-                        onChange={obj => {
-                          setFieldValue(
-                            'householdBasicProfile.bankName',
-                            obj.label,
-                          );
-                        }}
-                      />
+                       <DropDown
+                                           data={bankList}
+                                           dropdownStyle={{marginLeft: SH(10)}}
+                                           width={SW(345)}
+                                           labelField="label"
+                                           valueField="value"
+                                           value={values?.householdBasicProfile?.bankName}
+                                           placeholder={
+                                             values?.householdBasicProfile?.bankName ||
+                                             t('Select Bank Name')
+                                           }
+                                           onChange={obj => {
+                                              
+                                             getBankIfscCodeByBankName(obj.label,setFieldValue);
+                                            
+                                             //  setIfscCode(result[0]?.ifscCode || null);
+                     
+                                             setFieldValue(
+                                               'householdBasicProfile.bankName',
+                                               obj.label,
+                                             );
+                                             // Alert.alert("Selected Bank",JSON.stringify(ifscCode));
+                                              setFieldValue(
+                                               'householdBasicProfile.ifscCodeOrBranch',
+                                               ifscCode
+                                             );
+                                           }}
+                                           searchPlaceholder={'Search ...'}
+                                         />
 
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.bankName}
@@ -1269,36 +1301,140 @@ const FamilyFormSurveyEdit = props => {
                         {errors?.householdBasicProfile?.bankAccountNumber}
                       </Text>
                       <Spacing space={SH(5)} />
-                      <Input
-                        title={
-                          '13. ' + t('IFSC code / Branch') + ' eg. SBIN0001234'
-                        }
-                        placeholder={t('IFSC code / Branch')}
-                        maxLength={11}
-                        autoCapitalize="characters"
-                        onChangeText={text => {
-                          const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+                      {ifscCodeList?.length > 1 && (<Text style={AnalyaticsStyles.PleaseEnterDate}>
+                      13. {t('IFSC code / Branch') + ' eg. SBIN0001234'}
+                    </Text>)}
+                    <Spacing space={SH(5)} />
+                    {ifscCodeList?.length > 1 && (<DropDown
+                      data={ifscCodeList}
+                      dropdownStyle={{marginLeft: SH(10)}}
+                      width={SW(345)}
+                      labelField="label"
+                      valueField="value"
+                      value={
+                        ifscCode ||
+                        values?.householdBasicProfile?.ifscCodeOrBranch
+                      }
+                      placeholder={
+                        values?.householdBasicProfile?.bankName ||
+                        t('Select IFSC Code')
+                      }
+                      onChange={obj => {
+                        //  Alert.alert("Selected Bank",JSON.stringify(obj));
+                        // getBankIfscCodeByBankName(obj.label);
+                        setIfscCode(obj.label);
+                        setFieldValue(
+                          'householdBasicProfile.ifscCodeOrBranch',
+                          obj.label,
+                        );
+                      }}
+                      searchPlaceholder={'Search ...'}
+                    />)}
+                    {values?.householdBasicProfile?.ifscCodeOrBranch!=null || (ifscCode!=null && ifscCodeList.length>0 && ifscCodeList.length==1) && <Input
+                      title={
+                        '13. ' + t('IFSC code / Branch') + ' eg. SBIN0001234'
+                      }
+                      placeholder={t('IFSC code / Branch')}
+                      maxLength={15}
+                      autoCapitalize="characters"
+                      onChangeText={text => {
+                        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 
-                          if (ifscRegex.test(text)) {
-                            // console.log('Valid IFSC');
-                            setFieldValue(
-                              'householdBasicProfile.ifscCodeOrBranch',
-                              text,
-                            );
-                          } else {
-                            setFieldValue(
-                              'householdBasicProfile.ifscCodeOrBranch',
-                              text,
-                            );
-                            console.log('Invalid IFSC');
+                        if (ifscRegex.test(text)) {
+                          // console.log('Valid IFSC');
+                          setFieldValue(
+                            'householdBasicProfile.ifscCodeOrBranch',
+                            text,
+                          );
+                          setIfscCode(text);
+                          if(text.length>10){
+                              if(bankList.length==0){
+                            getBankDetailsByIfscCode(text);
+                              }
+                            async function getBankDetailsByIfscCode(ifscCode) {
+                              let token = loginData?.token;
+                              const res = await api.user.getBankDetailsByIfscCode(ifscCode, token);
+                              //  Alert.alert("Bank Details",JSON.stringify(res));
+                                setBankList([...bankList, ...res]);
+                                let bankName = res[0]?.bankName || "";
+                                setFieldValue("householdBasicProfile.bankName", bankName);
+                             
+                              return res;
+                            }
                           }
-                          // const formattedText = text
-                          //   .toUpperCase()
-                          //   .replace(/^[A-Z]{4}0[A-Z0-9]{6}$/, ''); // ❌ removes special chars
-                        }}
-                        value={values?.householdBasicProfile?.ifscCodeOrBranch}
-                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                      />
+                        } else {
+                          setFieldValue(
+                            'householdBasicProfile.ifscCodeOrBranch',
+                            text,
+                          );
+                          setIfscCode(text);
+                          console.log('Invalid IFSC');
+                        }
+                        // const formattedText = text
+                        //   .toUpperCase()
+                        //   .replace(/^[A-Z]{4}0[A-Z0-9]{6}$/, ''); // ❌ removes special chars
+                      }}
+                      value={
+                        ifscCode ||
+                        values?.householdBasicProfile?.ifscCodeOrBranch
+                      }
+                      titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                    />}
+                      {values?.householdBasicProfile?.bankName==null &&<Input
+                                          title={
+                                            '13. ' + t('IFSC code / Branch') + ' eg. SBIN0001234'
+                                          }
+                                          placeholder={t('IFSC code / Branch')}
+                                          maxLength={15}
+                                          autoCapitalize="characters"
+                                          onChangeText={text => {
+                                            const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+                    
+                                            if (ifscRegex.test(text)) {
+                                              // console.log('Valid IFSC');
+                                              setFieldValue(
+                                                'householdBasicProfile.ifscCodeOrBranch',
+                                                text,
+                                              );
+                                              setIfscCode(text);
+                                              if(text.length>10){
+                                                  // if(bankList.length==0){
+                                                getBankDetailsByIfscCode(text);
+                                                  // }
+                                                async function getBankDetailsByIfscCode(ifscCode) {
+                                                  let token = loginData?.token;
+                                                  const res = await api.user.getBankDetailsByIfscCode(ifscCode, token);
+                                                  //  Alert.alert("Bank Details",JSON.stringify(res));
+                                                    setBankList([...bankList, ...res]);
+                                                    let bankName = res[0]?.bankName || "";
+                                                    if(bankName!=="" && bankName!=null && bankName!=undefined) {
+                                                  setIfscCode(text);
+                                                  setIfscCodeList([{label:text,value:text,ifscCode:text}]);     
+                                                  }
+                                                    setFieldValue("householdBasicProfile.bankName", bankName);
+                    
+                                                 
+                                                  return res;
+                                                }
+                                              }
+                                            } else {
+                                              setFieldValue(
+                                                'householdBasicProfile.ifscCodeOrBranch',
+                                                text,
+                                              );
+                                              setIfscCode(text);
+                                              console.log('Invalid IFSC');
+                                            }
+                                            // const formattedText = text
+                                            //   .toUpperCase()
+                                            //   .replace(/^[A-Z]{4}0[A-Z0-9]{6}$/, ''); // ❌ removes special chars
+                                          }}
+                                          value={
+                                            ifscCode ||
+                                            values?.householdBasicProfile?.ifscCodeOrBranch
+                                          }
+                                          titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                                        />}
                       <Text style={{color: 'red'}}>
                         {errors?.householdBasicProfile?.ifscCodeOrBranch}
                       </Text>

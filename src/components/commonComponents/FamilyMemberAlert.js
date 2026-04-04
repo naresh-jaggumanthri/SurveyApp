@@ -27,7 +27,7 @@ import {useTranslation} from 'react-i18next';
 import {Style, AnalyaticsStyle, HomeTabStyle} from '../../styles';
 import PubSub from 'pubsub-js';
 
-function FamilyalertModal(props) {
+const FamilyalertModal = (props) => {
   const {
     message,
     modalVisible,
@@ -105,44 +105,65 @@ function FamilyalertModal(props) {
     setFamilyMembers(members);
   };
   useEffect(() => {
-    //  Alert.alert("familyMembers",JSON.stringify(familyMembers));
-    if (count > 0) {
-      if (editable) {
-        let existingCount = familyMembers?.length || 0;
+  if (count > 0 && (!familyMembers || familyMembers.length === 0)) {
+    let existingCount = familyMembers?.length || 0;
         let newCount = count - existingCount;
-        setFamilyMembers([
-          ...familyMembers,
-          Array.from({length: newCount}, () => ({
-            name: '',
-            age: 0,
-            gender: '',
-            educationalQualification: '',
-            migratedInLast3Years: false,
-            destinationState: '',
-            sectorOfEngagementDuringMigration: '',
-            periodOfMigration: '',
-            monthlyRemittanceDuringMigration: 0,
-            interestInSkillDevelopment: '',
-          })),
-        ]);
-      } else {
-        setFamilyMembers(
-          Array.from({length: count}, () => ({
-            name: '',
-            age: 0,
-            gender: '',
-            educationalQualification: '',
-            migratedInLast3Years: false,
-            destinationState: '',
-            sectorOfEngagementDuringMigration: '',
-            periodOfMigration: '',
-            monthlyRemittanceDuringMigration: 0,
-            interestInSkillDevelopment: '',
-          })),
-        );
-      }
-    }
-  }, [count]);
+        
+    setFamilyMembers(
+      Array.from({ length: newCount }, () => ({
+        name: '',
+        age: '',
+        gender: '',
+        educationalQualification: '',
+        migratedInLast3Years: false,
+        destinationState: '',
+        sectorOfEngagementDuringMigration: '',
+        periodOfMigration: '',
+        monthlyRemittanceDuringMigration: '',
+        interestInSkillDevelopment: [],
+      }))
+    );
+  }
+},[count]);
+  // useEffect(() => {
+  //   //  Alert.alert("familyMembers",JSON.stringify(familyMembers));
+  //   if (count > 0) {
+  //     if (editable) {
+  //       let existingCount = familyMembers?.length || 0;
+  //       let newCount = count - existingCount;
+  //       setFamilyMembers([
+  //         ...familyMembers,
+  //         Array.from({length: newCount}, () => ({
+  //           name: '',
+  //           age: 0,
+  //           gender: '',
+  //           educationalQualification: '',
+  //           migratedInLast3Years: false,
+  //           destinationState: '',
+  //           sectorOfEngagementDuringMigration: '',
+  //           periodOfMigration: '',
+  //           monthlyRemittanceDuringMigration: 0,
+  //           interestInSkillDevelopment: '',
+  //         })),
+  //       ]);
+  //     } else {
+  //       setFamilyMembers(
+  //         Array.from({length: count}, () => ({
+  //           name: '',
+  //           age: 0,
+  //           gender: '',
+  //           educationalQualification: '',
+  //           migratedInLast3Years: false,
+  //           destinationState: '',
+  //           sectorOfEngagementDuringMigration: '',
+  //           periodOfMigration: '',
+  //           monthlyRemittanceDuringMigration: 0,
+  //           interestInSkillDevelopment: '',
+  //         })),
+  //       );
+  //     }
+  //   }
+  // }, [count]);
   //  const handleMemberChange = async(index, key, value) => {
   //     const updatedMembers = [...familyMembers];
   //     updatedMembers[index][key] = value;
@@ -151,7 +172,7 @@ function FamilyalertModal(props) {
 
   const renderForm = () => {
     if (!familyMembers || familyMembers.length === 0) return null;
-    const FamilyMemberForm = ({index, data, onChange}) => {
+   const FamilyMemberForm = React.memo(({ index, data, onChange }) => {
       const [nameError, setNameError] = useState('');
       return (
         <View>
@@ -288,7 +309,7 @@ function FamilyalertModal(props) {
           {renderCheckboxes(index)}
         </View>
       );
-    };
+    });
 
     return (
       <View style={styles.card}>
@@ -403,12 +424,7 @@ function FamilyalertModal(props) {
       />
     ));
   };
-  //   const handleCheckboxChange = (index, ind) => {
-  //     const updatedCheckboxes = [...checkboxes];
-  //         updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
-  //         updatedCheckboxes[index].mainIndex = ind;
-  //     setCheckboxes(updatedCheckboxes);
-  //   };
+  
 
   const handleCheckboxChange = (checkboxIndex, memberIndex) => {
     setFamilyMembers(prev => {
@@ -522,6 +538,7 @@ function FamilyalertModal(props) {
   );
 }
 
+
 FamilyalertModal.defaultProps = {
   message: '',
   onPress: () => {},
@@ -564,4 +581,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FamilyalertModal;
+// export default FamilyalertModal;
+export default React.memo(FamilyalertModal);

@@ -35,7 +35,8 @@ const RouteName = {
     THANK_YOU_SCREEN: 'ThankyouScreen',   
     MAP_SCREEN: 'MapScreen', 
     EDIT_LOCATION_SCREEN: 'EditLocationScreen', 
-    VIEW_REPORT_SCREEN: 'ViewSurveyReportScreen', 
+    VIEW_REPORT_SCREEN: 'ViewSurveyReportScreen',
+    ADD_FAMILY_SCREEN: 'AddFamilyScreen',
     
 }
 export default RouteName;
