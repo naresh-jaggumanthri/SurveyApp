@@ -37,36 +37,39 @@ import {useTheme} from 'react-native-elements';
 import {Style, AnalyaticsStyle, HomeTabStyle} from '../../styles';
 import {Formik} from 'formik';
 import {validationSchema} from './AddFamilyHelper';
-import { RouteName } from '../../routes';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {RouteName} from '../../routes';
+import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 
 const AddFamilyScreen = props => {
   const {navigation} = props;
-    const {route}=useRoute();
+  const {route} = useRoute();
   //   const { Colors } = useTheme();
   //   const ProfileTabStyle = useMemo(() => ProfileTabStyles(Colors), [Colors]);
 
   const {t} = useTranslation();
   const [state, setState] = useState({});
   const AnalyaticsStyles = useMemo(() => AnalyaticsStyle(Colors), [Colors]);
- 
- 
+
   const [familyMembers, setFamilyMembers] = useState([]);
-  
-const [count, setCount] = useState(0);
+  const [headName, setHeadName] = useState('');
+
+  const [count, setCount] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     const token = PubSub.subscribe('count', (msg, data) => {
-    console.log('Received count:', data);
-    setCount(data);
-    setCurrentIndex(data-1);
-  });
+      console.log('Received count:', data);
+      setCount(data?.count);
+      setHeadName(data?.name);
+      // familyMembers[0]?.name = data?.name;
+      setCurrentIndex(data?.count - 1);
+    });
 
-  return () => {
-    PubSub.unsubscribe(token);
-  };
-  }, []);
+    return () => {
+      PubSub.unsubscribe(token);
+    };
+  }, [isFocused]);
   const genderData = [
     {label: t('mMale'), value: t('mMale')},
     {label: t('fFemale'), value: t('fFemale')},
@@ -169,16 +172,22 @@ const [count, setCount] = useState(0);
     {label: 'Uttar Pradesh', value: 'Uttar Pradesh'},
     {label: 'Uttarakhand', value: 'Uttarakhand'},
     {label: 'West Bengal', value: 'West Bengal'},
-    {label: 'Andaman and Nicobar Islands', value: 'Andaman and Nicobar Islands'},
+    {
+      label: 'Andaman and Nicobar Islands',
+      value: 'Andaman and Nicobar Islands',
+    },
     {label: 'Chandigarh', value: 'Chandigarh'},
-    {label: 'Dadra and Nagar Haveli and Daman and Diu', value: 'Dadra and Nagar Haveli and Daman and Diu'},
+    {
+      label: 'Dadra and Nagar Haveli and Daman and Diu',
+      value: 'Dadra and Nagar Haveli and Daman and Diu',
+    },
     {label: 'Delhi', value: 'Delhi'},
     {label: 'Jammu and Kashmir', value: 'Jammu and Kashmir'},
     {label: 'Ladakh', value: 'Ladakh'},
     {label: 'Lakshadweep', value: 'Lakshadweep'},
     {label: 'Puducherry', value: 'Puducherry'},
-    {label:'Intra-state', value:'Intra-state'},
-    {label: 'Other', value: 'Other'},   
+    {label: 'Intra-state', value: 'Intra-state'},
+    {label: 'Other', value: 'Other'},
   ];
   const sectorsData = [
     {label: 'Brick Kiln', value: 'Brick Kiln'},
@@ -187,7 +196,10 @@ const [count, setCount] = useState(0);
     {label: 'Mason', value: 'Mason'},
     {label: 'Domestic Support', value: 'Domestic Support'},
     {label: 'Manufacturing', value: 'Manufacturing'},
-    {label: 'Service Sector(Hotel,Hospital,Security)', value: 'Service Sector(Hotel,Hospital,Security)'},
+    {
+      label: 'Service Sector(Hotel,Hospital,Security)',
+      value: 'Service Sector(Hotel,Hospital,Security)',
+    },
     {label: 'Other', value: 'Other'},
   ];
   const monthlyIncomeData = [
@@ -210,23 +222,21 @@ const [count, setCount] = useState(0);
     {label: '19000', value: '19000'},
     {label: '20000', value: '20000'},
   ];
- 
-  
-  
+
   const initialMembers = Array.from({length: count}, () => ({
-    name: '',
+    name: headName || '',
     age: '',
     gender: '',
     educationalQualification: '',
-    relationshipWithHeadOfHousehold:'',
+    relationshipWithHeadOfHousehold: '',
     migratedInLast3Years: '',
     memberHasLabourCard: '',
     memberCoveredUnderNSKY: '',
     destinationState: '',
     periodOfMigration: '',
     monthlyRemittanceDuringMigration: '',
-    interestInSkillDevelopment:null,
-    sectorOfEngagementDuringMigration: [],
+    interestInSkillDevelopment: null,
+    sectorOfEngagementDuringMigration: '',
   }));
   return (
     <Formik
@@ -245,19 +255,22 @@ const [count, setCount] = useState(0);
           <View style={Style.BgColorWhiteAll}>
             <ScrollView>
               <View style={styles.card}>
-                <Text>Family Member {currentIndex + 1}</Text>
+                <Text>
+                  {t('Household Member No.')} {currentIndex + 1}
+                </Text>
 
                 {/* NAME */}
                 <Input
                   title={t('Name of the Family Member')}
-                  value={member?.name}
+                  value={headName || member?.name}
                   onChangeText={text => {
-                    const cleaned = text.replace(/[^a-zA-Z\s]/g, '');
+                    const cleaned = text.replace(/[^a-zA-Z\s.]/g, '');
                     setFieldValue(
                       `familyMembers[${currentIndex}].name`,
                       cleaned,
                     );
                   }}
+                  maxLength={30}
                 />
                 {errors.familyMembers?.[currentIndex]?.name && (
                   <Text style={{color: 'red'}}>
@@ -267,7 +280,7 @@ const [count, setCount] = useState(0);
 
                 {/* AGE */}
                 <Input
-                  title={t('Age')}
+                  title={t('AgeN')}
                   keyboardType="numeric"
                   value={member?.age}
                   onChangeText={text =>
@@ -305,13 +318,14 @@ const [count, setCount] = useState(0);
                   valueField="value"
                   value={member?.educationalQualification}
                   placeholder={
-                    member?.educationalQualification || t('Select Education Qualification')
+                    member?.educationalQualification ||
+                    t('Select Education Qualification')
                   }
                   onChange={obj => {
-                   setFieldValue(
-        `familyMembers[${currentIndex}].educationalQualification`,
-        obj?.label
-      )
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].educationalQualification`,
+                      obj?.label,
+                    );
                   }}
                 />
 
@@ -329,17 +343,18 @@ const [count, setCount] = useState(0);
                   valueField="value"
                   value={member?.relationshipWithHeadOfHousehold}
                   placeholder={
-                    member?.relationshipWithHeadOfHousehold || t('Relationship with Head of Household')
+                    member?.relationshipWithHeadOfHousehold ||
+                    t('Relationship with Head of Household')
                   }
                   onChange={obj => {
-                   setFieldValue(
-        `familyMembers[${currentIndex}].relationshipWithHeadOfHousehold`,
-        obj?.label
-      )
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].relationshipWithHeadOfHousehold`,
+                      obj?.label,
+                    );
                   }}
                 />
 
-                 {/* migrated */}
+                {/* migrated */}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
                   {t('Whether Migrated in last three years')}
@@ -348,11 +363,14 @@ const [count, setCount] = useState(0);
                   arrayData={selfHelpData}
                   value={member?.migratedInLast3Years}
                   onChangeText={val =>
-                    setFieldValue(`familyMembers[${currentIndex}].migratedInLast3Years`, val)
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].migratedInLast3Years`,
+                      val,
+                    )
                   }
                 />
 
-                  {/* labour Card*/}
+                {/* labour Card*/}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
                   {t('Whether the Member has labour Card')}
@@ -361,26 +379,34 @@ const [count, setCount] = useState(0);
                   arrayData={selfHelpData}
                   value={member?.memberHasLabourCard}
                   onChangeText={val =>
-                    setFieldValue(`familyMembers[${currentIndex}].memberHasLabourCard`, val)
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].memberHasLabourCard`,
+                      val,
+                    )
                   }
                 />
-                   {/*Nirman Shramik Kalyan Yojana*/}
+                {/*Nirman Shramik Kalyan Yojana*/}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                  {t('Whether the member covered under Nirman Shramik Kalyan Yojana (NSKY)?')}
+                  {t(
+                    'Whether the member covered under Nirman Shramik Kalyan Yojana (NSKY)?',
+                  )}
                 </Text>
                 <RadioButton
                   arrayData={selfHelpData}
                   value={member?.memberCoveredUnderNSKY}
                   onChangeText={val =>
-                    setFieldValue(`familyMembers[${currentIndex}].memberCoveredUnderNSKY`, val)
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].memberCoveredUnderNSKY`,
+                      val,
+                    )
                   }
                 />
 
-                  {/* Destination State */}
+                {/* Destination State */}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                 {t('Destination State')}
+                  {t('Destination State')}
                 </Text>
                 <Spacing space={SH(5)} />
                 <DropDown
@@ -394,16 +420,18 @@ const [count, setCount] = useState(0);
                     member?.destinationState || t('Destination State')
                   }
                   onChange={obj => {
-                   setFieldValue(
-        `familyMembers[${currentIndex}].destinationState`,
-        obj?.label
-      )
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].destinationState`,
+                      obj?.label,
+                    );
                   }}
                 />
                 {/* Nature/Sector of engagement */}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                 {t('Nature/Sector of engagement at destination during migration?')}
+                  {t(
+                    'Nature/Sector of engagement at destination during migration?',
+                  )}
                 </Text>
                 <Spacing space={SH(5)} />
                 <DropDown
@@ -414,20 +442,23 @@ const [count, setCount] = useState(0);
                   valueField="value"
                   value={member?.sectorOfEngagementDuringMigration}
                   placeholder={
-                    member?.sectorOfEngagementDuringMigration || t('Nature/Sector of engagement at destination during migration?')
+                    member?.sectorOfEngagementDuringMigration ||
+                    t(
+                      'Nature/Sector of engagement at destination during migration?',
+                    )
                   }
                   onChange={obj => {
-                   setFieldValue(
-        `familyMembers[${currentIndex}].sectorOfEngagementDuringMigration`,
-        obj?.label
-      )
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].sectorOfEngagementDuringMigration`,
+                      obj?.label,
+                    );
                   }}
                 />
 
- {/* Period of migration */}
+                {/* Period of migration */}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                 {t('Period of migration')}
+                  {t('Period of migration')}
                 </Text>
                 <Spacing space={SH(5)} />
                 <DropDown
@@ -441,16 +472,18 @@ const [count, setCount] = useState(0);
                     member?.periodOfMigration || t('Period of migration')
                   }
                   onChange={obj => {
-                   setFieldValue(
-        `familyMembers[${currentIndex}].periodOfMigration`,
-        obj?.label
-      )
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].periodOfMigration`,
+                      obj?.label,
+                    );
                   }}
                 />
                 {/* Monthly Income */}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                 {t('What was the monthly income during migration(In Rupees)?')}
+                  {t(
+                    'What was the monthly income during migration(In Rupees)?',
+                  )}
                 </Text>
                 <Spacing space={SH(5)} />
                 <DropDown
@@ -461,26 +494,34 @@ const [count, setCount] = useState(0);
                   valueField="value"
                   value={member?.monthlyRemittanceDuringMigration}
                   placeholder={
-                    member?.monthlyRemittanceDuringMigration || t('What was the monthly income during migration(In Rupees)?')
+                    member?.monthlyRemittanceDuringMigration ||
+                    t(
+                      'What was the monthly income during migration(In Rupees)?',
+                    )
                   }
                   onChange={obj => {
-                   setFieldValue(
-        `familyMembers[${currentIndex}].monthlyRemittanceDuringMigration`,
-        obj?.label
-      )
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].monthlyRemittanceDuringMigration`,
+                      obj?.label,
+                    );
                   }}
                 />
 
-                  {/*skill development*/}
+                {/*skill development*/}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                  {t('Whether interested for skill development (DDUGKY, RSETI, Other) under any Govt. program?')}
+                  {t(
+                    'Whether interested for skill development (DDUGKY, RSETI, Other) under any Govt. program?',
+                  )}
                 </Text>
                 <RadioButton
                   arrayData={selfHelpData}
                   value={member?.interestInSkillDevelopment}
                   onChangeText={val =>
-                    setFieldValue(`familyMembers[${currentIndex}].interestInSkillDevelopment`, val)
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].interestInSkillDevelopment`,
+                      val,
+                    )
                   }
                 />
 
@@ -509,21 +550,54 @@ const [count, setCount] = useState(0);
                 ))} */}
 
                 {/* NAVIGATION */}
-                <View style={{flexDirection: 'row', marginTop: 20}}>
+                <View style={{flexDirection: 'row', marginTop:20,justifyContent:'space-between'}}>
                   {currentIndex > 0 && (
-                    <Button
-                      title="Previous"
-                      onPress={() => setCurrentIndex(i => i - 1)}
-                    />
+                    // <Button
+                    //   title="Previous"
+                    //   onPress={() => {
+                    //      setCurrentIndex(i => i - 1);
+                    //    // setCurrentIndex(i);
+                    // }}
+                    // />
+                    <TouchableOpacity
+                      style={AnalyaticsStyles.PreviousButton}
+                      onPress={() => {
+                        setCurrentIndex(i => i - 1);
+                        // setCurrentIndex(i);
+                      }}>
+                      <Text style={AnalyaticsStyles.PreviousTextStyle}>
+                        {t('Survey_Title_47')}
+                      </Text>
+                    </TouchableOpacity>
                   )}
 
-                  {currentIndex < values.familyMembers.length - 1 ? (
-                    <Button
-                      title="Next"
-                      onPress={() => setCurrentIndex(i => i + 1)}
-                    />
+                  {currentIndex < count - 1 ? (
+                    // <Button
+                    //   title="Next"
+                    //   onPress={() => {
+                    //      setCurrentIndex(i => i + 1);
+                    //     // setCurrentIndex(i);
+                    // }}
+                    // />
+                    <TouchableOpacity
+                      style={AnalyaticsStyles.PreviousButton}
+                      onPress={() => {
+                        setCurrentIndex(i => i + 1);
+                        // setCurrentIndex(i);
+                      }}>
+                      <Text style={AnalyaticsStyles.PreviousTextStyle}>
+                        {t('Survey_Title_48')}
+                      </Text>
+                    </TouchableOpacity>
                   ) : (
-                    <Button title="Submit" onPress={handleSubmit} />
+                    <TouchableOpacity
+                      style={AnalyaticsStyles.SubmitButton}
+                      onPress={handleSubmit}>
+                      <Text style={AnalyaticsStyles.PreviousTextStyle}>
+                        {t('Submit')}
+                      </Text>
+                    </TouchableOpacity>
+                    // <Button title="Submit" onPress={handleSubmit} />
                   )}
                 </View>
               </View>

@@ -144,7 +144,7 @@ export const HouseHoldFormValidationSchema = (props) =>{
 
       fullJobCardNumber: Yup.string().when('hasMGNREGSJobCard', {
         is: true,
-        then: schema => schema.required('Job Card Number is required'),
+        then: schema => schema.required('Job Card Number is required').matches(/^\d{4,7}$/, 'Must be 4 to 7 digits only'),
         otherwise: schema => schema.notRequired()
       }),
 
@@ -163,7 +163,7 @@ export const HouseHoldFormValidationSchema = (props) =>{
 
       familyContactMobileNo: Yup.string()
         .matches(/^[6-9][0-9]{9}$/, 'Enter valid 10 digit mobile number')
-        .required('Family Contact Mobile No. is required'),
+        .required('Household Contact Mobile No. is required'),
 
       respondentIdentity: Yup.string().required('Respondent Identity is required'),
     //   respondentPhotoPathOrUrl: Yup.string().required('Respondent Photo is required')
@@ -186,18 +186,18 @@ export const HouseHoldFormValidationSchema = (props) =>{
         otherwise: schema => schema.notRequired()
       }),
 
-      fraClaimantStatus: Yup.string().required('FRA Claimant Status is required'),
-     fra_LandAmountInAcres: Yup.number()
-  .typeError('FRA Land Amount must be a number')
-  .when('fraClaimantStatus', {
-    is: 'FRA Claimant',
-    then: schema =>
-      schema
-        .required('FRA Land Amount is required')
-        .min(0.5, 'Minimum land should be 0.5 acres')
-        .max(5, 'Maximum land should be 5 acres'),
-    otherwise: schema => schema.notRequired(),
-  }),
+  //     fraClaimantStatus: Yup.string().required('FRA Claimant Status is required'),
+  //    fra_LandAmountInAcres: Yup.number()
+  // .typeError('FRA Land Amount must be a number')
+  // .when('fraClaimantStatus', {
+  //   is: 'FRA Claimant',
+  //   then: schema =>
+  //     schema
+  //       .required('FRA Land Amount is required')
+  //       .min(0.5, 'Minimum land should be 0.5 acres')
+  //       .max(5, 'Maximum land should be 5 acres'),
+  //   otherwise: schema => schema.notRequired(),
+  // }),
       ownsHomesteadPattaLand: requiredBoolean,
       approximatePrivateLandHolding: Yup.string().required('Private Land Holding is required'),
       isIrrigationFacilityAvailable: Yup.boolean().when('approximatePrivateLandHolding', {
@@ -251,9 +251,9 @@ export const isEligibleForNext = (currentQuestion,values,involvedWaterSource,inv
     case 2:
       return values.householdBasicProfile && Object.keys(values.householdBasicProfile).length > 0 && values.householdBasicProfile.bankName && values.householdBasicProfile.bankAccountNumber && values.householdBasicProfile.ifscCodeOrBranch&&values.householdBasicProfile.totalFamilyMembers;
     case 3:
-      return values.householdEntitlement && Object.keys(values.householdEntitlement).length > 0 && values.householdBasicProfile.isWomenCoveredUnderSHG!=null && values.householdBasicProfile.isWomenCoveredUnderSubhadraYojana!=null  && values.householdBasicProfile.hasRationCard!=null  && involvedWaterSource!=null && values.householdBasicProfile.hasUjjwalaLPGConnection!=null && selectedSchemes!=null && values.householdEntitlement.hasRuralHousingSchemeHouse!=null && values.householdEntitlement.hasMGNREGSJobCard!=null && values.householdEntitlement.hasIndividualHouseholdLatrine!=null && values.householdEntitlement.hasElectricityConnection!=null && values.householdEntitlement.hasJanDhanYojanaAccount!=null && values.householdEntitlement.isCoveredUnderAyushmanBharat!=null && values.householdEntitlement.isEnrolledUnderShramYogiMaandhan!=null && values.householdEntitlement.isCoveredUnderPMJJBY!=null && values.householdEntitlement.isCoveredUnderPMSBY!=null && values.householdEntitlement.isAtalPensionYojana!=null && values.householdEntitlement.isDisabilityPension!=null && values.householdEntitlement.isOldAgePension!=null && values.householdEntitlement.isWidowPension!=null;
+      return values.householdEntitlement && Object.keys(values.householdEntitlement).length > 0 && values.householdBasicProfile.isWomenCoveredUnderSHG!=null && values.householdBasicProfile.isWomenCoveredUnderSubhadraYojana!=null  && values.householdBasicProfile.hasRationCard!=null  && values.householdBasicProfile.drinkingWaterSource!=null && values.householdBasicProfile.hasUjjwalaLPGConnection!=null && selectedSchemes!=null && values.householdEntitlement.hasRuralHousingSchemeHouse!=null && values.householdEntitlement.hasMGNREGSJobCard!=null && values.householdEntitlement.hasIndividualHouseholdLatrine!=null && values.householdEntitlement.hasElectricityConnection!=null && values.householdEntitlement.hasJanDhanYojanaAccount!=null && values.householdEntitlement.isCoveredUnderAyushmanBharat!=null && values.householdEntitlement.isEnrolledUnderShramYogiMaandhan!=null && values.householdEntitlement.isCoveredUnderPMJJBY!=null && values.householdEntitlement.isCoveredUnderPMSBY!=null && values.householdEntitlement.isAtalPensionYojana!=null && values.householdEntitlement.isDisabilityPension!=null && values.householdEntitlement.isOldAgePension!=null && values.householdEntitlement.isWidowPension!=null;
     case 4:
-      return values.householdOccupationAndLand && Object.keys(values.householdOccupationAndLand).length > 0 && values.householdOccupationAndLand.primaryOccupationOfTheFamily!=null && values.householdOccupationAndLand.fraClaimantStatus!=null &&  values.householdOccupationAndLand.ownsHomesteadPattaLand!=null && values.householdOccupationAndLand.approximatePrivateLandHolding!=null && values.householdOccupationAndLand.isIrrigationFacilityAvailable!=null && involvedInLivestockActivity!=null;
+      return values.householdOccupationAndLand && Object.keys(values.householdOccupationAndLand).length > 0 && values.householdOccupationAndLand.primaryOccupationOfTheFamily!=null && values.householdOccupationAndLand.ownsHomesteadPattaLand!=null && values.householdOccupationAndLand.approximatePrivateLandHolding!=null && values.householdOccupationAndLand.isIrrigationFacilityAvailable!=null && involvedInLivestockActivity!=null;
       case 5:
         return values.householdMigrationStatus && Object.keys(values.householdMigrationStatus).length > 0 && values.householdMigrationStatus.takenAdvanceForMigrationFromMiddleman!=null && values.householdMigrationStatus.minorChildrenAccompaniedMigration!=null && values.householdMigrationStatus.familyContactMobileNo!=null && values.householdMigrationStatus.respondentIdentity!=null;
     default:

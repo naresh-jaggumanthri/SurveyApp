@@ -62,6 +62,7 @@ import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import {AppOkAlert} from '../../../utils/AlertHelper';
 import {err} from 'react-native-svg';
 import propTypes from 'prop-types';
+import { counterEvent } from 'react-native/Libraries/Performance/Systrace';
 
 const FamilyFormSurveyTab = props => {
   const {t} = useTranslation();
@@ -177,7 +178,7 @@ const FamilyFormSurveyTab = props => {
     getLocation();
     if (isFocused) {
      const token = PubSub.subscribe('familyData', (msg, data) => {
-Alert.alert('Family Data Received', JSON.stringify(data));
+// Alert.alert('Family Data Received', JSON.stringify(data));
 setFamilyMembers(data);
      });
 
@@ -278,8 +279,8 @@ setFamilyMembers(data);
   const respondantData = [
     {label: t('Migrant Person himself'), value: t('Migrant Person himself')},
     {
-      label: t('Other Adult family member'),
-      value: t('Other Adult family member'),
+      label: t('Others'),
+      value: t('Others'),
     },
     {
       label: t('Village Head/Ward Member'),
@@ -317,7 +318,7 @@ setFamilyMembers(data);
     {label: t('Goatery'), checked: false},
     {label: t('Dairy'), checked: false},
     {label: t('Others'), checked: false},
-    {label: t('No/Nill'), checked: false},
+    {label: t('None'), checked: false},
 
     // Add more options as needed
   ]);
@@ -560,13 +561,28 @@ setFamilyMembers(data);
   const [familyAlertVisible, setFamilyAlertVisible] = useState(false);
   const [familyMembers, setFamilyMembers] = useState([]);
   const [familyMemberCount, setFamilyMemberCount] = useState(0);
+  const [headName,setHeadName]=useState('');
 
   const handleAddFamilyMember = () => {
-    //  Alert.alert("inn",JSON.stringify(familyMemberCount));
-    //setFamilyAlertVisible(true);
-    PubSub.publish('count', familyMemberCount);
+    // Alert.alert('headName',JSON.stringify(headName));
+   try{
+    const res={
+      name: headName,
+      count: familyMemberCount
+    }
+    if(!headName){
+      setNameError(t('Please enter the name of the head of the household'));
+      return;
+    }
+    setTimeout(() => {
+       PubSub.publish('count', res);  
+    } , 10);
+   
     navigation.navigate(RouteName.ADD_FAMILY_SCREEN);
+  }catch(err){
+    Alert.alert("Error", "An error occurred while adding family member. Please try again.");  
   }
+}
    
 
 
@@ -885,7 +901,7 @@ setFamilyMembers(data);
 
           const finalValues = {
             ...values,
-            householdFamilyMember: finalFamilyMembers,
+            householdFamilyMember:finalFamilyMembers,
           };
 
           const formData = new FormData();
@@ -1180,6 +1196,7 @@ setFamilyMembers(data);
                           'householdBasicProfile.headOfTheHouseholdNameAsPerAadhar',
                           filteredText,
                         );
+                        setHeadName(filteredText);
                       }}
                       value={
                         values?.householdBasicProfile
@@ -1341,7 +1358,7 @@ setFamilyMembers(data);
                     </Text>
                     <Spacing space={SH(5)} />
                     {ifscCodeList?.length > 1 && (<Text style={AnalyaticsStyles.PleaseEnterDate}>
-                      13. {t('IFSC code / Branch') + ' eg. SBIN0001234'}
+                      13. {t('IFSC code / Branch')}
                     </Text>)}
                     <Spacing space={SH(5)} />
                     {ifscCodeList?.length > 1 && (<DropDown
@@ -1371,7 +1388,7 @@ setFamilyMembers(data);
                     />)}
                     {ifscCode!=null && ifscCodeList.length>0 && ifscCodeList.length==1 &&<Input
                       title={
-                        '13. ' + t('IFSC code / Branch') + ' eg. SBIN0001234'
+                        '13. ' + t('IFSC code / Branch')
                       }
                       placeholder={t('IFSC code / Branch')}
                       maxLength={15}
@@ -1421,7 +1438,7 @@ setFamilyMembers(data);
                     />}
                      {values?.householdBasicProfile?.bankName==null &&<Input
                       title={
-                        '13. ' + t('IFSC code / Branch') + ' eg. SBIN0001234'
+                        '13. ' + t('IFSC code / Branch')
                       }
                       placeholder={t('IFSC code / Branch')}
                       maxLength={15}
@@ -1480,8 +1497,9 @@ setFamilyMembers(data);
                     <Spacing space={SH(5)} />
                     <Input
                       title={'14. ' + t('Total Number of Family Members')}
-                      placeholder={""+familyMemberCount || t('Total Number of Family Members')}
-                      onChangeText={text => {
+                      placeholder={t('Total Number of Family Members')}
+                      onChangeText={(text) => {
+                        try{
                         // Allow only numbers
                         const numericText = text.replace(/[^0-9]/g, '');
 
@@ -1503,7 +1521,7 @@ setFamilyMembers(data);
                             age,
                           );
                         }
-                        try {
+                        
                           setFamilyMemberCount(age);
                         } catch (e) {}
 
@@ -1512,9 +1530,8 @@ setFamilyMembers(data);
                         //   text,
                         // );
                       }}
-                      value={
-                        ""+values?.householdBasicProfile?.totalFamilyMembers ||
-                        familyMemberCount.toString()
+                      value={values?.householdBasicProfile?.totalFamilyMembers ||
+                        familyMemberCount?.toString()
                       }
                       inputType="numeric"
                       maxLength={3}
@@ -1524,7 +1541,7 @@ setFamilyMembers(data);
                     {familyMemberCount > 0 && (
                       <TouchableOpacity
                         style={AnalyaticsStyles.addButton}
-                        onPress={handleAddFamilyMember}>
+                        onPress={()=>{handleAddFamilyMember()}}>
                         <Text style={AnalyaticsStyles.PreviousTextStyle}>
                           {t('Add Member')}
                         </Text>
@@ -1664,8 +1681,8 @@ setFamilyMembers(data);
                         'What is the source of drinking water for the family?',
                       )}
                     </Text>
-                    {renderCheckboxes4()}
-                    {/* <RadioButton
+                    {/* {renderCheckboxes4()} */}
+                     <RadioButton
                         arrayData={waterSourceData}
                         onChangeText={text => {
                           setFieldValue(
@@ -1679,7 +1696,7 @@ setFamilyMembers(data);
                             ? values.householdBasicProfile.drinkingWaterSource
                             : drinkingWaterSource
                         }
-                      /> */}
+                      /> 
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.drinkingWaterSource}
                     </Text>
@@ -1790,15 +1807,21 @@ setFamilyMembers(data);
                         placeholder={t(
                           'Mention the Full Job card No (after Revenue Village code)',
                         )}
-                        onChangeText={text =>
-                          setFieldValue(
-                            'householdEntitlement.fullJobCardNumber',
-                            text,
-                          )
-                        }
+                        onChangeText={(text) => {
+                          // ✅ Allow only digits
+    let cleaned = text.replace(/[^0-9]/g, '');
+
+    // ✅ Restrict max length to 7
+    if (cleaned.length > 7) return;
+
+    setFieldValue(
+      'householdEntitlement.fullJobCardNumber',
+      cleaned,
+    );
+                        }}
                         value={values?.householdEntitlement?.fullJobCardNumber}
                         inputType="numeric"
-                        maxLength={100}
+                        maxLength={7}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                     )}
@@ -2176,14 +2199,14 @@ setFamilyMembers(data);
 
                     
 
-                    <Spacing space={SH(5)} />
-                    <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                    {/* <Spacing space={SH(5)} /> */}
+                    {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>
                       37.{' '}
                       {t(
                         'Amount of Land holding under FRA- In Acres ? (If Not a FRA claimant.. Go to next Qn or else go to next to next Qn.)',
                       )}
-                    </Text>
-                    <RadioButton
+                    </Text> */}
+                    {/* <RadioButton
                       arrayData={fraHelpData}
                       onChangeText={text => {
                         setFieldValue(
@@ -2197,11 +2220,11 @@ setFamilyMembers(data);
                           ? values.householdOccupationAndLand.fraClaimantStatus
                           : fraClaimantStatus
                       }
-                    />
-                    <Text style={{color: 'red'}}>
+                    /> */}
+                    {/* <Text style={{color: 'red'}}>
                       {errors?.householdOccupationAndLand?.fraClaimantStatus}
-                    </Text>
-                    {values?.householdOccupationAndLand?.fraClaimantStatus ===
+                    </Text> */}
+                    {/* {values?.householdOccupationAndLand?.fraClaimantStatus ===
                       'FRA Claimant' && (
                       <>
                         <Spacing space={SH(15)} />
@@ -2256,17 +2279,17 @@ setFamilyMembers(data);
                           maxLength={20}
                         />
                       </>
-                    )}
-                    <Text style={{color: 'red'}}>
+                    )} */}
+                    {/* <Text style={{color: 'red'}}>
                       {
                         errors?.householdOccupationAndLand
                           ?.fra_LandAmountInAcres
                       }
-                    </Text>
+                    </Text> */}
 
                     <Spacing space={SH(5)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                      38. {t('Whether your family owns Homestead Patta land?')}
+                      37. {t('Whether your family owns Homestead Patta land?')}
                     </Text>
                     <RadioButton
                       arrayData={selfHelpData}
@@ -2293,7 +2316,7 @@ setFamilyMembers(data);
 
                     <Spacing space={SH(5)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                      39.{' '}
+                      38.{' '}
                       {t('Approximate private land holding of the Household?')}
                     </Text>
                     <RadioButton
@@ -2325,7 +2348,7 @@ setFamilyMembers(data);
                     )}
                     {approximatePrivateLandHolding != 'Landless' && (
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        40. {t('Whether irrigation facility available?')}
+                        39. {t('Whether irrigation facility available?')}
                       </Text>
                     )}
                     {approximatePrivateLandHolding != 'Landless' && (
@@ -2373,7 +2396,7 @@ setFamilyMembers(data);
                       {errors?.householdOccupationAndLand?.sourcesOfIrrigation}
                     </Text>
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                      41. {t('Whether involved in livestock activity?')}
+                      40. {t('Whether involved in livestock activity?')}
                     </Text>
                     {renderCheckboxes3()}
                     <Text style={{color: 'red'}}>
@@ -2397,7 +2420,7 @@ setFamilyMembers(data);
                    
                     <Spacing space={SH(5)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                      42.{' '}
+                      41.{' '}
                       {t(
                         'Had the family taken any advance from middleman  for migration?',
                       )}
@@ -2427,14 +2450,15 @@ setFamilyMembers(data);
                     <Spacing space={SH(5)} />
                     <Input
                       title={
-                        '43. ' +
+                        '42. ' +
                         t(
                           'No of minor children accompanied during migration? (Less than 18 Yrs of age)',
                         )
                       }
-                      placeholder={t(
-                        'No of minor children accompanied during migration? (Less than 18 Yrs of age)',
-                      )}
+                      // placeholder={t(
+                      //   'No of minor children accompanied during migration? (Less than 18 Yrs of age)',
+                      // )}
+                      placeholder={t('Enter value (0-4 only)')}
                       value={
                         values?.householdMigrationStatus
                           ?.minorChildrenAccompaniedMigration
@@ -2442,7 +2466,7 @@ setFamilyMembers(data);
                       keyboardType="number-pad"
                       onChangeText={text => {
                         // allow only digits
-                        const digitsOnly = text.replace(/[^0-9]/g, '');
+                        const digitsOnly = text.replace(/[^0-4]/g, '').slice(0, 1);
 
                         // allow first digit only if 6-9
                         if (digitsOnly.length === 0) {
@@ -2471,7 +2495,7 @@ setFamilyMembers(data);
                         // else: ignore invalid starting digit (1–5,0)
                       }}
                       inputType="numeric"
-                      maxLength={5}
+                      maxLength={1}
                       titleStyle={AnalyaticsStyles.PleaseEnterDate}
                     />
 
@@ -2484,7 +2508,7 @@ setFamilyMembers(data);
                     
                     <Spacing space={SH(5)} />
                     <Input
-                      title={'44. ' + t('Household contact mobile no.?')}
+                      title={'43. ' + t('Household contact mobile no.?')}
                       placeholder={t('Household contact mobile no.?')}
                       value={
                         values?.householdMigrationStatus?.familyContactMobileNo
@@ -2530,7 +2554,7 @@ setFamilyMembers(data);
                     </Text>
                     <Spacing space={SH(10)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                      45. {t('Identity of the respondent?')}
+                      44. {t('Identity of the respondent?')}
                     </Text>
                     <RadioButton
                       arrayData={respondantData}
@@ -2554,7 +2578,7 @@ setFamilyMembers(data);
                     <Spacing space={SH(10)} />
                     <View style={AnalyaticsStyles.PaddingHori}>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        46. {t('Click on the icon to capture GEO location')}
+                        45. {t('Click on the icon to capture GEO location')}
                       </Text>
                       <View style={Style.FlexEditView}>
                         <TouchableOpacity
@@ -2570,8 +2594,16 @@ setFamilyMembers(data);
                               size={SF(20)}
                               color={Colors.theme_background}
                             />{' '}
-                            {location ? location.coords.latitude : null},
-                            {location ? location.coords.longitude : null}
+                           {
+  location
+    ? parseFloat(location.coords.latitude.toFixed(6))
+    : null
+},
+{
+  location
+    ? parseFloat(location.coords.longitude.toFixed(6))
+    : null
+}
                           </Text>
                         </TouchableOpacity>
                         {/* <TouchableOpacity
@@ -2595,7 +2627,7 @@ setFamilyMembers(data);
                     </Text>
                     <Spacing space={SH(5)} />
                     <Input
-                      title={'47. ' + t('Surveyor Name')}
+                      title={'46. ' + t('Surveyor Name')}
                       placeholder={t('Surveyor Name')}
                       onChangeText={text =>
                         setFieldValue('householdBasicProfile.entryBy', text)
@@ -2620,7 +2652,7 @@ setFamilyMembers(data);
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 /> */}
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                      48. {t('Survey Date and Time')}
+                      47. {t('Survey Date and Time')}
                     </Text>
                     <Spacing space={SH(5)} />
                     <DatePicker
@@ -2834,7 +2866,7 @@ setFamilyMembers(data);
                       }
                     </Text>
                     
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'Amount of Land holding under FRA- In Acres ? (If Not a FRA claimant.. Go to next Qn or else go to next to next Qn.)',
@@ -2854,7 +2886,7 @@ setFamilyMembers(data);
                         previewData?.householdOccupationAndLand
                           ?.fra_LandAmountInAcres
                       }
-                    </Text>
+                    </Text> */}
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Whether your family owns Homestead Patta land?')}:
@@ -3177,7 +3209,7 @@ setFamilyMembers(data);
                         handleSubmit(); // ✅ FINAL SUBMIT
                       }}
                       style={{padding: 10}}>
-                      <Text style={{color: 'green'}}>Confirm & Submit</Text>
+                      <Text style={{color: 'green'}}>{t('Confirm & Submit')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -3205,6 +3237,7 @@ setFamilyMembers(data);
                 <TouchableOpacity
                   style={AnalyaticsStyles.SubmitButton}
                   onPress={() => {
+                    // Alert.alert('errors',JSON.stringify(errors));
                     if (involvedInLivestockActivity?.length > 0) {
                       let livestockArray = '';
                       involvedInLivestockActivity?.forEach(item => {
@@ -3622,13 +3655,13 @@ setFamilyMembers(data);
                       );
                       return;
                     }
-                    if (
-                      errors &&
-                      errors?.householdOccupationAndLand?.fraClaimantStatus
-                    ) {
-                      AppOkAlert('Please enter FRA Claimant Status', () => {});
-                      return;
-                    }
+                    // if (
+                    //   errors &&
+                    //   errors?.householdOccupationAndLand?.fraClaimantStatus
+                    // ) {
+                    //   AppOkAlert('Please enter FRA Claimant Status', () => {});
+                    //   return;
+                    // }
                     if (
                       values?.householdOccupationAndLand?.fraClaimantStatus ===
                         'FRA Claimant' &&
@@ -3676,7 +3709,12 @@ setFamilyMembers(data);
                       return;
                     }
 
-                    setPreviewData(finalValuesPreview);
+                    setTimeout(() => {
+                      //  PubSub.publish('preview', finalValuesPreview);
+                       setPreviewData(finalValuesPreview);  
+                    } , 50);
+                    // setPreviewData(finalValuesPreview);
+
                     setShowConfirmModal(true);
 
                     //  return;

@@ -87,3 +87,45 @@ export const VillageFormValidationSchema = (props)=>{
     .required('Respondent Mobile is required'),
 //   SurveyDate: Yup.date().required('Survey Date is required'),
 })};
+
+export const isEligibleForNextTab = (currentQuestion,values,involvedWaterSource) => {
+  switch (currentQuestion) {
+    case 1:
+      const result =  values?.District!==null && values?.Block!==null && values?.GramPanchayat!==null && values?.RevenueVillage!==null && values?.TotalHouseholds!==null && values?.MalePopulation!== null && values?.FemalePopulation !== null;
+      console.log('eligibility result for question 1:', result);
+     
+      return result; // Block is required
+    case 2:const result2 =  values?.IsElectrified!==null && values?.StreetLightingAvailable!==null && values?.VillageConnectedToGP!==null && values?.LengthAllWeatherRoadToHighway!==null;
+      console.log('eligibility result for question 2:', result2); 
+       
+
+      return result2; // Gram Panchayat is required
+    case 3:
+      const result3 = values?.MenInMigration!==null && values?.WomenInMigration!==null && values?.MinorChildrenInMigration!==null;
+      console.log('eligibility result for question 3:', result3);
+     
+      return result3; // Revenue Village is required
+    case 4:
+      const result4 = involvedWaterSource!=null && values?.AllHouseholdsWithToilets!=null;
+      console.log('eligibility result for question 4:', result4);
+      return result4; // Total Households is required
+    case 5:const result5 = values?.AnganwadiCentre!==null && values?.PrimarySchoolAvailable!==null && values?.SecondarySchoolWithin3km!==null && values?.SubHealthCentre!==null;
+      console.log('eligibility result for question 5:', result5);
+      return result5; // Male Population is required
+    case 6:const result6 = values?.CommunityCentreAvailable!==null && values?.CommonShedForWSHG!==null && values?.PlaygroundAvailable!==null && values?.CommunityTanks!==null;
+      
+
+      return result6; // Female          Population is required
+    case 7:const result7 = values?.DigitalConnectivity!==null && values?.PDSAvailable!==null && values?.BankingPostOfficeNearby!==null;  
+     
+      return result7; // Internal Village Roads is required
+    case 8:const result8 = values?.WaterFromIrrigationProject!==null && values?.FunctionalCheckDams!==null;
+      console.log('eligibility result for question 8:', result8);
+      return result8; // Length of All Weather Road to Highway is required
+    case 9:const result9 = values?.RespondentName!=null && values?.IdentityRole!=null && values?.RespondentMobile!=null && values?.EnumeratorName!=null;
+      console.log('eligibility result for question 9:', result9);
+      return result9; // Respondent Name, Identity Role, Respondent Mobile is required
+    default:
+      return false;
+  }
+}

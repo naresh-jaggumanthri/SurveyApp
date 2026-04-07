@@ -442,7 +442,7 @@ export function HomeScsreenTabAll() {
         name={RouteName.ADD_FAMILY_SCREEN}
         component={AddFamilyScreenStack}
         options={{
-          // tabBarLabel: t("HH Survey List"),
+          //tabBarLabel: t("HH Survey List"),
          
           tabBarButton: () => null,
         

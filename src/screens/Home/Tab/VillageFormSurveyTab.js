@@ -39,6 +39,7 @@ import {SW} from '../../../utils/dimensions';
 import FamilyalertModal from '../../../components/commonComponents/FamilyMemberAlert';
 import {Formik} from 'formik';
 import {
+  isEligibleForNextTab,
   VillageFormInitialValues,
   VillageFormValidationSchema,
 } from './VillageFormHelper';
@@ -53,6 +54,7 @@ import Loader from '../../../components/commonComponents/Loader';
 import {v4 as uuidv4} from 'uuid';
 import {VillageSurvey} from '../../../database/entities/VillageSurvey';
 import {AppOkAlert} from '../../../utils/AlertHelper';
+import { isEligibleForNext } from './FamilyFormHelper';
 // import { VillageFormSurveyTab } from '.';
 
 const VillageFormSurveyTab = props => {
@@ -1170,6 +1172,7 @@ const VillageFormSurveyTab = props => {
                         onChangeText={text => {
                           setFieldValue('LengthAllWeatherRoadToHighway', text);
                         }}
+                        inputType={"numeric"}
                         value={values?.LengthAllWeatherRoadToHighway}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
@@ -2559,7 +2562,7 @@ const VillageFormSurveyTab = props => {
                   {t('Survey_Title_47')}
                 </Text>
               </TouchableOpacity>
-              {currentQuestion < 9 && (
+              {currentQuestion < 9 && isEligibleForNextTab(currentQuestion,values,involvedWaterSource) && (
                 <TouchableOpacity
                   style={AnalyaticsStyles.PreviousButton}
                   onPress={handleNext}>
@@ -2568,7 +2571,7 @@ const VillageFormSurveyTab = props => {
                   </Text>
                 </TouchableOpacity>
               )}
-              {currentQuestion == 9 && (
+              {currentQuestion == 9 && isEligibleForNextTab(currentQuestion,values,involvedWaterSource) && (
                 <TouchableOpacity
                   style={AnalyaticsStyles.SubmitButton}
                   onPress={() => {
@@ -2751,17 +2754,7 @@ const VillageFormSurveyTab = props => {
         buttonText={t('Ok')}
         buttonminview={Style.ButtonCenter}
       />
-      {/* <FamilyMemberAlert
-        message={alertMessage}
-        modalVisible={familyAlertVisible}
-        setModalVisible={setFamilyAlertVisible}
-        onPress={() => {
-          setFamilyAlertVisible(!familyAlertVisible), onoknutton();
-        }}
-        buttonminview={Style.ButtonCenter}
-        iconVisible={true}
-        buttonText={t('Ok')}
-      /> */}
+   
     </View>
   );
 };
