@@ -8,7 +8,8 @@ function RadioButton({
   onChangeText,
   value,
   errorMessage,
-  arrayData
+  arrayData,
+  type
 }) {
   const styles = useMemo(
     () =>
@@ -18,7 +19,7 @@ function RadioButton({
           paddingHorizontal: SW(15)
         },
         radioButtonView: {
-          flexDirection: 'column',
+          flexDirection: type === 1 ? 'column' : 'row',
           justifyContent: 'flex-start'
         },
         labelStyle: {

@@ -39,6 +39,7 @@ import {Formik} from 'formik';
 import {validationSchema} from './AddFamilyHelper';
 import {RouteName} from '../../routes';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 
 const AddFamilyScreen = props => {
   const {navigation} = props;
@@ -54,14 +55,17 @@ const AddFamilyScreen = props => {
   const [headName, setHeadName] = useState('');
 
   const [count, setCount] = useState(0);
+  const [type,setType]=useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const isFocused = useIsFocused();
+   const { familyData } = useSelector(state => state.DataReducer) || {};
 
   useEffect(() => {
     const token = PubSub.subscribe('count', (msg, data) => {
       console.log('Received count:', data);
       setCount(data?.count);
       setHeadName(data?.name);
+      setType(data?.type);
       // familyMembers[0]?.name = data?.name;
       setCurrentIndex(data?.count - 1);
     });
@@ -244,9 +248,34 @@ const AddFamilyScreen = props => {
       validationSchema={validationSchema}
       onSubmit={values => {
         console.log('Final Data:', values);
-        // Alert.alert('Form Submitted', JSON.stringify(values));
-        PubSub.publish('familyData', values.familyMembers);
-        navigation.navigate(RouteName.FAMILY_SURVEY_TAB);
+        
+      
+        if(type==1){
+              PubSub.publish('familyData', values?.familyMembers);
+            //    Alert.alert('Form Submitted', JSON.stringify(values?.familyMembers));
+            //   navigation.goBack();
+         navigation.navigate(RouteName.FAMILY_SURVEY_TAB);
+//         navigation.reset({
+//   index: 0,
+//   routes: [{ name:RouteName.FAMILY_SURVEY_TAB}],
+// });
+        return;
+        }
+         if(type==2){
+            const result={
+                ...familyData,
+                householdFamilyMember:values.familyMembers
+            }
+         //Alert.alert("familyData",JSON.stringify(result.householdFamilyMember));
+        PubSub.publish('HouseItem',result);
+        //  PubSub.publish('familyData', values.familyMembers); 
+        // navigation.replace(RouteName.FAMILY_SURVEY_EDIT_TAB);
+        navigation.reset({
+  index: 0,
+  routes: [{ name:RouteName.FAMILY_SURVEY_EDIT_TAB}],
+});
+        return;
+        }
         // setModalVisible(false);
       }}>
       {({values, setFieldValue, errors, touched, handleSubmit}) => {
@@ -354,21 +383,7 @@ const AddFamilyScreen = props => {
                   }}
                 />
 
-                {/* migrated */}
-                <Spacing space={SH(15)} />
-                <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                  {t('Whether Migrated in last three years')}
-                </Text>
-                <RadioButton
-                  arrayData={selfHelpData}
-                  value={member?.migratedInLast3Years}
-                  onChangeText={val =>
-                    setFieldValue(
-                      `familyMembers[${currentIndex}].migratedInLast3Years`,
-                      val,
-                    )
-                  }
-                />
+                
 
                 {/* labour Card*/}
                 <Spacing space={SH(15)} />
@@ -455,13 +470,41 @@ const AddFamilyScreen = props => {
                   }}
                 />
 
-                {/* Period of migration */}
+                {/* migrated */}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                  {t('Period of migration')}
+                  {t('Whether Migrated in last three years')}
                 </Text>
-                <Spacing space={SH(5)} />
-                <DropDown
+                <RadioButton
+                  arrayData={selfHelpData}
+                  value={member?.migratedInLast3Years}
+                  onChangeText={(val) => {
+                    Alert.alert("val",JSON.stringify(val));
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].migratedInLast3Years`,
+                      val,
+                    );
+                    if(!val){setFieldValue(
+                      `familyMembers[${currentIndex}].periodOfMigration`,
+                      "",
+                    );
+
+                    setFieldValue(
+                      `familyMembers[${currentIndex}].monthlyRemittanceDuringMigration`,
+                      0,
+                    );
+
+                }
+                  }}
+                />
+
+                {/* Period of migration */}
+                {member?.migratedInLast3Years &&<Spacing space={SH(15)} />}
+                {member?.migratedInLast3Years && <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                  {t('Period of migration')}
+                </Text>}
+                {member?.migratedInLast3Years && <Spacing space={SH(5)} />}
+                 {member?.migratedInLast3Years &&<DropDown
                   data={migrationData}
                   dropdownStyle={{marginLeft: SH(10)}}
                   width={SW(345)}
@@ -477,16 +520,16 @@ const AddFamilyScreen = props => {
                       obj?.label,
                     );
                   }}
-                />
+                />}
                 {/* Monthly Income */}
-                <Spacing space={SH(15)} />
-                <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                {member?.migratedInLast3Years && <Spacing space={SH(15)} />}
+                {member?.migratedInLast3Years && <Text style={AnalyaticsStyles.PleaseEnterDate}>
                   {t(
                     'What was the monthly income during migration(In Rupees)?',
                   )}
-                </Text>
-                <Spacing space={SH(5)} />
-                <DropDown
+                </Text>}
+                {member?.migratedInLast3Years && <Spacing space={SH(5)} />}
+                {member?.migratedInLast3Years && <DropDown
                   data={monthlyIncomeData}
                   dropdownStyle={{marginLeft: SH(10)}}
                   width={SW(345)}
@@ -505,7 +548,7 @@ const AddFamilyScreen = props => {
                       obj?.label,
                     );
                   }}
-                />
+                />}
 
                 {/*skill development*/}
                 <Spacing space={SH(15)} />

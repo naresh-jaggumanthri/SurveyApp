@@ -127,9 +127,9 @@ const VillageFormSurveyEdit = props => {
     {label: t('No'), value: false},
   ];
   const selfHelpData2 = [
-    {label: t('Yes'), value: 'true'},
-    {label: t('No'), value: 'false'},
-    {label: t('Partially'), value: 'Partially'},
+    {label: t('Yes'), value:  t('Yes')},
+    {label: t('No'), value: t('No')},
+    {label: t('Partially'), value:t('Partially')},
   ];
   const electricityData = [
     {label: t('Solar'), value: 'Solar'},
@@ -741,7 +741,7 @@ const VillageFormSurveyEdit = props => {
                                       <View>
                                         {/* District */}
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                          {t('Basic Details')}
+                                           {'A. '+t('Basic Details')}
                                         </Text>
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                           1. {t('District')}
@@ -930,7 +930,7 @@ const VillageFormSurveyEdit = props => {
                                     {currentQuestion === 2 && (
                                       <View>
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                          {t('Basic Infrastructure & Amenities')}
+                                            {'B. '+t('Basic Infrastructure & Amenities')}
                                         </Text>
                                         {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                           9. {t('Are internal village roads pucca (concrete)?')}
@@ -1161,7 +1161,7 @@ const VillageFormSurveyEdit = props => {
                                     {currentQuestion === 3 && (
                                       <View>
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                          {t('Information Related to Migration')}
+                                          {'C. '+t('Information Related to Migration')}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Input
@@ -1295,7 +1295,7 @@ const VillageFormSurveyEdit = props => {
                                     )}
                                     {currentQuestion === 4 && (<View>
                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                          {t('Water Supply & Sanitation')}
+                                          {'D. '+t('Water Supply & Sanitation')}
                                         </Text>
                                         <Spacing space={SH(10)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1339,7 +1339,7 @@ const VillageFormSurveyEdit = props => {
                                     </View>)}
                                      {currentQuestion === 5 && (<View>
                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                          {t('Education & Health Facilities')}
+                                          {'E. '+t('Education & Health Facilities')}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1421,7 +1421,7 @@ const VillageFormSurveyEdit = props => {
                                      </View>)}
                                       {currentQuestion === 6 && (<View>
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                          {t('Community & Social Infrastructure')}
+                                           {'F. '+t('Community & Social Infrastructure')}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1505,7 +1505,7 @@ const VillageFormSurveyEdit = props => {
                                        {currentQuestion === 7 &&  (<View>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                          {t('Livelihood & Service Infrastructure')}
+                                          {'G. '+t('Livelihood & Service Infrastructure')}
                                         </Text>
                                        {/* <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1632,7 +1632,7 @@ const VillageFormSurveyEdit = props => {
                                     {currentQuestion === 8 && (
                                       <View>
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                          {t('Water Resource & Irrigation Structures')}
+                                           {'H. '+t('Water Resource & Irrigation Structures')}
                                         </Text>
                                         <Spacing space={SH(10)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1860,7 +1860,7 @@ const VillageFormSurveyEdit = props => {
                                     {currentQuestion === 9 && (
                                       <View>
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                          {t('Respondent Details')}
+                                            {'I. '+t('Respondent Details')}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Input

@@ -1,3 +1,4 @@
+import { Alert } from 'react-native';
 import * as Yup from 'yup';
 export const HouseHoldFormInitialValues = (props,loginData) => ({
     
@@ -47,10 +48,10 @@ export const HouseHoldFormInitialValues = (props,loginData) => ({
    isEnrolledUnderShramYogiMaandhan:null,
    isCoveredUnderPMJJBY:null,
    isCoveredUnderPMSBY:null,
-   isOldAgePension:null,
-   isWidowPension:null,
-   isAtalPensionYojana:null,
-   isDisabilityPension:null
+   oldagePension:null,
+   widowPension:null,
+   atalPension:null,
+   disabilityPension:null
  },
 
 
@@ -245,18 +246,27 @@ export const HouseHoldFormValidationSchema = (props) =>{
 const requiredBoolean = Yup.boolean().required('This field is required').oneOf([true, false], 'This field is required');
 
 export const isEligibleForNext = (currentQuestion,values,involvedWaterSource,involvedInLivestockActivity,selectedSchemes)=>{
+  try{
   switch(currentQuestion){
     case 1:
-      return values.householdBasicProfile && Object.keys(values.householdBasicProfile).length > 0 && values.householdBasicProfile.district && values.householdBasicProfile.block && values.householdBasicProfile.gramPanchayat && values.householdBasicProfile.revenueVillage && values.householdBasicProfile.hamlet && values.householdBasicProfile.headOfTheHouseholdNameAsPerAadhar && values.householdBasicProfile.headOfTheHouseholdGender && values.householdBasicProfile.aadharNo && values.householdBasicProfile.socialCategory;
+      return values?.householdBasicProfile && Object.keys(values.householdBasicProfile).length > 0 && values.householdBasicProfile.district && values.householdBasicProfile.block && values.householdBasicProfile.gramPanchayat && values.householdBasicProfile.revenueVillage && values.householdBasicProfile.hamlet && values.householdBasicProfile.headOfTheHouseholdNameAsPerAadhar && values.householdBasicProfile.headOfTheHouseholdGender && values.householdBasicProfile.aadharNo && values.householdBasicProfile.socialCategory;
     case 2:
-      return values.householdBasicProfile && Object.keys(values.householdBasicProfile).length > 0 && values.householdBasicProfile.bankName && values.householdBasicProfile.bankAccountNumber && values.householdBasicProfile.ifscCodeOrBranch&&values.householdBasicProfile.totalFamilyMembers;
+     
+      return values?.householdBasicProfile && Object.keys(values.householdBasicProfile).length > 0 && values.householdBasicProfile.bankName!=null && values.householdBasicProfile.bankAccountNumber!=null && values.householdBasicProfile.ifscCodeOrBranch!=null&&values.householdBasicProfile.totalFamilyMembers!=null;
     case 3:
-      return values.householdEntitlement && Object.keys(values.householdEntitlement).length > 0 && values.householdBasicProfile.isWomenCoveredUnderSHG!=null && values.householdBasicProfile.isWomenCoveredUnderSubhadraYojana!=null  && values.householdBasicProfile.hasRationCard!=null  && values.householdBasicProfile.drinkingWaterSource!=null && values.householdBasicProfile.hasUjjwalaLPGConnection!=null && selectedSchemes!=null && values.householdEntitlement.hasRuralHousingSchemeHouse!=null && values.householdEntitlement.hasMGNREGSJobCard!=null && values.householdEntitlement.hasIndividualHouseholdLatrine!=null && values.householdEntitlement.hasElectricityConnection!=null && values.householdEntitlement.hasJanDhanYojanaAccount!=null && values.householdEntitlement.isCoveredUnderAyushmanBharat!=null && values.householdEntitlement.isEnrolledUnderShramYogiMaandhan!=null && values.householdEntitlement.isCoveredUnderPMJJBY!=null && values.householdEntitlement.isCoveredUnderPMSBY!=null && values.householdEntitlement.isAtalPensionYojana!=null && values.householdEntitlement.isDisabilityPension!=null && values.householdEntitlement.isOldAgePension!=null && values.householdEntitlement.isWidowPension!=null;
+      return values?.householdEntitlement && Object.keys(values.householdEntitlement).length > 0 && values.householdBasicProfile.isWomenCoveredUnderSHG!=null && values.householdBasicProfile.isWomenCoveredUnderSubhadraYojana!=null  && values.householdBasicProfile.hasRationCard!=null  && values.householdBasicProfile.drinkingWaterSource!=null && values.householdBasicProfile.hasUjjwalaLPGConnection!=null && selectedSchemes!=null && values.householdEntitlement.hasRuralHousingSchemeHouse!=null && values.householdEntitlement.hasMGNREGSJobCard!=null && values.householdEntitlement.hasIndividualHouseholdLatrine!=null && values.householdEntitlement.hasElectricityConnection!=null && values.householdEntitlement.hasJanDhanYojanaAccount!=null && values.householdEntitlement.isCoveredUnderAyushmanBharat!=null && values.householdEntitlement.isEnrolledUnderShramYogiMaandhan!=null && values.householdEntitlement.isCoveredUnderPMJJBY!=null && values.householdEntitlement.isCoveredUnderPMSBY!=null && values.householdEntitlement.atalPension!=null && values.householdEntitlement.disabilityPension!=null && values.householdEntitlement.oldagePension!=null && values.householdEntitlement.widowPension!=null;
     case 4:
-      return values.householdOccupationAndLand && Object.keys(values.householdOccupationAndLand).length > 0 && values.householdOccupationAndLand.primaryOccupationOfTheFamily!=null && values.householdOccupationAndLand.ownsHomesteadPattaLand!=null && values.householdOccupationAndLand.approximatePrivateLandHolding!=null && values.householdOccupationAndLand.isIrrigationFacilityAvailable!=null && involvedInLivestockActivity!=null;
+      return values?.householdOccupationAndLand && Object.keys(values.householdOccupationAndLand).length > 0 && values.householdOccupationAndLand.primaryOccupationOfTheFamily!=null && values.householdOccupationAndLand.ownsHomesteadPattaLand!=null && values.householdOccupationAndLand.approximatePrivateLandHolding!=null && values.householdOccupationAndLand.isIrrigationFacilityAvailable!=null && involvedInLivestockActivity!=null;
       case 5:
-        return values.householdMigrationStatus && Object.keys(values.householdMigrationStatus).length > 0 && values.householdMigrationStatus.takenAdvanceForMigrationFromMiddleman!=null && values.householdMigrationStatus.minorChildrenAccompaniedMigration!=null && values.householdMigrationStatus.familyContactMobileNo!=null && values.householdMigrationStatus.respondentIdentity!=null;
+        return values?.householdMigrationStatus && Object.keys(values.householdMigrationStatus).length > 0 && values.householdMigrationStatus.takenAdvanceForMigrationFromMiddleman!=null && values.householdMigrationStatus.minorChildrenAccompaniedMigration!=null && values.householdMigrationStatus.familyContactMobileNo!=null && values.householdMigrationStatus.respondentIdentity!=null;
     default:
       return false;
   }
+}catch(error){
+    console.error("Error in eligibility check:", error);
+    return false;
+}
+
+return false;
+
 }     

@@ -132,9 +132,9 @@ const VillageFormSurveyTab = props => {
     {label: t('No'), value: false},
   ];
   const selfHelpData2 = [
-    {label: t('Yes'), value: 'true'},
-    {label: t('No'), value: 'false'},
-    {label: t('Partially'), value: 'Partially'},
+    {label: t('Yes'), value:  t('Yes')},
+    {label: t('No'), value: t('No')},
+    {label: t('Partially'), value:t('Partially')},
   ];
   const electricityData = [
     {label: t('Solar'), value: 'Solar'},
@@ -354,6 +354,7 @@ const VillageFormSurveyTab = props => {
   };
 
   const handleNext = () => {
+    goToTop();
     if (currentQuestion < 9) {
       const updatedColors = [...backgroundColors];
       updatedColors[currentQuestion - 1] = Colors.theme_background; // Change background color of current view
@@ -382,7 +383,7 @@ const VillageFormSurveyTab = props => {
     logout: t('Survey_Title_33'),
   };
   const onoknutton = () => {
-    navigation.navigate(RouteName.ANALYTICS_SCREEN);
+    navigation.navigate(RouteName.HOME_SCREEN);
   };
   const Onpressfunction = e => {
     navigation.toggleDrawer();
@@ -521,7 +522,7 @@ const VillageFormSurveyTab = props => {
       formikRef.current.resetForm({
         values: {
           ...VillageFormInitialValues(props),
-          ...resetData,
+          // ...resetData,
         },
       });
       const result = data?.item;
@@ -609,15 +610,25 @@ const VillageFormSurveyTab = props => {
       );
       return;
     }
-
+    
+    const finalValues = {
+      ...values,
+      surveyDate:  moment(new Date(), 'YYYY-MM-DDTHH:mm:ss Z')
+      .local()
+      .format('YYYY-MM-DD'),
+    };
+    console.log('values', JSON.stringify(finalValues));
+// Alert.alert("response",JSON.stringify(finalValues.surveyDate));
     const response = await api.user.saveMigrationSurveyData(
       null,
-      values,
+      finalValues,
       token,
       false,
     );
-    //Alert.alert("response",JSON.stringify(response));
-    //return
+    setLoading(false);
+    console.log('response', JSON.stringify(response));
+    
+    return
     if (response != null && response != undefined) {
       setLoading(false);
       setAlertVisible(true);
@@ -694,7 +705,14 @@ const VillageFormSurveyTab = props => {
       return false;
     }
   };
-
+const scrollRef = useRef(null);
+const goToTop = () => {
+    // 2. Call the scrollTo method
+    scrollRef.current?.scrollTo({
+      y: 0,
+      animated: true,
+    });
+  };
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(10)} />
@@ -716,7 +734,7 @@ const VillageFormSurveyTab = props => {
       </View>
       <Formik
         innerRef={formikRef}
-        initialValues={VillageFormInitialValues(props)}
+        initialValues={VillageFormInitialValues(props,loginData)}
         validationSchema={VillageFormValidationSchema(props)}
         onSubmit={values => {
           // Alert.alert("VALUES",JSON.stringify(values));
@@ -735,6 +753,7 @@ const VillageFormSurveyTab = props => {
         }) => (
           <>
             <ScrollView
+            ref={scrollRef}
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={Style.ScrollViewStyles}>
               <KeyboardAvoidingView enabled>
@@ -746,7 +765,7 @@ const VillageFormSurveyTab = props => {
                     <View>
                       {/* District */}
                       <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Basic Details')}
+                        {'A. '+t('Basic Details')}
                       </Text>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         1. {t('District')}
@@ -758,15 +777,15 @@ const VillageFormSurveyTab = props => {
                         width={SW(345)}
                         labelField="label"
                         valueField="value"
-                        value={values?.District}
-                        placeholder={values?.District || t('Select District')}
+                        value={values?.district}
+                        placeholder={values?.district || t('Select District')}
                         onChange={obj => {
                           // Alert.alert("hellll",JSON.stringify(label));
                           getBlocks(obj.value);
-                          setFieldValue('District', obj.label);
+                          setFieldValue('district', obj.label);
                         }}
                       />
-                      <Text style={{color: 'red'}}>{errors?.District}</Text>
+                      <Text style={{color: 'red'}}>{errors?.district}</Text>
                       <Spacing space={SH(15)} />
                       {/* Block */}
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -779,14 +798,14 @@ const VillageFormSurveyTab = props => {
                         width={SW(345)}
                         labelField="label"
                         valueField="value"
-                        value={values?.Block}
-                        placeholder={values?.Block || t('Select Block')}
+                        value={values?.block}
+                        placeholder={values?.block || t('Select Block')}
                         onChange={obj => {
                           getPanchayats(obj.value);
-                          setFieldValue('Block', obj.label);
+                          setFieldValue('block', obj.label);
                         }}
                       />
-                      <Text style={{color: 'red'}}>{errors?.Block}</Text>
+                      <Text style={{color: 'red'}}>{errors?.block}</Text>
                       <Spacing space={SH(15)} />
                       {/* Gram Panchayat */}
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -799,17 +818,17 @@ const VillageFormSurveyTab = props => {
                         width={SW(345)}
                         labelField="label"
                         valueField="value"
-                        value={values?.GramPanchayat}
+                        value={values?.gramPanchayat}
                         placeholder={
-                          values?.GramPanchayat || t('Select Gram Panchayat')
+                          values?.gramPanchayat || t('Select Gram Panchayat')
                         }
                         onChange={obj => {
                           getVillages(obj.value);
-                          setFieldValue('GramPanchayat', obj.label);
+                          setFieldValue('gramPanchayat', obj.label);
                         }}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.GramPanchayat}
+                        {errors?.gramPanchayat}
                       </Text>
                       <Spacing space={SH(15)} />
                       {/* Revenue Village */}
@@ -823,73 +842,83 @@ const VillageFormSurveyTab = props => {
                         width={SW(345)}
                         labelField="label"
                         valueField="value"
-                        value={values?.RevenueVillage}
+                        value={values?.revenueVillage}
                         placeholder={
-                          values?.RevenueVillage || t('Select Revenue Village')
+                          values?.revenueVillage || t('Select Revenue Village')
                         }
                         onChange={obj => {
-                          setFieldValue('RevenueVillage', obj.label);
+                          setFieldValue('revenueVillage', obj.label);
                         }}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.RevenueVillage}
+                        {errors?.revenueVillage}
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
                         title={'5. ' + t('Total number of households')}
                         placeholder={t('Total number of households')}
                         onChangeText={text => {
+                        
                           // Allow only digits
-                          const filtered = text.replace(/[^0-9]/g, '');
+                          let filtered = text.replace(/[^0-9]/g, '');
+                          // If the first character is '0', remove it
+  if (filtered.startsWith('0')) {
+    filtered = filtered.substring(1);
+  }
+                           const number = Number(filtered);
+
+                          // Block 0 and values > 1500
+                          if (number > 1500) return;
 
                           // Allow empty (while typing)
                           if (filtered === '') {
-                            setFieldValue('TotalHouseholds', '');
+                            setFieldValue('totalHouseholds', '');
                             return;
                           }
 
-                          const number = Number(filtered);
+                         
 
-                          // Block 0 and values > 1500
-                          if (number < 1 || number > 1500) return;
-
-                          setFieldValue('TotalHouseholds', filtered);
-                          // setFieldValue('TotalHouseholds', text)
+                          setFieldValue('totalHouseholds', filtered);
+                          // setFieldValue('totalHouseholds', text)
                         }}
-                        value={values?.TotalHouseholds}
+                        value={values?.totalHouseholds}
                         inputType={'numeric'}
+                        keyboardType={"number-pad"}
                         maxLength={4}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.TotalHouseholds}
+                        {errors?.totalHouseholds}
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
                         title={'6. ' + t('Male')}
                         placeholder={t('Male')}
                         onChangeText={text => {
-                          const filtered = text.replace(/[^0-9]/g, '');
+                          let filtered = text.replace(/[^0-9]/g, '');
+                           if (filtered.startsWith('0')) {
+    filtered = filtered.substring(1);
+  }
                           // Allow empty (while typing)
                           if (filtered === '') {
-                            setFieldValue('MalePopulation', '');
+                            setFieldValue('malePopulation', '');
                             return;
                           }
                           const number = Number(filtered);
                           // Block 0 and values > 1500
                           if (number < 1 || number > 4000) return;
                           const male = number || 0;
-                          setFieldValue('MalePopulation', number || 0);
-                          const female = Number(values?.FemalePopulation) || 0;
+                          setFieldValue('malePopulation', number || 0);
+                          const female = Number(values?.femalePopulation) || 0;
                           setFieldValue('TotalPopulation', male + female);
                         }}
-                        value={String(values?.MalePopulation ?? '')}
+                        value={String(values?.malePopulation ?? '')}
                         inputType={'numeric'}
                         maxLength={8}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.MalePopulation}
+                        {errors?.malePopulation}
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
@@ -897,27 +926,30 @@ const VillageFormSurveyTab = props => {
                         placeholder={t('Female')}
                         onChangeText={text => {
                           // Allow only digits
-                          const filtered = text.replace(/[^0-9]/g, '');
+                          let filtered = text.replace(/[^0-9]/g, '');
+                           if (filtered.startsWith('0')) {
+    filtered = filtered.substring(1);
+  }
                           if (filtered === '') {
-                            setFieldValue('FemalePopulation', '');
+                            setFieldValue('femalePopulation', '');
                             return;
                           }
                           const number = Number(filtered);
                           if (number < 1 || number > 4000) return;
 
-                          setFieldValue('FemalePopulation', number || 0);
-                          const male = Number(values?.MalePopulation) || 0;
+                          setFieldValue('femalePopulation', number || 0);
+                          const male = Number(values?.malePopulation) || 0;
                           const female = number || 0;
 
                           setFieldValue('TotalPopulation', male + female);
                         }}
-                        value={String(values?.FemalePopulation ?? '')}
+                        value={String(values?.femalePopulation ?? '')}
                         inputType={'numeric'}
                         maxLength={8}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.FemalePopulation}
+                        {errors?.femalePopulation}
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
@@ -935,7 +967,7 @@ const VillageFormSurveyTab = props => {
                   {currentQuestion === 2 && (
                     <View>
                       <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Basic Infrastructure & Amenities')}
+                        {'B. '+t('Basic Infrastructure & Amenities')}
                       </Text>
                       {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         9. {t('Are internal village roads pucca (concrete)?')}
@@ -1029,16 +1061,16 @@ const VillageFormSurveyTab = props => {
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setIsElectrified(text);
-                          setFieldValue('IsElectrified', text);
+                          setFieldValue('isElectrified', text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.IsElectrified
+                            ? values?.isElectrified
                             : IsElectrified
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.IsElectrified}
+                        {errors?.isElectrified}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1048,44 +1080,44 @@ const VillageFormSurveyTab = props => {
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setStreetLightingAvailable(text);
-                          setFieldValue('StreetLightingAvailable', text);
+                          setFieldValue('streetLightingAvailable', text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.StreetLightingAvailable
+                            ? values?.streetLightingAvailable
                             : StreetLightingAvailable
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.StreetLightingAvailable}
+                        {errors?.streetLightingAvailable}
                       </Text>
-                      {(values?.StreetLightingAvailable ||
+                      {(values?.streetLightingAvailable ||
                         StreetLightingAvailable) && <Spacing space={SH(5)} />}
-                      {(values?.StreetLightingAvailable ||
+                      {(values?.streetLightingAvailable ||
                         StreetLightingAvailable) && (
                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                          {t('What type of street lighting is provided?')}
+                          10.1 {t('What type of street lighting is provided?')}
                         </Text>
                       )}
-                      {(values?.StreetLightingAvailable ||
+                      {(values?.streetLightingAvailable ||
                         StreetLightingAvailable) && (
                         <RadioButton
                           arrayData={electricityData}
                           onChangeText={text => {
                             setStreetLightingType(text);
-                            setFieldValue('StreetLightingType', text);
+                            setFieldValue('streetLightingType', text);
                           }}
                           value={
                             editData != undefined
-                              ? values?.StreetLightingType
+                              ? values?.streetLightingType
                               : StreetLightingType
                           }
                         />
                       )}
-                      {(values?.StreetLightingAvailable ||
+                      {(values?.streetLightingAvailable ||
                         StreetLightingAvailable) && (
                         <Text style={{color: 'red'}}>
-                          {errors?.StreetLightingType}
+                          {errors?.streetLightingType}
                         </Text>
                       )}
                       <Spacing space={SH(5)} />
@@ -1100,23 +1132,24 @@ const VillageFormSurveyTab = props => {
                         onChangeText={text => {
                           // Alert.alert("text",text);
                           setVillageConnectedToGP(text);
-                          setFieldValue('VillageConnectedToGP', text);
+                         
+                          setFieldValue('villageConnectedToGP', text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.VillageConnectedToGP
+                            ? values?.villageConnectedToGP
                             : VillageConnectedToGP
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.VillageConnectedToGP}
+                        {errors?.villageConnectedToGP}
                       </Text>
                       {(VillageConnectedToGP == 'false' ||
-                        values?.VillageConnectedToGP == 'Partially') && (
+                        values?.villageConnectedToGP == 'Partially') && (
                         <Spacing space={SH(2)} />
                       )}
                       {(VillageConnectedToGP == 'false' ||
-                        values?.VillageConnectedToGP == 'Partially') && (
+                        values?.villageConnectedToGP == 'Partially') && (
                         <Input
                           title={
                             '12. ' +
@@ -1128,10 +1161,12 @@ const VillageFormSurveyTab = props => {
                             'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
                           )}
                           onChangeText={text => {
-                            setFieldValue('LengthAllWeatherRoadToGP', text);
+                            setFieldValue('lengthAllWeatherRoadToGP', text);
                           }}
-                          value={values?.LengthAllWeatherRoadToGP}
+                          value={values?.lengthAllWeatherRoadToGP}
                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                          inputType={"numeric"}
+                          
                         />
                       )}
                       {/* <Text style={{color: 'red'}}>{errors?.LengthAllWeatherRoadToGP}</Text> */}
@@ -1170,14 +1205,24 @@ const VillageFormSurveyTab = props => {
                           'What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
                         )}
                         onChangeText={text => {
-                          setFieldValue('LengthAllWeatherRoadToHighway', text);
+                           let filtered = text.replace(/[^0-9]/g, '');
+                           if (filtered.startsWith('0')) {
+    filtered = filtered.substring(1);
+  }
+                          if (filtered === '') {
+                            setFieldValue('lengthAllWeatherRoadToHighway', '');
+                            return;
+                          }
+                          const number = Number(filtered);
+                          if (number < 100 || number > 4000) return;
+                          setFieldValue('lengthAllWeatherRoadToHighway', number);
                         }}
                         inputType={"numeric"}
-                        value={values?.LengthAllWeatherRoadToHighway}
+                        value={values?.lengthAllWeatherRoadToHighway}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.LengthAllWeatherRoadToHighway}
+                        {errors?.lengthAllWeatherRoadToHighway}
                       </Text>
                     </View>
                   )}
@@ -1185,18 +1230,18 @@ const VillageFormSurveyTab = props => {
                   {currentQuestion === 3 && (
                     <View>
                       <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Information Related to Migration')}
+                        {'C. '+t('Information Related to Migration')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
                         title={'14. ' + t('No of men currently in migration?')}
                         placeholder={t('No of men currently in migration?')}
                         onChangeText={text => {
-                          setFieldValue('MenInMigration', Number(text) || 0);
+                          setFieldValue('menInMigration', Number(text) || 0);
                           const men = Number(text) || 0;
-                          const women = Number(values?.WomenInMigration) || 0;
+                          const women = Number(values?.womenInMigration) || 0;
                           const children =
-                            Number(values?.MinorChildrenInMigration) || 0;
+                            Number(values?.minorChildrenInMigration) || 0;
 
                           const total = men + women + children;
 
@@ -1205,13 +1250,13 @@ const VillageFormSurveyTab = props => {
                             JSON.stringify(total),
                           );
                         }}
-                        value={values?.MenInMigration}
+                        value={values?.menInMigration}
                         inputType={'numeric'}
                         maxLength={6}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.MenInMigration}
+                        {errors?.menInMigration}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
@@ -1222,11 +1267,11 @@ const VillageFormSurveyTab = props => {
                         maxLength={6}
                         placeholder={t('No of women currently in migration?')}
                         onChangeText={text => {
-                          setFieldValue('WomenInMigration', Number(text) || 0);
-                          const men = Number(values?.MenInMigration) || 0;
+                          setFieldValue('womenInMigration', Number(text) || 0);
+                          const men = Number(values?.menInMigration) || 0;
                           const women = Number(text) || 0;
                           const children =
-                            Number(values?.MinorChildrenInMigration) || 0;
+                            Number(values?.minorChildrenInMigration) || 0;
 
                           const total = men + women + children;
 
@@ -1235,11 +1280,11 @@ const VillageFormSurveyTab = props => {
                             JSON.stringify(total),
                           );
                         }}
-                        value={values?.WomenInMigration}
+                        value={values?.womenInMigration}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.WomenInMigration}
+                        {errors?.womenInMigration}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Input
@@ -1254,11 +1299,11 @@ const VillageFormSurveyTab = props => {
                         )}
                         onChangeText={text => {
                           setFieldValue(
-                            'MinorChildrenInMigration',
+                            'minorChildrenInMigration',
                             Number(text) || 0,
                           );
-                          const men = Number(values?.MenInMigration) || 0;
-                          const women = Number(values?.WomenInMigration) || 0;
+                          const men = Number(values?.menInMigration) || 0;
+                          const women = Number(values?.womenInMigration) || 0;
                           const children = Number(text) || 0;
 
                           const total = men + women + children;
@@ -1268,13 +1313,13 @@ const VillageFormSurveyTab = props => {
                             JSON.stringify(total),
                           );
                         }}
-                        value={values?.MinorChildrenInMigration}
+                        value={values?.minorChildrenInMigration}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                         inputType={'numeric'}
                         maxLength={6}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.MinorChildrenInMigration}
+                        {errors?.minorChildrenInMigration}
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
@@ -1311,7 +1356,7 @@ const VillageFormSurveyTab = props => {
                   {currentQuestion === 4 && (
                     <View>
                       <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Water Supply & Sanitation')}
+                        {'D.'+t('Water Supply & Sanitation')}
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1331,7 +1376,7 @@ const VillageFormSurveyTab = props => {
                         }
                       /> */}
                       <Text style={{color: 'red'}}>
-                        {errors?.DrinkingWaterSource}
+                        {errors?.drinkingWaterSource}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1341,23 +1386,23 @@ const VillageFormSurveyTab = props => {
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setAllHouseholdsWithToilets(text);
-                          setFieldValue('AllHouseholdsWithToilets', text);
+                          setFieldValue('allHouseholdsWithToilets', text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.AllHouseholdsWithToilets
+                            ? values?.allHouseholdsWithToilets
                             : AllHouseholdsWithToilets
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.AllHouseholdsWithToilets}
+                        {errors?.allHouseholdsWithToilets}
                       </Text>
                     </View>
                   )}
                   {currentQuestion === 5 && (
                     <View>
                       <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Education & Health Facilities')}
+                        {'E. '+t('Education & Health Facilities')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1366,17 +1411,17 @@ const VillageFormSurveyTab = props => {
                       <RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
-                          setFieldValue('AnganwadiCentre', text);
+                          setFieldValue('anganwadiCentre', text);
                           setAnganwadiCentre(text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.AnganwadiCentre
+                            ? values?.anganwadiCentre
                             : AnganwadiCentre
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.AnganwadiCentre}
+                        {errors?.anganwadiCentre}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1386,17 +1431,17 @@ const VillageFormSurveyTab = props => {
                       <RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
-                          setFieldValue('PrimarySchoolAvailable', text);
+                          setFieldValue('primarySchoolAvailable', text);
                           setPrimarySchoolAvailable(text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.PrimarySchoolAvailable
+                            ? values?.primarySchoolAvailable
                             : PrimarySchoolAvailable
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.PrimarySchoolAvailable}
+                        {errors?.primarySchoolAvailable}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1405,17 +1450,17 @@ const VillageFormSurveyTab = props => {
                       <RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
-                          setFieldValue('SecondarySchoolWithin3km', text);
+                          setFieldValue('secondarySchoolWithin3km', text);
                           setSecondarySchoolWithin3km(text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.SecondarySchoolWithin3km
+                            ? values?.secondarySchoolWithin3km
                             : SecondarySchoolWithin3km
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.SecondarySchoolWithin3km}
+                        {errors?.secondarySchoolWithin3km}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1424,24 +1469,24 @@ const VillageFormSurveyTab = props => {
                       <RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
-                          setFieldValue('SubHealthCentre', text);
+                          setFieldValue('subHealthCentre', text);
                           setSubHealthCentre(text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.SubHealthCentre
+                            ? values?.subHealthCentre
                             : SubHealthCentre
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.SubHealthCentre}
+                        {errors?.subHealthCentre}
                       </Text>
                     </View>
                   )}
                   {currentQuestion === 6 && (
                     <View>
                       <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Community & Social Infrastructure')}
+                        {'F. '+t('Community & Social Infrastructure')}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1450,17 +1495,17 @@ const VillageFormSurveyTab = props => {
                       <RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
-                          setFieldValue('CommunityCentreAvailable', text);
+                          setFieldValue('communityCentreAvailable', text);
                           setCommunityCentreAvailable(text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.CommunityCentreAvailable
+                            ? values?.communityCentreAvailable
                             : CommunityCentreAvailable
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.CommunityCentreAvailable}
+                        {errors?.communityCentreAvailable}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1469,17 +1514,17 @@ const VillageFormSurveyTab = props => {
                       <RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
-                          setFieldValue('CommonShedForWSHG', text);
+                          setFieldValue('commonShedForWSHG', text);
                           setCommonShedForWSHG(text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.CommonShedForWSHG
+                            ? values?.commonShedForWSHG
                             : CommonShedForWSHG
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.CommonShedForWSHG}
+                        {errors?.commonShedForWSHG}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1488,17 +1533,17 @@ const VillageFormSurveyTab = props => {
                       <RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
-                          setFieldValue('PlaygroundAvailable', text);
+                          setFieldValue('playgroundAvailable', text);
                           setPlaygroundAvailable(text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.PlaygroundAvailable
+                            ? values?.playgroundAvailable
                             : PlaygroundAvailable
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.PlaygroundAvailable}
+                        {errors?.playgroundAvailable}
                       </Text>
                       <Spacing space={SH(15)} />
                       <Input
@@ -1509,16 +1554,24 @@ const VillageFormSurveyTab = props => {
                         placeholder={t(
                           'No. of community tanks available in the village?',
                         )}
-                        onChangeText={text =>
-                          setFieldValue('CommunityTanks', text)
-                        }
-                        value={values?.CommunityTanks}
+                        onChangeText={text =>{
+                           let filtered = text.replace(/[^0-9]/g, '');
+                          
+                          if (filtered === '') {
+                            setFieldValue('communityTanks', '');
+                            return;
+                          }
+                          const number = Number(filtered);
+                          if (number > 30) return;
+                          setFieldValue('communityTanks', number)
+                        }}
+                        value={values?.communityTanks}
                         inputType={'numeric'}
-                        maxLength={6}
+                        maxLength={2}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.CommunityTanks}
+                        {errors?.communityTanks}
                       </Text>
                     </View>
                   )}
@@ -1526,7 +1579,7 @@ const VillageFormSurveyTab = props => {
                     <View>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Livelihood & Service Infrastructure')}
+                        {'G. '+t('Livelihood & Service Infrastructure')}
                       </Text>
                       {/* <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1558,16 +1611,16 @@ const VillageFormSurveyTab = props => {
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setDigitalConnectivity(text);
-                          setFieldValue('DigitalConnectivity', text);
+                          setFieldValue('digitalConnectivity', text);
                         }}
                         value={
                           editData != undefined
-                            ? values.DigitalConnectivity
+                            ? values.digitalConnectivity
                             : DigitalConnectivity
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.DigitalConnectivity}
+                        {errors?.digitalConnectivity}
                       </Text>
                       {/* <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1592,17 +1645,17 @@ const VillageFormSurveyTab = props => {
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setPDSAvailable(text);
-                          setFieldValue('PDSAvailable', text);
+                          setFieldValue('pdsAvailable', text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.PDSAvailable
+                            ? values?.pdsAvailable
                             : PDSAvailable
                         }
                       />
-                      <Text style={{color: 'red'}}>{errors?.PDSAvailable}</Text>
-                      <Spacing space={SH(15)} />
-                      {values?.PDSAvailable == false && (
+                      <Text style={{color: 'red'}}>{errors?.pdsAvailable}</Text>
+                      {/* <Spacing space={SH(15)} /> */}
+                      {/*values?.PDSAvailable == false && (
                         <Input
                           title={t(
                             'If No, distance of PDS (ration shop) from the village (in km)?',
@@ -1618,10 +1671,10 @@ const VillageFormSurveyTab = props => {
                           inputType={'numeric'}
                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                         />
-                      )}
-                      <Text style={{color: 'red'}}>
-                        {errors?.DistanceOfPDS}
-                      </Text>
+                      )*/}
+                      {/* <Text style={{color: 'red'}}>
+                        {errors?.distanceOfPDS}
+                      </Text> */}
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         30.{' '}
@@ -1633,16 +1686,16 @@ const VillageFormSurveyTab = props => {
                         arrayData={selfHelpData}
                         onChangeText={text => {
                           setBankingPostOfficeNearby(text);
-                          setFieldValue('BankingPostOfficeNearby', text);
+                          setFieldValue('bankingPostOfficeNearby', text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.BankingPostOfficeNearby
+                            ? values?.bankingPostOfficeNearby
                             : BankingPostOfficeNearby
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.BankingPostOfficeNearby}
+                        {errors?.bankingPostOfficeNearby}
                       </Text>
                     </View>
                   )}
@@ -1651,7 +1704,7 @@ const VillageFormSurveyTab = props => {
                   {currentQuestion === 8 && (
                     <View>
                       <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Water Resource & Irrigation Structures')}
+                        {'H. '+t('Water Resource & Irrigation Structures')}
                       </Text>
                       <Spacing space={SH(10)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1663,17 +1716,17 @@ const VillageFormSurveyTab = props => {
                       <RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
-                          setFieldValue('WaterFromIrrigationProject', text);
+                          setFieldValue('waterFromIrrigationProject', text);
                           setWaterFromIrrigationProject(text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.WaterFromIrrigationProject
+                            ? values?.waterFromIrrigationProject
                             : WaterFromIrrigationProject
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.WaterFromIrrigationProject}
+                        {errors?.waterFromIrrigationProject}
                       </Text>
                       {/* <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1699,9 +1752,9 @@ const VillageFormSurveyTab = props => {
                       <Text style={{color: 'red'}}>
                         {errors?.RepairOrNewDistributionCanalRequired}
                       </Text> */}
-                      {RepairOrNewDistributionCanalRequired && (
+                      {/* {RepairOrNewDistributionCanalRequired && (
                         <Spacing space={SH(5)} />
-                      )}
+                      )} */}
                       {/* {RepairOrNewDistributionCanalRequired && (
                         <Input
                           title={
@@ -1776,17 +1829,17 @@ const VillageFormSurveyTab = props => {
                       <RadioButton
                         arrayData={selfHelpData}
                         onChangeText={text => {
-                          setFieldValue('FunctionalCheckDams', text);
+                          setFieldValue('functionalCheckDams', text);
                           setFunctionalCheckDams(text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.FunctionalCheckDams
+                            ? values?.functionalCheckDams
                             : FunctionalCheckDams
                         }
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.FunctionalCheckDams}
+                        {errors?.functionalCheckDams}
                       </Text>
                       {/* <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1830,7 +1883,7 @@ const VillageFormSurveyTab = props => {
                         {errors?.FunctionalDistributionCanal}
                       </Text> */}
                       <Spacing space={SH(5)} />
-                      {values.FunctionalDistributionCanal == true && (
+                      {/* {values.functionalDistributionCanal == true && (
                         <Input
                           title={t(
                             'If Yes, Scope of new distribution canal in the village in RMT?',
@@ -1844,7 +1897,7 @@ const VillageFormSurveyTab = props => {
                           value={values?.ScopeOfNewDistributionCanal}
                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                         />
-                      )}
+                      )} */}
 
                       <Spacing space={SH(5)} />
                       {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_46")}</Text>
@@ -1879,21 +1932,28 @@ const VillageFormSurveyTab = props => {
                   {currentQuestion === 9 && (
                     <View>
                       <Text style={AnalyaticsStyles.TitleStyle}>
-                        {t('Respondent Details')}
+                        {'I. '+t('Respondent Details')}
                       </Text>
                       <Spacing space={SH(5)} />
-                      <Input
-                        title={'33. ' + t('Respondent Name')}
-                        placeholder={t('Respondent Name')}
-                        onChangeText={text => {
-                          setFieldValue('RespondentName', text);
-                        }}
-                        value={values?.RespondentName}
-                        maxLength={200}
-                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                      />
+                     <Input
+  title={'33. ' + t('Respondent Name')}
+  placeholder={t('Respondent Name')}
+  onChangeText={text => {
+    // [^a-zA-Z.] means: "Match anything that is NOT a letter or a dot"
+    // The 'g' flag replaces all occurrences
+    const filtered = text.replace(/[^a-zA-Z.]/g, '');
+    
+    setFieldValue('respondentName', filtered);
+  }}
+  onFocus={() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  }}
+  value={values?.respondentName}
+  maxLength={200}
+  titleStyle={AnalyaticsStyles.PleaseEnterDate}
+/>
                       <Text style={{color: 'red'}}>
-                        {errors?.RespondentName}
+                        {errors?.respondentName}
                       </Text>
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1902,16 +1962,17 @@ const VillageFormSurveyTab = props => {
                       <RadioButton
                         arrayData={identityData}
                         onChangeText={text => {
-                          setFieldValue('IdentityRole', text);
+                          setFieldValue('identityRole', text);
                           setIdentityRole(text);
                         }}
                         value={
                           editData != undefined
-                            ? values?.IdentityRole
+                            ? values?.identityRole
                             : IdentityRole
                         }
+                        type={1}
                       />
-                      <Text style={{color: 'red'}}>{errors?.IdentityRole}</Text>
+                      <Text style={{color: 'red'}}>{errors?.identityRole}</Text>
                       {/* <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         47. {t('Process Adopted for Survey')}
@@ -1936,15 +1997,15 @@ const VillageFormSurveyTab = props => {
                         title={'35. ' + t('Respondent contact mobile no.?')}
                         placeholder={t('Respondent contact mobile no.?')}
                         onChangeText={text => {
-                          setFieldValue('RespondentMobile', text);
+                          setFieldValue('respondentMobile', text);
                         }}
-                        value={values?.RespondentMobile}
+                        value={values?.respondentMobile}
                         inputType="numeric"
                         maxLength={10}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.RespondentMobile}
+                        {errors?.respondentMobile}
                       </Text>
                       {/* <Spacing space={SH(10)} /> */}
                       {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -2049,14 +2110,14 @@ const VillageFormSurveyTab = props => {
                         title={'37. ' + t('Enumerator Name')}
                         placeholder={t('Enumerator Name')}
                         onChangeText={text =>
-                          setFieldValue('EnumeratorName', text)
+                          setFieldValue('enumeratorName', text)
                         }
-                        value={values?.EnumeratorName}
+                        value={values?.enumeratorName}
                         maxLength={200}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
-                        {errors?.EnumeratorName}
+                        {errors?.enumeratorName}
                       </Text>
                       {/* <Spacing space={SH(5)} />
                 <Input
@@ -2575,36 +2636,38 @@ const VillageFormSurveyTab = props => {
                 <TouchableOpacity
                   style={AnalyaticsStyles.SubmitButton}
                   onPress={() => {
-                    setFieldValue('SurveyDate', dateSelectLocal);
+                  //  Alert.alert("errors",JSON.stringify(errors));
+                    // return;
+                    setFieldValue('surveyDate', dateSelectLocal);
                     // Alert.alert("errors",JSON.stringify(dateSelectLocal));
                     // return;
                     let res =
                       (location ? location.coords.latitude : null) +
                       ',' +
                       (location ? location.coords.longitude : null);
-                    setFieldValue('GeoLocation', res);
+                    setFieldValue('geoLocation', res);
 
                     let finalValuesPreview = {
                       ...values,
                       SurveyDate: dateSelectLocal,
                     };
-                    if (errors && errors?.District) {
-                      AppOkAlert(errors.District, () => {});
+                    if (errors && errors?.district) {
+                      AppOkAlert(errors.district, () => {});
                       return;
                     }
 
-                    if (errors && errors?.Block) {
-                      AppOkAlert(errors.Block, () => {});
+                    if (errors && errors?.block) {
+                      AppOkAlert(errors.block, () => {});
                       return;
                     }
 
-                    if (errors && errors?.GramPanchayat) {
-                      AppOkAlert(errors.GramPanchayat, () => {});
+                    if (errors && errors?.gramPanchayat) {
+                      AppOkAlert(errors.gramPanchayat, () => {});
                       return;
                     }
 
-                    if (errors && errors?.RevenueVillage) {
-                      AppOkAlert(errors.RevenueVillage, () => {});
+                    if (errors && errors?.revenueVillage) {
+                      AppOkAlert(errors.revenueVillage, () => {});
                       return;
                     }
 
@@ -2613,44 +2676,44 @@ const VillageFormSurveyTab = props => {
                       return;
                     }
 
-                    if (errors && errors?.MalePopulation) {
-                      AppOkAlert(errors.MalePopulation, () => {});
+                    if (errors && errors?.malePopulation) {
+                      AppOkAlert(errors.malePopulation, () => {});
                       return;
                     }
 
-                    if (errors && errors?.FemalePopulation) {
-                      AppOkAlert(errors.FemalePopulation, () => {});
+                    if (errors && errors?.femalePopulation) {
+                      AppOkAlert(errors.femalePopulation, () => {});
+                      return;
+                    }
+
+                    // if (
+                    //   values?.InternalVillageRoads === false &&
+                    //   errors &&
+                    //   errors?.InternalVillageRoadsRequirement
+                    // ) {
+                    //   AppOkAlert(
+                    //     errors.InternalVillageRoadsRequirement,
+                    //     () => {},
+                    //   );
+                    //   return;
+                    // }
+
+                    if (
+                      values?.villageConnectedToGP === false &&
+                      errors &&
+                      errors?.lengthAllWeatherRoadToGP
+                    ) {
+                      AppOkAlert(errors.lengthAllWeatherRoadToGP, () => {});
                       return;
                     }
 
                     if (
-                      values?.InternalVillageRoads === false &&
+                      values?.gpConnectedToPWDOrHighway === true &&
                       errors &&
-                      errors?.InternalVillageRoadsRequirement
+                      errors?.lengthAllWeatherRoadToHighway
                     ) {
                       AppOkAlert(
-                        errors.InternalVillageRoadsRequirement,
-                        () => {},
-                      );
-                      return;
-                    }
-
-                    if (
-                      values?.VillageConnectedToGP === false &&
-                      errors &&
-                      errors?.LengthAllWeatherRoadToGP
-                    ) {
-                      AppOkAlert(errors.LengthAllWeatherRoadToGP, () => {});
-                      return;
-                    }
-
-                    if (
-                      values?.GPConnectedToPWDOrHighway === true &&
-                      errors &&
-                      errors?.LengthAllWeatherRoadToHighway
-                    ) {
-                      AppOkAlert(
-                        errors.LengthAllWeatherRoadToHighway,
+                        errors.lengthAllWeatherRoadToHighway,
                         () => {},
                       );
                       return;
@@ -2661,40 +2724,40 @@ const VillageFormSurveyTab = props => {
                     //   return;
                     // }
 
-                    if (
-                      values?.PDSAvailable === false &&
-                      errors &&
-                      errors?.DistanceOfPDS
-                    ) {
-                      AppOkAlert(errors.DistanceOfPDS, () => {});
+                    // if (
+                    //   values?.pdsAvailable === false &&
+                    //   errors &&
+                    //   errors?.DistanceOfPDS
+                    // ) {
+                    //   AppOkAlert(errors.DistanceOfPDS, () => {});
+                    //   return;
+                    // }
+
+                    // if (
+                    //   values?.waterFromIrrigationProject === true &&
+                    //   errors &&
+                    //   errors?.LengthOfDistributionCanal
+                    // ) {
+                    //   AppOkAlert(errors.LengthOfDistributionCanal, () => {});
+                    //   return;
+                    // }
+
+                    // if (
+                    //   values?.waterFromIrrigationProject === true &&
+                    //   errors &&
+                    //   errors?.scopeOfNewDistributionCanal
+                    // ) {
+                    //   AppOkAlert(errors.scopeOfNewDistributionCanal, () => {});
+                    //   return;
+                    // }
+
+                    if (errors && errors?.respondentName) {
+                      AppOkAlert(errors.respondentName, () => {});
                       return;
                     }
 
-                    if (
-                      values?.WaterFromIrrigationProject === true &&
-                      errors &&
-                      errors?.LengthOfDistributionCanal
-                    ) {
-                      AppOkAlert(errors.LengthOfDistributionCanal, () => {});
-                      return;
-                    }
-
-                    if (
-                      values?.WaterFromIrrigationProject === true &&
-                      errors &&
-                      errors?.ScopeOfNewDistributionCanal
-                    ) {
-                      AppOkAlert(errors.ScopeOfNewDistributionCanal, () => {});
-                      return;
-                    }
-
-                    if (errors && errors?.RespondentName) {
-                      AppOkAlert(errors.RespondentName, () => {});
-                      return;
-                    }
-
-                    if (errors && errors?.IdentityRole) {
-                      AppOkAlert(errors.IdentityRole, () => {});
+                    if (errors && errors?.identityRole) {
+                      AppOkAlert(errors.identityRole, () => {});
                       return;
                     }
 
@@ -2703,17 +2766,16 @@ const VillageFormSurveyTab = props => {
                     //   return;
                     // }
 
-                    if (errors && errors?.RespondentMobile) {
-                      AppOkAlert(errors.RespondentMobile, () => {});
+                    if (errors && errors?.respondentMobile) {
+                      AppOkAlert(errors.respondentMobile, () => {});
                       return;
                     }
-                    if (errors && errors?.EnumeratorName) {
-                      AppOkAlert(errors.EnumeratorName, () => {});
+                    if (errors && errors?.enumeratorName) {
+                      AppOkAlert(errors.enumeratorName, () => {});
                       return;
                     }
 
-                    // Alert.alert('errors', JSON.stringify(errors));
-                    // return;
+                    
 
                     setPreviewData(finalValuesPreview);
                     setShowConfirmModal(true);
@@ -2726,7 +2788,7 @@ const VillageFormSurveyTab = props => {
                             : waterArray.concat(item);
                       });
                       //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
-                      setFieldValue('DrinkingWaterSource', waterArray);
+                      setFieldValue('drinkingWaterSource', waterArray);
                       setDrinkingWaterSource(waterArray);
                     }
 

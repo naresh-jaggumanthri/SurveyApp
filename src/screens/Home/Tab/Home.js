@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { useFocusEffect, useTheme } from '@react-navigation/native';
+import { useFocusEffect, useTheme,useIsFocused} from '@react-navigation/native';
 import { View, Text, TouchableOpacity, FlatList, Alert } from "react-native";
 import { SH, SW, widthPercent } from '../../../utils';
 import { Spacing, RecentlyDataView } from '../../../components';
@@ -12,6 +12,7 @@ import { ScrollView } from 'react-native-virtualized-view';
 import { useSelector } from 'react-redux';
 import { BackHandler } from 'react-native';
 import api from '../../../api';
+import UserProfileCard from '../../../components/commonComponents/UserProfileCard';
 
 
 
@@ -84,6 +85,7 @@ const HomeTab = (props) => {
   ];
   const { Colors } = useTheme();
   const HomeTabStyles = useMemo(() => HomeTabStyle(Colors), [Colors]);
+  const isFocused = useIsFocused();
   useEffect(() => {
     getFamilyList();
     getVillageList();
@@ -95,7 +97,7 @@ const HomeTab = (props) => {
   // );
 
   // return () => backHandler.remove();
-}, []);
+}, [isFocused]);
 useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -150,6 +152,7 @@ const getFamilyList =async()=>{
            let token=loginData?.token;
              
                const res=await api.user.getMigrationListSurveyData(token);
+               console.log('village listresponse', JSON.stringify(res));
        
            //      {
            //   text: 'Side_Title_11',
@@ -197,8 +200,8 @@ const getFamilyList =async()=>{
                 <Text style={tabshow == 3 ? HomeTabStyles.MenuTextStyle : HomeTabStyles.MenuTextStyleTwo}>{t("Home_Title_19")}</Text>
               </TouchableOpacity>
             </View> */}
-            <Spacing space={SH(30)} />
-            <View style={HomeTabStyles.PieChartView}>
+            <Spacing space={SH(5)} />
+            {/* <View style={HomeTabStyles.PieChartView}> */}
               {/* <PieChart
                 data={data}
                 width={SW(320)}
@@ -219,7 +222,7 @@ const getFamilyList =async()=>{
                 paddingLeft="15"
                 valueAccessor={({ item }) => item.population}
               /> */}
-            </View>
+            {/* </View> */}
             {/* <Spacing space={SH(20)} /> */}
             {/* <LineChart
               data={LineChartData}
@@ -252,16 +255,18 @@ const getFamilyList =async()=>{
               }}
               paddingLeft="0"
             /> */}
-            <Spacing space={SH(10)} />
+            
             {/* <View style={HomeTabStyles.FlexRow}> */}
-            <View style={{flexDirection:"column"}}>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>Name :{loginData.username}</Text>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>District :{t("Bolangir")}</Text>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>Block :{t("Titlagarh")}</Text>
-              {/* <TouchableOpacity onPress={() => navigation.navigate(RouteName.ALL_SERVEY_SCREEN)}>
-                <Text style={HomeTabStyles.ViewAllTextStyle}>{t("Home_Title_21")}</Text>
-              </TouchableOpacity> */}
-            </View>
+            <UserProfileCard
+            loginData={loginData}/>
+            {/* <View style={{flexDirection:"column"}}>
+              <Text style={HomeTabStyles.RecentlyTextStyle}>{t("Name")} :{loginData?.username}</Text>
+              <Text style={HomeTabStyles.RecentlyTextStyle}>{t("District")} :{loginData?.district}</Text>
+              <Text style={HomeTabStyles.RecentlyTextStyle}>{t("Block")} :{loginData?.block}</Text>
+              <Text style={HomeTabStyles.RecentlyTextStyle}>{t("Gram Panchayat")} :{loginData?.gp}</Text>
+              <Text style={HomeTabStyles.RecentlyTextStyle}>{t("Village")} :{loginData?.village.join(', ')}</Text>
+            
+            </View> */}
             <Spacing space={SH(10)} />
             <View style={HomeTabStyles.BackGroundShape}>
               <FlatList

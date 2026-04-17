@@ -17,6 +17,7 @@ import Loader from '../../../components/commonComponents/Loader';
 import { AppDataSource } from '../../../database/database';
 import { VillageSurvey } from '../../../database/entities/VillageSurvey';
 import { v4 as uuidv4 } from 'uuid';
+import UserProfileCard from '../../../components/commonComponents/UserProfileCard';
 
 const VillageFormList = (props) => {
   const { navigation } = props;
@@ -255,8 +256,8 @@ const VillageFormList = (props) => {
                 <Text style={tabshow == 3 ? HomeTabStyles.MenuTextStyle : HomeTabStyles.MenuTextStyleTwo}>{t("Home_Title_19")}</Text>
               </TouchableOpacity>
             </View> */}
-            <Spacing space={SH(30)} />
-            <View style={HomeTabStyles.PieChartView}>
+            {/* <Spacing space={SH(30)} /> */}
+            {/* <View style={HomeTabStyles.PieChartView}> */}
               {/* <PieChart
                 data={data}
                 width={SW(320)}
@@ -277,7 +278,7 @@ const VillageFormList = (props) => {
                 paddingLeft="15"
                 valueAccessor={({ item }) => item.population}
               /> */}
-            </View>
+            {/* </View> */}
             {/* <Spacing space={SH(20)} /> */}
             {/* <LineChart
               data={LineChartData}
@@ -310,16 +311,8 @@ const VillageFormList = (props) => {
               }}
               paddingLeft="0"
             /> */}
-            <Spacing space={SH(10)} />
-            {/* <View style={HomeTabStyles.FlexRow}> */}
-            <View style={{flexDirection:"column"}}>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>Name :{loginData.username}</Text>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>District :{t("Bolangir")}</Text>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>Block :{t("Titlagarh")}</Text>
-              {/* <TouchableOpacity onPress={() => navigation.navigate(RouteName.ALL_SERVEY_SCREEN)}>
-                <Text style={HomeTabStyles.ViewAllTextStyle}>{t("Home_Title_21")}</Text>
-              </TouchableOpacity> */}
-            </View>
+            <UserProfileCard
+            loginData={loginData}/>
             <Spacing space={SH(10)} />
             <View style={HomeTabStyles.BackGroundShape}>
               <FlatList

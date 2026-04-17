@@ -2136,11 +2136,27 @@ Response :
     );
    };
    
+// https://demo2.itmaniacs.co.in/api/household/222cd5ea-34de-4881-9045-8de68fae77f2
+
+// https://demo2.itmaniacs.co.in/api/household/{uniqueId}
+
+saveEditedHouseHold(body,uniqueId,token) {
+    return this.apiClient.postImageUpdate(
+      null,
+      `api/Household/${uniqueId}`,
+      body,
+      null,
+      true,
+      token
+    );
+  };
+
+}
 
 
    
 
  
-}
+
 
 

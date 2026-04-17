@@ -1,4 +1,4 @@
-import { DATA_DETAILES_TYPE, LOGIN_DATA_TYPE } from "../actiontypes/DataTypes";
+import { DATA_DETAILES_TYPE, FAMILY_DATA, HOUSE_DATA, LOGIN_DATA_TYPE } from "../actiontypes/DataTypes";
 const initialState = {
   detailsStore: []
 };
@@ -13,6 +13,17 @@ export default function DataReducer(state = initialState, action) {
       return {
         ...state,
         loginData: action.data,
+      };
+      case HOUSE_DATA:
+        return {
+        ...state,
+        houseData: action.data,
+      };
+      
+      case FAMILY_DATA:
+        return {
+        ...state,
+        familyData: action.data,
       };
 
     default: {

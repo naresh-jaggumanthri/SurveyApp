@@ -1,4 +1,6 @@
+import { Alert } from 'react-native';
 import * as Yup from 'yup';
+import { decode as atob } from 'base-64';
 export const LoginFormInitialValues = (username, password) => {
     return{
         username: username || '',
@@ -17,4 +19,24 @@ export const LoginValidationSchema = (username, password) => {
             .max(7, 'Too Long!')
             .required('Password is Required'),
     });
+}
+
+export async function decodeJWT(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+    // Now atob will work!
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Decoding failed:", error);
+    return null;
+  }
 }

@@ -176,17 +176,19 @@ const FamilyFormSurveyTab = props => {
   useEffect(() => {
    
     getLocation();
-    if (isFocused) {
+    // if (isFocused) {
+     
      const token = PubSub.subscribe('familyData', (msg, data) => {
-// Alert.alert('Family Data Received', JSON.stringify(data));
+  Alert.alert('Family Data Received', JSON.stringify(data));
 setFamilyMembers(data);
      });
 
-      return () => {
+     return () => {
            PubSub.unsubscribe(token);
          };
       
-    }
+    // }
+     
   }, [isFocused]);
   
 
@@ -568,7 +570,8 @@ setFamilyMembers(data);
    try{
     const res={
       name: headName,
-      count: familyMemberCount
+      count: familyMemberCount,
+      type:1
     }
     if(!headName){
       setNameError(t('Please enter the name of the head of the household'));
@@ -640,6 +643,8 @@ setFamilyMembers(data);
     setVillages(result);
   };
   const handleNext = () => {
+    // goToTop();
+    
     if (currentQuestion == 1) {
       twoRef.current?.focus();
     }
@@ -701,8 +706,9 @@ setFamilyMembers(data);
     logout: t('Survey_Title_33'),
   };
   const onoknutton = () => {
-    // Alert.alert("Analytics Screen",JSON.stringify(familyMembers));
-    // navigation.navigate(RouteName.ANALYTICS_SCREEN);
+    //  Alert.alert("Analytics Screen",JSON.stringify(familyMembers));
+    // setAlertMessage(false);
+    navigation.navigate(RouteName.HOME_SCREEN);
   };
   const Onpressfunction = e => {
     navigation.toggleDrawer();
@@ -749,6 +755,7 @@ setFamilyMembers(data);
     //   token,
     //   false
     // );
+    
     const response = await api.user.postHouseholdSurveyDataFilesUpload(
       values,
       null,
@@ -786,10 +793,12 @@ setFamilyMembers(data);
               console.log(error.message);
             },
             {
-              enableHighAccuracy: false,
-              timeout: 30000,
-              maximumAge: 10000,
+              enableHighAccuracy:false,
+              timeout:60000,
+              maximumAge:10000,
+              distanceFilter:500
             },
+           
           );
           // Geolocation.getCurrentPosition(
           //   position => {
@@ -855,13 +864,20 @@ setFamilyMembers(data);
  
 
   const handleAddPress = () => {
-     setFamilyAlertVisible(!familyAlertVisible);
+    setAlertVisible(!alertVisible)
   onoknutton();
   }
 
   
  
- 
+ const scrollRef = useRef(null);
+ const goToTop = () => {
+     // 2. Call the scrollTo method
+     scrollRef?.current?.scrollTop({
+       y: 0,
+       animated: true,
+     });
+   };
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(10)} />
@@ -1026,6 +1042,7 @@ setFamilyMembers(data);
         }) => (
           <>
             <KeyboardAwareScrollView
+            ref={scrollRef}
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={Style.ScrollViewStyles}>
               {/* <KeyboardAwareScrollView> */}
@@ -1035,7 +1052,7 @@ setFamilyMembers(data);
                   <View>
                     {/* District */}
                     <Text ref={oneRef} style={AnalyaticsStyles.TitleStyle}>
-                      {t('Demographic Profile')}
+                      {'A. '+t('Demographic Profile')}
                     </Text>
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
                       1. {t('District')}
@@ -1060,6 +1077,7 @@ setFamilyMembers(data);
                           obj.label,
                         );
                       }}
+                     
                     />
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.district}
@@ -1085,6 +1103,7 @@ setFamilyMembers(data);
                         getPanchayats(obj.value);
                         setFieldValue('householdBasicProfile.block', obj.label);
                       }}
+                      
                     />
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.block}
@@ -1296,7 +1315,7 @@ setFamilyMembers(data);
                 {currentQuestion === 2 && (
                   <View>
                     <Text refs={twoRef} style={AnalyaticsStyles.TitleStyle}>
-                      {t('Bank Account Details of Head of Household')}
+                      {'B. '+t('Bank Account Details of Head of Household')}
                     </Text>
                     <Spacing space={SH(5)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1547,6 +1566,12 @@ setFamilyMembers(data);
                         </Text>
                       </TouchableOpacity>
                     )}
+                      <Text style={{fontWeight: 'bold'}}>{t('House hold Members')}:</Text>
+                                                     {familyMembers?.map((m, i) => (
+                                                       <Text key={i}>
+                                                         {i + 1}. {m.name} | Age: {m.age} | Gender: {m.gender}
+                                                       </Text>
+                                                     ))}
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.totalFamilyMembers}
                     </Text>
@@ -1556,7 +1581,7 @@ setFamilyMembers(data);
                 {currentQuestion === 3 && (
                   <View>
                     <Text refs={threeRef} style={AnalyaticsStyles.TitleStyle}>
-                      {t('Social Protection')}
+                      {'C. '+t('Social Protection')}
                     </Text>
                     <Spacing space={SH(5)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1696,6 +1721,7 @@ setFamilyMembers(data);
                             ? values.householdBasicProfile.drinkingWaterSource
                             : drinkingWaterSource
                         }
+                        type={1}
                       /> 
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.drinkingWaterSource}
@@ -2030,18 +2056,18 @@ setFamilyMembers(data);
                         setIsAtalPensionYojana(text);
                         // Alert.alert("text",JSON.stringify(text));
                         setFieldValue(
-                          'householdEntitlement.isAtalPensionYojana',
+                          'householdEntitlement.atalPension',
                           text,
                         );
                       }}
                       value={
                         editData != undefined
-                          ? values.householdEntitlement.isAtalPensionYojana
+                          ? values.householdEntitlement.atalPension
                           : isAtalPensionYojana
                       }
                     />
                     <Text style={{color: 'red'}}>
-                      {errors?.householdEntitlement?.isAtalPensionYojana}
+                      {errors?.householdEntitlement?.atalPension}
                     </Text>
 
                     <Spacing space={SH(5)} />
@@ -2056,18 +2082,18 @@ setFamilyMembers(data);
                       onChangeText={text => {
                         setIsOldAgePension(text);
                         setFieldValue(
-                          'householdEntitlement.isOldAgePension',
+                          'householdEntitlement.oldagePension',
                           text,
                         );
                       }}
                       value={
                         editData != undefined
-                          ? values.householdEntitlement.isOldAgePension
+                          ? values.householdEntitlement.oldagePension
                           : isOldAgePension
                       }
                     />
                     <Text style={{color: 'red'}}>
-                      {errors?.householdEntitlement?.isOldAgePension}
+                      {errors?.householdEntitlement?.oldagePension}
                     </Text>
 
                     <Spacing space={SH(5)} />
@@ -2082,18 +2108,18 @@ setFamilyMembers(data);
                       onChangeText={text => {
                         setIsWidowPension(text);
                         setFieldValue(
-                          'householdEntitlement.isWidowPension',
+                          'householdEntitlement.widowPension',
                           text,
                         );
                       }}
                       value={
                         editData != undefined
-                          ? values.householdEntitlement.isWidowPension
+                          ? values.householdEntitlement.widowPension
                           : isWidowPension
                       }
                     />
                     <Text style={{color: 'red'}}>
-                      {errors?.householdEntitlement?.isWidowPension}
+                      {errors?.householdEntitlement?.widowPension}
                     </Text>
 
                     <Spacing space={SH(5)} />
@@ -2108,18 +2134,18 @@ setFamilyMembers(data);
                       onChangeText={text => {
                         setIsDisabilityPension(text);
                         setFieldValue(
-                          'householdEntitlement.isDisabilityPension',
-                          JSON.stringify(text),
+                          'householdEntitlement.disabilityPension',
+                          text,
                         );
                       }}
                       value={
                         editData != undefined
-                          ? values.householdEntitlement.isDisabilityPension
+                          ? values.householdEntitlement.disabilityPension
                           : isDisabilityPension
                       }
                     />
                     <Text style={{color: 'red'}}>
-                      {errors?.householdEntitlement?.isDisabilityPension}
+                      {errors?.householdEntitlement?.disabilityPension}
                     </Text>
                   </View>
                 )}
@@ -2127,7 +2153,7 @@ setFamilyMembers(data);
                 {currentQuestion === 4 && (
                   <View>
                     <Text refs={threeRef} style={AnalyaticsStyles.TitleStyle}>
-                      {t('Occupation & Resources')}
+                    {'D. '+t('Occupation & Resources')}
                     </Text>
 
                     
@@ -2335,6 +2361,7 @@ setFamilyMembers(data);
                               .approximatePrivateLandHolding
                           : approximatePrivateLandHolding
                       }
+                      type={1}
                     />
                     <Text style={{color: 'red'}}>
                       {
@@ -2415,7 +2442,7 @@ setFamilyMembers(data);
                 {currentQuestion === 5 && (
                   <View>
                     <Text style={AnalyaticsStyles.TitleStyle}>
-                      {t('Additional Information of HH on Migration')}
+                      {'E. '+t('Additional Information of HH on Migration')}
                     </Text>
                    
                     <Spacing space={SH(5)} />
@@ -2570,6 +2597,7 @@ setFamilyMembers(data);
                           ? values.householdMigrationStatus.respondentIdentity
                           : respondentIdentity
                       }
+                      type={1}
                     />
                     <Text style={{color: 'red'}}>
                       {errors?.householdMigrationStatus?.respondentIdentity}
@@ -3056,7 +3084,7 @@ setFamilyMembers(data);
                         :
                       </Text>{' '}
                       {'' +
-                        previewData?.householdEntitlement?.isAtalPensionYojana}
+                        previewData?.householdEntitlement?.atalPension}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -3065,7 +3093,7 @@ setFamilyMembers(data);
                         )}
                         :
                       </Text>{' '}
-                      {'' + previewData?.householdEntitlement?.isOldAgePension}
+                      {'' + previewData?.householdEntitlement?.oldagePension}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -3074,7 +3102,7 @@ setFamilyMembers(data);
                         )}
                         :
                       </Text>{' '}
-                      {'' + previewData?.householdEntitlement?.isWidowPension}
+                      {'' + previewData?.householdEntitlement?.widowPension}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -3084,7 +3112,7 @@ setFamilyMembers(data);
                         :
                       </Text>{' '}
                       {'' +
-                        previewData?.householdEntitlement?.isDisabilityPension}
+                        previewData?.householdEntitlement?.disabilityPension}
                     </Text>
 
                     <Text style={AnalyaticsStyles.TitleStyle}>
@@ -3737,7 +3765,9 @@ setFamilyMembers(data);
         modalVisible={alertVisible}
         setModalVisible={setAlertVisible}
         onPressCancel={() => setAlertVisible(!alertVisible)}
-        onPress={handleAddPress}
+         onPress={() => {
+          setAlertVisible(!alertVisible), onoknutton();
+        }}
         buttonText={t('Ok')}
         buttonminview={Style.ButtonCenter}
       />

@@ -18,12 +18,16 @@ import { AppDataSource } from '../../../database/database';
 import { HouseholdSurvey } from '../../../database/entities/HouseholdSurvey';
 import Loader from '../../../components/commonComponents/Loader';
 import { v4 as uuidv4 } from 'uuid';
+import { save_family_data } from '../../../redux/action/DataAction';
+import { useDispatch } from 'react-redux';
+import UserProfileCard from '../../../components/commonComponents/UserProfileCard';
 
 const FamilyFormList = (props) => {
   const { navigation } = props;
   const { t } = useTranslation();
   const { loginData } = useSelector(state => state.DataReducer) || {};
   const route=useRoute();
+   const dispatch = useDispatch();
 //   const PubSub = require('pubsub-js');
 
   const data = [
@@ -198,7 +202,7 @@ const saveHouseholdsToLocalDB = async (res) => {
         }
     
       });
-    //    Alert.alert("FamilyFormList",JSON.stringify(result));
+      // Alert.alert("FamilyFormList",JSON.stringify(result[0].item.householdBasicProfile?.totalFamilyMembers));
       setFamilyList(result);
 
   };
@@ -356,16 +360,8 @@ onSavePress(formData);
               }}
               paddingLeft="0"
             /> */}
-            <Spacing space={SH(10)} />
-            {/* <View style={HomeTabStyles.FlexRow}> */}
-            <View style={{flexDirection:"column"}}>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>Name :{loginData.username}</Text>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>District :{t("Bolangir")}</Text>
-              <Text style={HomeTabStyles.RecentlyTextStyle}>Block :{t("Titlagarh")}</Text>
-              {/* <TouchableOpacity onPress={() => navigation.navigate(RouteName.ALL_SERVEY_SCREEN)}>
-                <Text style={HomeTabStyles.ViewAllTextStyle}>{t("Home_Title_21")}</Text>
-              </TouchableOpacity> */}
-            </View>
+             <UserProfileCard
+                        loginData={loginData}/>
             <Spacing space={SH(10)} />
            
             <View style={HomeTabStyles.BackGroundShape}>
@@ -379,7 +375,8 @@ onSavePress(formData);
                   index={index}
                   type={1}
                   onPress={() =>{
-                    
+                  
+                      dispatch(save_family_data(item));
                     PubSub.publish('HouseItem',item) 
                     navigation.navigate(RouteName.FAMILY_SURVEY_EDIT_TAB);
  
