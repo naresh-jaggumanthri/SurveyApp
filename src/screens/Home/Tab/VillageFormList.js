@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useTheme } from '@react-navigation/native';
 import { View, Text, TouchableOpacity, FlatList, Alert, StyleSheet } from "react-native";
 import { Colors, SH, SW, widthPercent } from '../../../utils';
-import { Spacing, RecentlyDataView, VectorIcon } from '../../../components';
+import { Spacing, RecentlyDataView, VectorIcon, RecentlyDataViewVillage } from '../../../components';
 import { HomeTabStyle, Style } from '../../../styles';
 import { PieChart, LineChart } from 'react-native-chart-kit';
 import images from '../../../index';
@@ -149,9 +149,9 @@ const VillageFormList = (props) => {
                      surveyJson={};
                    }
                    return{
-                     text:surveyJson.respondentName,
+                     text:surveyJson.revenueVillage,
                     imageset: images.village,
-                     musicname:surveyJson.identityRole,
+                     musicname:surveyJson.respondentName+' ('+surveyJson.identityRole+')',
                    //   TextTwo::m.householdBasicProfile.,
                      TextThree:surveyJson.totalHouseholds,
                      id:surveyJson.localId,
@@ -162,7 +162,7 @@ const VillageFormList = (props) => {
                
                  });
                   // Alert.alert("FamilyFormList",JSON.stringify(result));
-                 setVillageList(result);
+                 setVillageList(result.reverse());
                });
                return;
              }
@@ -181,9 +181,9 @@ const VillageFormList = (props) => {
            
          const result=res.map((m)=>{
            return{
-             text:m.respondentName,
+             text:m.revenueVillage,
              imageset: images.village,
-             musicname:m.identityRole,
+             musicname:m.respondentName+' ('+m.identityRole+')',
            //   TextTwo::m.householdBasicProfile.,
              TextThree:m.totalHouseholds,
              item:m,
@@ -192,7 +192,7 @@ const VillageFormList = (props) => {
        
          });
        //    Alert.alert("FamilyFormList",JSON.stringify(result));
-         setVillageList(result);
+         setVillageList(result.reverse());
    
      };
       const syncPendingSurveys = async () => {
@@ -319,7 +319,7 @@ const VillageFormList = (props) => {
                 data={villageList}
                 numColumns={1}
                 showsHorizontalScrollIndicator={false}
-                renderItem={({ item, index }) => (<RecentlyDataView
+                renderItem={({ item, index }) => (<RecentlyDataViewVillage
                   item={item}
                   index={index}
                   type={2}

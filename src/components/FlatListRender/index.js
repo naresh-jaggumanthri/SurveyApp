@@ -8,3 +8,4 @@ export { default as PaymentModalData } from './PaymentModalData';
 export { default as ProfileAccountView } from './ProfileAccountView';
 export { default as NotificationView } from './NotificationView';
 export { default as RecentlyDataView } from './RecentlyDataView';
+export { default as RecentlyDataViewVillage } from './RecentlyDataViewVillage';

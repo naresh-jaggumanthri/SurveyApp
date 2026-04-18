@@ -425,70 +425,98 @@ const VillageFormSurveyEdit = props => {
     var token = PubSub.subscribe('VillageItem', mySubscriber);
     formikRef.current.resetForm({values: undefined});
   }, []);
+  const toggleCheckbox4 = (label) => {
+    const labelsToToggle = label.split(',').map(l => l.trim());
+  setCheckboxes4((prev) => {
+    return prev.map((item) => {
+      // Case 1: User clicked "None"
+      if (label === t('None')) {
+        return item.label === t('None') 
+          ? { ...item, checked: !item.checked } 
+          : { ...item, checked: false }; // Uncheck everything else
+      }
+
+      // Case 2: User clicked a normal option, but "None" was previously checked
+      if (item.label === t('None')) {
+        return { ...item, checked: false };
+      }
+
+      // Case 3: Standard matching logic
+     
+      return item.label === label || labelsToToggle.includes(item.label)
+        ? { ...item, checked: !item.checked } 
+        : item;
+    });
+  });
+};
   var mySubscriber = function (msg, data) {
     // console.log(msg, data);
-    //  Alert.alert("Data",JSON.stringify(data?.item));
+    const drinkingWater = data?.item?.drinkingWaterSource || "";
+    // Alert.alert("Drinking Water Source",JSON.stringify(drinkingWater));
+      toggleCheckbox4(drinkingWater||"");
+const labelsArray2 = drinkingWater.split(",").map(s => s.trim());
+    setDrinkingWaterSource(labelsArray2);
     setEditData(data);
     if (data && formikRef.current) {
       const resultData = data?.item;
       const resetData = {
-        District: resultData.district,
-        Block: resultData.block,
-        GramPanchayat: resultData.gramPanchayat,
-        RevenueVillage: resultData.revenueVillage,
-        TotalHouseholds: resultData.totalHouseholds,
-        MalePopulation: resultData.malePopulation,
-        FemalePopulation: resultData.femalePopulation,
-        InternalVillageRoads: resultData.internalVillageRoads,
-        InternalVillageRoadsRequirement:
-          resultData.internalVillageRoadsRequirement,
-        InternalDrainsAvailable: resultData.internalDrainsAvailable,
-        DrainsProperlyFunctional: resultData.drainsProperlyFunctional,
-        IsElectrified: resultData.isElectrified,
-        StreetLightingAvailable: resultData.streetLightingAvailable,
-        StreetLightingType: resultData.streetLightingType,
-        VillageConnectedToGP: resultData.villageConnectedToGP,
-        LengthAllWeatherRoadToGP: resultData.lengthAllWeatherRoadToGP,
-        GPConnectedToPWDOrHighway: resultData.gpConnectedToPWDOrHighway,
-        LengthAllWeatherRoadToHighway: resultData.lengthAllWeatherRoadToHighway,
-        MenInMigration: resultData.menInMigration,
-        WomenInMigration: resultData.womenInMigration,
+        district: resultData.district,
+        block: resultData.block,
+        gramPanchayat: resultData.gramPanchayat,
+        revenueVillage: resultData.revenueVillage,
+        totalHouseholds: resultData.totalHouseholds,
+        malePopulation: resultData.malePopulation,
+        femalePopulation: resultData.femalePopulation,
+        // internalVillageRoads: resultData.internalVillageRoads,
+        // internalVillageRoadsRequirement:
+        //   resultData.internalVillageRoadsRequirement,
+        // internalDrainsAvailable: resultData.internalDrainsAvailable,
+        // drainsProperlyFunctional: resultData.drainsProperlyFunctional,
+        isElectrified: resultData.isElectrified,
+        streetLightingAvailable: resultData.streetLightingAvailable,
+        streetLightingType: resultData.streetLightingType,
+        villageConnectedToGP: resultData.villageConnectedToGP,
+        lengthAllWeatherRoadToGP: resultData.lengthAllWeatherRoadToGP,
+        gpConnectedToPWDOrHighway: resultData.gpConnectedToPWDOrHighway,
+        lengthAllWeatherRoadToHighway: resultData.lengthAllWeatherRoadToHighway,
+        menInMigration: resultData.menInMigration,
+        womenInMigration: resultData.womenInMigration,
         TotalPersonsInMigration: resultData.totalPersonsInMigration,
-        MinorChildrenInMigration: resultData.minorChildrenInMigration,
-        DrinkingWaterSource: resultData.drinkingWaterSource,
-        AllHouseholdsWithToilets: resultData.allHouseholdsWithToilets,
-        AnganwadiCentre: resultData.anganwadiCentre,
-        PrimarySchoolAvailable: resultData.primarySchoolAvailable,
-        SecondarySchoolWithin3km: resultData.secondarySchoolWithin3km,
-        SubHealthCentre: resultData.subHealthCentre,
-        CommunityCentreAvailable: resultData.communityCentreAvailable,
-        CommonShedForWSHG: resultData.commonShedForWSHG,
-        PlaygroundAvailable: resultData.playgroundAvailable,
-        CommunityTanks: resultData.communityTanks,
-        MobileNetworkCoverage: resultData.mobileNetworkCoverage,
-        DigitalConnectivity: resultData.digitalConnectivity,
-        DryingYard: resultData.dryingYard,
-        PDSAvailable: resultData.pdsAvailable,
-        DistanceOfPDS: resultData.distanceOfPDS,
-        BankingPostOfficeNearby: resultData.bankingPostOfficeNearby,
-        WaterFromIrrigationProject: resultData.waterFromIrrigationProject,
-        RepairOrNewDistributionCanalRequired:
-          resultData.repairOrNewDistributionCanalRequired,
-        LengthOfDistributionCanal: resultData.lengthOfDistributionCanal,
-        FunctionalLiftIrrigation: resultData.functionalLiftIrrigation,
-        ScopeOfNewLiftIrrigation: resultData.scopeOfNewLiftIrrigation,
-        FunctionalCheckDams: resultData.functionalCheckDams,
-        ScopeOfNewCheckDams: resultData.scopeOfNewCheckDams,
-        FunctionalDistributionCanal: resultData.functionalDistributionCanal,
-        ScopeOfNewDistributionCanal: resultData.scopeOfNewDistributionCanal,
-        RespondentName: resultData.respondentName,
-        IdentityRole: resultData.identityRole,
-        SurveyProcess: resultData.surveyProcess,
-        RespondentMobile: resultData.respondentMobile,
-        MeetingPhotoPath: resultData.meetingPhotoPath,
-        GeoLocation: resultData.geoLocation,
-        EnumeratorName: resultData.enumeratorName,
-        SurveyDate: resultData.surveyDate,
+        minorChildrenInMigration: resultData.minorChildrenInMigration,
+        drinkingWaterSource: resultData.drinkingWaterSource,
+        allHouseholdsWithToilets: resultData.allHouseholdsWithToilets,
+        anganwadiCentre: resultData.anganwadiCentre,
+        primarySchoolAvailable: resultData.primarySchoolAvailable,
+        secondarySchoolWithin3km: resultData.secondarySchoolWithin3km,
+        subHealthCentre: resultData.subHealthCentre,
+        communityCentreAvailable: resultData.communityCentreAvailable,
+        commonShedForWSHG: resultData.commonShedForWSHG,
+        playgroundAvailable: resultData.playgroundAvailable,
+        communityTanks: resultData.communityTanks,
+        // MobileNetworkCoverage: resultData.mobileNetworkCoverage,
+        digitalConnectivity: resultData.digitalConnectivity,
+        // DryingYard: resultData.dryingYard,
+        pdsAvailable: resultData.pdsAvailable,
+        // DistanceOfPDS: resultData.distanceOfPDS,
+        bankingPostOfficeNearby: resultData.bankingPostOfficeNearby,
+        waterFromIrrigationProject: resultData.waterFromIrrigationProject,
+        // RepairOrNewDistributionCanalRequired:
+        //   resultData.repairOrNewDistributionCanalRequired,
+        // LengthOfDistributionCanal: resultData.lengthOfDistributionCanal,
+        functionalLiftIrrigation: resultData.functionalLiftIrrigation,
+        // ScopeOfNewLiftIrrigation: resultData.scopeOfNewLiftIrrigation,
+        // FunctionalCheckDams: resultData.functionalCheckDams,
+        // ScopeOfNewCheckDams: resultData.scopeOfNewCheckDams,
+        // FunctionalDistributionCanal: resultData.functionalDistributionCanal,
+        // ScopeOfNewDistributionCanal: resultData.scopeOfNewDistributionCanal,
+        respondentName: resultData.respondentName,
+        identityRole: resultData.identityRole,
+        // SurveyProcess: resultData.surveyProcess,
+        respondentMobile: resultData.respondentMobile,
+        // MeetingPhotoPath: resultData.meetingPhotoPath,
+        geoLocation: resultData.geoLocation,
+        enumeratorName: resultData.enumeratorName,
+        surveyDate: resultData.surveyDate,
         TotalPopulation: resultData.totalPopulation,
       };
       formikRef.current.resetForm({
@@ -735,13 +763,11 @@ const VillageFormSurveyEdit = props => {
               <KeyboardAvoidingView enabled>
                 <Spacing space={SH(10)} />
                 <View style={AnalyaticsStyles.MainView}>
-                  {/* First question start */}
-                                    {/* <Text style={AnalyaticsStyles.TitleStyle}>{t("Basic Details")}</Text> */}
-                                    {currentQuestion === 1 && (
+                    {currentQuestion === 1 && (
                                       <View>
                                         {/* District */}
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                           {'A. '+t('Basic Details')}
+                                          {'A. '+t('Basic Details')}
                                         </Text>
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                           1. {t('District')}
@@ -753,15 +779,15 @@ const VillageFormSurveyEdit = props => {
                                           width={SW(345)}
                                           labelField="label"
                                           valueField="value"
-                                          value={values?.District}
-                                          placeholder={values?.District || t('Select District')}
+                                          value={values?.district}
+                                          placeholder={values?.district || t('Select District')}
                                           onChange={obj => {
                                             // Alert.alert("hellll",JSON.stringify(label));
                                             getBlocks(obj.value);
-                                            setFieldValue('District', obj.label);
+                                            setFieldValue('district', obj.label);
                                           }}
                                         />
-                                        <Text style={{color: 'red'}}>{errors?.District}</Text>
+                                        <Text style={{color: 'red'}}>{errors?.district}</Text>
                                         <Spacing space={SH(15)} />
                                         {/* Block */}
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -774,14 +800,14 @@ const VillageFormSurveyEdit = props => {
                                           width={SW(345)}
                                           labelField="label"
                                           valueField="value"
-                                          value={values?.Block}
-                                          placeholder={values?.Block || t('Select Block')}
+                                          value={values?.block}
+                                          placeholder={values?.block || t('Select Block')}
                                           onChange={obj => {
                                             getPanchayats(obj.value);
-                                            setFieldValue('Block', obj.label);
+                                            setFieldValue('block', obj.label);
                                           }}
                                         />
-                                        <Text style={{color: 'red'}}>{errors?.Block}</Text>
+                                        <Text style={{color: 'red'}}>{errors?.block}</Text>
                                         <Spacing space={SH(15)} />
                                         {/* Gram Panchayat */}
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -794,17 +820,17 @@ const VillageFormSurveyEdit = props => {
                                           width={SW(345)}
                                           labelField="label"
                                           valueField="value"
-                                          value={values?.GramPanchayat}
+                                          value={values?.gramPanchayat}
                                           placeholder={
-                                            values?.GramPanchayat || t('Select Gram Panchayat')
+                                            values?.gramPanchayat || t('Select Gram Panchayat')
                                           }
                                           onChange={obj => {
                                             getVillages(obj.value);
-                                            setFieldValue('GramPanchayat', obj.label);
+                                            setFieldValue('gramPanchayat', obj.label);
                                           }}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.GramPanchayat}
+                                          {errors?.gramPanchayat}
                                         </Text>
                                         <Spacing space={SH(15)} />
                                         {/* Revenue Village */}
@@ -818,101 +844,114 @@ const VillageFormSurveyEdit = props => {
                                           width={SW(345)}
                                           labelField="label"
                                           valueField="value"
-                                          value={values?.RevenueVillage}
+                                          value={values?.revenueVillage}
                                           placeholder={
-                                            values?.RevenueVillage || t('Select Revenue Village')
+                                            values?.revenueVillage || t('Select Revenue Village')
                                           }
                                           onChange={obj => {
-                                            setFieldValue('RevenueVillage', obj.label);
+                                            setFieldValue('revenueVillage', obj.label);
                                           }}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.RevenueVillage}
+                                          {errors?.revenueVillage}
                                         </Text>
                                         <Spacing space={SH(15)} />
                                         <Input
                                           title={'5. ' + t('Total number of households')}
                                           placeholder={t('Total number of households')}
                                           onChangeText={text => {
+                                          
                                             // Allow only digits
-                                            const filtered = text.replace(/[^0-9]/g, '');
+                                            let filtered = text.replace(/[^0-9]/g, '');
+                                            // If the first character is '0', remove it
+                    if (filtered.startsWith('0')) {
+                      filtered = filtered.substring(1);
+                    }
+                                             const number = Number(filtered);
+                  
+                                            // Block 0 and values > 1500
+                                            if (number > 1500) return;
                   
                                             // Allow empty (while typing)
                                             if (filtered === '') {
-                                              setFieldValue('TotalHouseholds', '');
+                                              setFieldValue('totalHouseholds', '');
                                               return;
                                             }
                   
-                                            const number = Number(filtered);
+                                           
                   
-                                            // Block 0 and values > 1500
-                                            if (number < 1 || number > 1500) return;
-                  
-                                            setFieldValue('TotalHouseholds', filtered);
-                                            // setFieldValue('TotalHouseholds', text)
+                                            setFieldValue('totalHouseholds', filtered);
+                                            // setFieldValue('totalHouseholds', text)
                                           }}
-                                          value={values?.TotalHouseholds}
+                                          value={values?.totalHouseholds}
                                           inputType={'numeric'}
+                                          keyboardType={"number-pad"}
                                           maxLength={4}
                                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.TotalHouseholds}
+                                          {errors?.totalHouseholds}
                                         </Text>
                                         <Spacing space={SH(15)} />
                                         <Input
                                           title={'6. ' + t('Male')}
                                           placeholder={t('Male')}
-                                          onChangeText={(text) => {
-                                            const filtered = text.replace(/[^0-9]/g, '');
+                                          onChangeText={text => {
+                                            let filtered = text.replace(/[^0-9]/g, '');
+                                             if (filtered.startsWith('0')) {
+                      filtered = filtered.substring(1);
+                    }
                                             // Allow empty (while typing)
                                             if (filtered === '') {
-                                              setFieldValue('MalePopulation', '');
+                                              setFieldValue('malePopulation', '');
                                               return;
                                             }
                                             const number = Number(filtered);
                                             // Block 0 and values > 1500
                                             if (number < 1 || number > 4000) return;
                                             const male = number || 0;
-                                            setFieldValue('MalePopulation', number || 0);
-                                            const female = Number(values?.FemalePopulation) || 0;
+                                            setFieldValue('malePopulation', number || 0);
+                                            const female = Number(values?.femalePopulation) || 0;
                                             setFieldValue('TotalPopulation', male + female);
                                           }}
-                                          value={String(values?.MalePopulation ?? '')}
+                                          value={String(values?.malePopulation ?? '')}
                                           inputType={'numeric'}
                                           maxLength={8}
                                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.MalePopulation}
+                                          {errors?.malePopulation}
                                         </Text>
                                         <Spacing space={SH(15)} />
                                         <Input
                                           title={'7. ' + t('Female')}
                                           placeholder={t('Female')}
-                                          onChangeText={(text) => {
-                                              // Allow only digits
-                                            const filtered = text.replace(/[^0-9]/g, '');
-                                              if (filtered === '') {
-                                              setFieldValue('FemalePopulation', '');
+                                          onChangeText={text => {
+                                            // Allow only digits
+                                            let filtered = text.replace(/[^0-9]/g, '');
+                                             if (filtered.startsWith('0')) {
+                      filtered = filtered.substring(1);
+                    }
+                                            if (filtered === '') {
+                                              setFieldValue('femalePopulation', '');
                                               return;
                                             }
-                                             const number = Number(filtered);
-                                               if (number < 1 || number > 4000) return;
+                                            const number = Number(filtered);
+                                            if (number < 1 || number > 4000) return;
                   
-                                            setFieldValue('FemalePopulation', number || 0);
-                                            const male = Number(values?.MalePopulation) || 0;
+                                            setFieldValue('femalePopulation', number || 0);
+                                            const male = Number(values?.malePopulation) || 0;
                                             const female = number || 0;
                   
                                             setFieldValue('TotalPopulation', male + female);
                                           }}
-                                          value={String(values?.FemalePopulation ?? '')}
+                                          value={String(values?.femalePopulation ?? '')}
                                           inputType={'numeric'}
                                           maxLength={8}
                                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.FemalePopulation}
+                                          {errors?.femalePopulation}
                                         </Text>
                                         <Spacing space={SH(15)} />
                                         <Input
@@ -930,7 +969,7 @@ const VillageFormSurveyEdit = props => {
                                     {currentQuestion === 2 && (
                                       <View>
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                            {'B. '+t('Basic Infrastructure & Amenities')}
+                                          {'B. '+t('Basic Infrastructure & Amenities')}
                                         </Text>
                                         {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                           9. {t('Are internal village roads pucca (concrete)?')}
@@ -1024,16 +1063,16 @@ const VillageFormSurveyEdit = props => {
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
                                             setIsElectrified(text);
-                                            setFieldValue('IsElectrified', text);
+                                            setFieldValue('isElectrified', text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.IsElectrified
+                                              ? values?.isElectrified
                                               : IsElectrified
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.IsElectrified}
+                                          {errors?.isElectrified}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1043,36 +1082,46 @@ const VillageFormSurveyEdit = props => {
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
                                             setStreetLightingAvailable(text);
-                                            setFieldValue('StreetLightingAvailable', text);
+                                            setFieldValue('streetLightingAvailable', text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.StreetLightingAvailable
+                                              ? values?.streetLightingAvailable
                                               : StreetLightingAvailable
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.StreetLightingAvailable}
+                                          {errors?.streetLightingAvailable}
                                         </Text>
-                                        {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<Spacing space={SH(5)} />}
-                                         {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                          {t('What type of street lighting is provided?')}
-                                        </Text>}
-                                        {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<RadioButton
-                                          arrayData={electricityData}
-                                          onChangeText={text => {
-                                            setStreetLightingType(text);
-                                            setFieldValue('StreetLightingType', text);
-                                          }}
-                                          value={
-                                            editData != undefined
-                                              ? values?.StreetLightingType
-                                              : StreetLightingType
-                                          }
-                                        />}
-                                        {(values?.StreetLightingAvailable||StreetLightingAvailable)&&<Text style={{color: 'red'}}>
-                                          {errors?.StreetLightingType}
-                                        </Text>}
+                                        {(values?.streetLightingAvailable ||
+                                          StreetLightingAvailable) && <Spacing space={SH(5)} />}
+                                        {(values?.streetLightingAvailable ||
+                                          StreetLightingAvailable) && (
+                                          <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                                            10.1 {t('What type of street lighting is provided?')}
+                                          </Text>
+                                        )}
+                                        {(values?.streetLightingAvailable ||
+                                          StreetLightingAvailable) && (
+                                          <RadioButton
+                                            arrayData={electricityData}
+                                            onChangeText={text => {
+                                              setStreetLightingType(text);
+                                              setFieldValue('streetLightingType', text);
+                                            }}
+                                            value={
+                                              editData != undefined
+                                                ? values?.streetLightingType
+                                                : StreetLightingType
+                                            }
+                                          />
+                                        )}
+                                        {(values?.streetLightingAvailable ||
+                                          StreetLightingAvailable) && (
+                                          <Text style={{color: 'red'}}>
+                                            {errors?.streetLightingType}
+                                          </Text>
+                                        )}
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                           11.{' '}
@@ -1085,32 +1134,43 @@ const VillageFormSurveyEdit = props => {
                                           onChangeText={text => {
                                             // Alert.alert("text",text);
                                             setVillageConnectedToGP(text);
-                                            setFieldValue('VillageConnectedToGP', text);
+                                           
+                                            setFieldValue('villageConnectedToGP', text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.VillageConnectedToGP
+                                              ? values?.villageConnectedToGP
                                               : VillageConnectedToGP
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.VillageConnectedToGP}
+                                          {errors?.villageConnectedToGP}
                                         </Text>
-                                        {(VillageConnectedToGP=="false"||values?.VillageConnectedToGP=="Partially")&&<Spacing space={SH(2)} />}
-                                        {(VillageConnectedToGP=="false"||values?.VillageConnectedToGP=="Partially")&&<Input
-                                          title={'12. ' +t(
+                                        {(VillageConnectedToGP == 'false' ||
+                                          values?.villageConnectedToGP == 'Partially') && (
+                                          <Spacing space={SH(2)} />
+                                        )}
+                                        {(VillageConnectedToGP == 'false' ||
+                                          values?.villageConnectedToGP == 'Partially') && (
+                                          <Input
+                                            title={
+                                              '12. ' +
+                                              t(
+                                                'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
+                                              )
+                                            }
+                                            placeholder={t(
                                               'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
-                                            )
-                                          }
-                                          placeholder={t(
-                                            'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
-                                          )}
-                                          onChangeText={text => {
-                                            setFieldValue('LengthAllWeatherRoadToGP', text);
-                                          }}
-                                          value={values?.LengthAllWeatherRoadToGP}
-                                          titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                        />}
+                                            )}
+                                            onChangeText={text => {
+                                              setFieldValue('lengthAllWeatherRoadToGP', text);
+                                            }}
+                                            value={values?.lengthAllWeatherRoadToGP!=null?" "+values?.lengthAllWeatherRoadToGP:""}
+                                            titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                                            inputType={"numeric"}
+                                            
+                                          />
+                                        )}
                                         {/* <Text style={{color: 'red'}}>{errors?.LengthAllWeatherRoadToGP}</Text> */}
                   
                                         {/* <Spacing space={SH(9)} />
@@ -1137,23 +1197,44 @@ const VillageFormSurveyEdit = props => {
                                         </Text> */}
                                         <Spacing space={SH(15)} />
                                         <Input
-                                          title={
-                                            '13. ' +
-                                            t(
-                                              'What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
-                                            )
-                                          }
-                                          placeholder={t(
-                                            'What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
-                                          )}
-                                          onChangeText={text => {
-                                            setFieldValue('LengthAllWeatherRoadToHighway', text);
-                                          }}
-                                          value={values?.LengthAllWeatherRoadToHighway}
-                                          titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                        />
+  title={'13. ' + t('What is the length of all weather road required...')}
+  placeholder={t('Enter length')}
+  onChangeText={text => {
+    // 1. Remove non-numeric characters
+    let filtered = text.replace(/[^0-9]/g, '');
+
+    // 2. Remove leading zeros
+    if (filtered.startsWith('0')) {
+      filtered = filtered.substring(1);
+    }
+
+    // 3. Handle empty string (allow clearing the field)
+    if (filtered === '') {
+      setFieldValue('lengthAllWeatherRoadToHighway', '');
+      return;
+    }
+
+    const number = Number(filtered);
+
+// if (number < 100 || number > 4000) return;
+
+setFieldValue('lengthAllWeatherRoadToHighway', number);
+
+
+
+    // 4. Update the value IMMEDIATELY so the user can see what they type
+    // Do NOT return early here, otherwise the field "locks"
+    // setFieldValue('lengthAllWeatherRoadToHighway', filtered);
+  }}
+  
+  inputType={"numeric"}
+  // Use trim() to ensure leading spaces don't interfere with logic
+  value={values?.lengthAllWeatherRoadToHighway ? String(values.lengthAllWeatherRoadToHighway) : ""}
+  titleStyle={AnalyaticsStyles.PleaseEnterDate}
+  maxLength={4}
+/>
                                         <Text style={{color: 'red'}}>
-                                          {errors?.LengthAllWeatherRoadToHighway}
+                                          {errors?.lengthAllWeatherRoadToHighway}
                                         </Text>
                                       </View>
                                     )}
@@ -1168,11 +1249,11 @@ const VillageFormSurveyEdit = props => {
                                           title={'14. ' + t('No of men currently in migration?')}
                                           placeholder={t('No of men currently in migration?')}
                                           onChangeText={text => {
-                                            setFieldValue('MenInMigration', Number(text) || 0);
+                                            setFieldValue('menInMigration', Number(text) || 0);
                                             const men = Number(text) || 0;
-                                            const women = Number(values?.WomenInMigration) || 0;
+                                            const women = Number(values?.womenInMigration) || 0;
                                             const children =
-                                              Number(values?.MinorChildrenInMigration) || 0;
+                                              Number(values?.minorChildrenInMigration) || 0;
                   
                                             const total = men + women + children;
                   
@@ -1181,13 +1262,13 @@ const VillageFormSurveyEdit = props => {
                                               JSON.stringify(total),
                                             );
                                           }}
-                                          value={values?.MenInMigration}
+                                          value={values?.menInMigration?.toString() || ''}
                                           inputType={'numeric'}
                                           maxLength={6}
                                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.MenInMigration}
+                                          {errors?.menInMigration}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Input
@@ -1198,11 +1279,11 @@ const VillageFormSurveyEdit = props => {
                                           maxLength={6}
                                           placeholder={t('No of women currently in migration?')}
                                           onChangeText={text => {
-                                            setFieldValue('WomenInMigration', Number(text) || 0);
-                                            const men = Number(values?.MenInMigration) || 0;
+                                            setFieldValue('womenInMigration', Number(text) || 0);
+                                            const men = Number(values?.menInMigration) || 0;
                                             const women = Number(text) || 0;
                                             const children =
-                                              Number(values?.MinorChildrenInMigration) || 0;
+                                              Number(values?.minorChildrenInMigration) || 0;
                   
                                             const total = men + women + children;
                   
@@ -1211,11 +1292,11 @@ const VillageFormSurveyEdit = props => {
                                               JSON.stringify(total),
                                             );
                                           }}
-                                          value={values?.WomenInMigration}
+                                           value={values?.womenInMigration?.toString() || ''}
                                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.WomenInMigration}
+                                          {errors?.womenInMigration}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Input
@@ -1230,11 +1311,11 @@ const VillageFormSurveyEdit = props => {
                                           )}
                                           onChangeText={text => {
                                             setFieldValue(
-                                              'MinorChildrenInMigration',
+                                              'minorChildrenInMigration',
                                               Number(text) || 0,
                                             );
-                                            const men = Number(values?.MenInMigration) || 0;
-                                            const women = Number(values?.WomenInMigration) || 0;
+                                            const men = Number(values?.menInMigration) || 0;
+                                            const women = Number(values?.womenInMigration) || 0;
                                             const children = Number(text) || 0;
                   
                                             const total = men + women + children;
@@ -1244,13 +1325,13 @@ const VillageFormSurveyEdit = props => {
                                               JSON.stringify(total),
                                             );
                                           }}
-                                          value={values?.MinorChildrenInMigration}
+                                          value={values?.minorChildrenInMigration?.toString() || ''}
                                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                           inputType={'numeric'}
                                           maxLength={6}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.MinorChildrenInMigration}
+                                          {errors?.minorChildrenInMigration}
                                         </Text>
                                         <Spacing space={SH(15)} />
                                         <Input
@@ -1274,15 +1355,6 @@ const VillageFormSurveyEdit = props => {
                                           maxLength={6}
                                         />
                   
-                                        
-                  
-                                        
-                  
-                  
-                                        
-                  
-                                        
-                  
                                         {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("What are the sources of Irrigation?")}</Text>
                                   {renderCheckboxes2()}
                                   {<Spacing space={SH(5)}/>}
@@ -1293,15 +1365,16 @@ const VillageFormSurveyEdit = props => {
                                   {<Spacing space={SH(5)}/>} */}
                                       </View>
                                     )}
-                                    {currentQuestion === 4 && (<View>
-                                      <Text style={AnalyaticsStyles.TitleStyle}>
-                                          {'D. '+t('Water Supply & Sanitation')}
+                                    {currentQuestion === 4 && (
+                                      <View>
+                                        <Text style={AnalyaticsStyles.TitleStyle}>
+                                          {'D.'+t('Water Supply & Sanitation')}
                                         </Text>
                                         <Spacing space={SH(10)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                           18. {t('Main source of drinking water?')}
                                         </Text>
-                                         {renderCheckboxes4()}
+                                        {renderCheckboxes4()}
                                         {/* <RadioButton
                                           arrayData={waterSourceData}
                                           onChangeText={text => {
@@ -1315,7 +1388,7 @@ const VillageFormSurveyEdit = props => {
                                           }
                                         /> */}
                                         <Text style={{color: 'red'}}>
-                                          {errors?.DrinkingWaterSource}
+                                          {errors?.drinkingWaterSource}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1325,20 +1398,22 @@ const VillageFormSurveyEdit = props => {
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
                                             setAllHouseholdsWithToilets(text);
-                                            setFieldValue('AllHouseholdsWithToilets', text);
+                                            setFieldValue('allHouseholdsWithToilets', text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.AllHouseholdsWithToilets
+                                              ? values?.allHouseholdsWithToilets
                                               : AllHouseholdsWithToilets
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.AllHouseholdsWithToilets}
+                                          {errors?.allHouseholdsWithToilets}
                                         </Text>
-                                    </View>)}
-                                     {currentQuestion === 5 && (<View>
-                                      <Text style={AnalyaticsStyles.TitleStyle}>
+                                      </View>
+                                    )}
+                                    {currentQuestion === 5 && (
+                                      <View>
+                                        <Text style={AnalyaticsStyles.TitleStyle}>
                                           {'E. '+t('Education & Health Facilities')}
                                         </Text>
                                         <Spacing space={SH(5)} />
@@ -1348,17 +1423,17 @@ const VillageFormSurveyEdit = props => {
                                         <RadioButton
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
-                                            setFieldValue('AnganwadiCentre', text);
+                                            setFieldValue('anganwadiCentre', text);
                                             setAnganwadiCentre(text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.AnganwadiCentre
+                                              ? values?.anganwadiCentre
                                               : AnganwadiCentre
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.AnganwadiCentre}
+                                          {errors?.anganwadiCentre}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1368,17 +1443,17 @@ const VillageFormSurveyEdit = props => {
                                         <RadioButton
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
-                                            setFieldValue('PrimarySchoolAvailable', text);
+                                            setFieldValue('primarySchoolAvailable', text);
                                             setPrimarySchoolAvailable(text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.PrimarySchoolAvailable
+                                              ? values?.primarySchoolAvailable
                                               : PrimarySchoolAvailable
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.PrimarySchoolAvailable}
+                                          {errors?.primarySchoolAvailable}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1387,17 +1462,17 @@ const VillageFormSurveyEdit = props => {
                                         <RadioButton
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
-                                            setFieldValue('SecondarySchoolWithin3km', text);
+                                            setFieldValue('secondarySchoolWithin3km', text);
                                             setSecondarySchoolWithin3km(text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.SecondarySchoolWithin3km
+                                              ? values?.secondarySchoolWithin3km
                                               : SecondarySchoolWithin3km
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.SecondarySchoolWithin3km}
+                                          {errors?.secondarySchoolWithin3km}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1406,22 +1481,24 @@ const VillageFormSurveyEdit = props => {
                                         <RadioButton
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
-                                            setFieldValue('SubHealthCentre', text);
+                                            setFieldValue('subHealthCentre', text);
                                             setSubHealthCentre(text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.SubHealthCentre
+                                              ? values?.subHealthCentre
                                               : SubHealthCentre
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.SubHealthCentre}
+                                          {errors?.subHealthCentre}
                                         </Text>
-                                     </View>)}
-                                      {currentQuestion === 6 && (<View>
+                                      </View>
+                                    )}
+                                    {currentQuestion === 6 && (
+                                      <View>
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                           {'F. '+t('Community & Social Infrastructure')}
+                                          {'F. '+t('Community & Social Infrastructure')}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1430,17 +1507,17 @@ const VillageFormSurveyEdit = props => {
                                         <RadioButton
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
-                                            setFieldValue('CommunityCentreAvailable', text);
+                                            setFieldValue('communityCentreAvailable', text);
                                             setCommunityCentreAvailable(text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.CommunityCentreAvailable
+                                              ? values?.communityCentreAvailable
                                               : CommunityCentreAvailable
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.CommunityCentreAvailable}
+                                          {errors?.communityCentreAvailable}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1449,17 +1526,17 @@ const VillageFormSurveyEdit = props => {
                                         <RadioButton
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
-                                            setFieldValue('CommonShedForWSHG', text);
+                                            setFieldValue('commonShedForWSHG', text);
                                             setCommonShedForWSHG(text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.CommonShedForWSHG
+                                              ? values?.commonShedForWSHG
                                               : CommonShedForWSHG
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.CommonShedForWSHG}
+                                          {errors?.commonShedForWSHG}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1468,17 +1545,17 @@ const VillageFormSurveyEdit = props => {
                                         <RadioButton
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
-                                            setFieldValue('PlaygroundAvailable', text);
+                                            setFieldValue('playgroundAvailable', text);
                                             setPlaygroundAvailable(text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.PlaygroundAvailable
+                                              ? values?.playgroundAvailable
                                               : PlaygroundAvailable
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.PlaygroundAvailable}
+                                          {errors?.playgroundAvailable}
                                         </Text>
                                         <Spacing space={SH(15)} />
                                         <Input
@@ -1489,25 +1566,34 @@ const VillageFormSurveyEdit = props => {
                                           placeholder={t(
                                             'No. of community tanks available in the village?',
                                           )}
-                                          onChangeText={text =>
-                                            setFieldValue('CommunityTanks', text)
-                                          }
-                                          value={values?.CommunityTanks}
+                                          onChangeText={text =>{
+                                             let filtered = text.replace(/[^0-9]/g, '');
+                                            
+                                            if (filtered === '') {
+                                              setFieldValue('communityTanks', '');
+                                              return;
+                                            }
+                                            const number = Number(filtered);
+                                            if (number > 30) return;
+                                            setFieldValue('communityTanks', number)
+                                          }}
+                                          value={values?.communityTanks?.toString() || ""}
                                           inputType={'numeric'}
-                                          maxLength={6}
+                                          maxLength={2}
                                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.CommunityTanks}
+                                          {errors?.communityTanks}
                                         </Text>
-                  
-                                      </View>)}
-                                       {currentQuestion === 7 &&  (<View>
+                                      </View>
+                                    )}
+                                    {currentQuestion === 7 && (
+                                      <View>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.TitleStyle}>
                                           {'G. '+t('Livelihood & Service Infrastructure')}
                                         </Text>
-                                       {/* <Spacing space={SH(5)} />
+                                        {/* <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                           33. {t('Is mobile network coverage available?')}
                                         </Text>
@@ -1537,16 +1623,16 @@ const VillageFormSurveyEdit = props => {
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
                                             setDigitalConnectivity(text);
-                                            setFieldValue('DigitalConnectivity', text);
+                                            setFieldValue('digitalConnectivity', text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values.DigitalConnectivity
+                                              ? values.digitalConnectivity
                                               : DigitalConnectivity
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.DigitalConnectivity}
+                                          {errors?.digitalConnectivity}
                                         </Text>
                                         {/* <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1571,17 +1657,17 @@ const VillageFormSurveyEdit = props => {
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
                                             setPDSAvailable(text);
-                                            setFieldValue('PDSAvailable', text);
+                                            setFieldValue('pdsAvailable', text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.PDSAvailable
+                                              ? values?.pdsAvailable
                                               : PDSAvailable
                                           }
                                         />
-                                        <Text style={{color: 'red'}}>{errors?.PDSAvailable}</Text>
-                                        <Spacing space={SH(15)} />
-                                        {values?.PDSAvailable == false && (
+                                        <Text style={{color: 'red'}}>{errors?.pdsAvailable}</Text>
+                                        {/* <Spacing space={SH(15)} /> */}
+                                        {/*values?.PDSAvailable == false && (
                                           <Input
                                             title={t(
                                               'If No, distance of PDS (ration shop) from the village (in km)?',
@@ -1597,10 +1683,10 @@ const VillageFormSurveyEdit = props => {
                                             inputType={'numeric'}
                                             titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                           />
-                                        )}
-                                        <Text style={{color: 'red'}}>
-                                          {errors?.DistanceOfPDS}
-                                        </Text>
+                                        )*/}
+                                        {/* <Text style={{color: 'red'}}>
+                                          {errors?.distanceOfPDS}
+                                        </Text> */}
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                           30.{' '}
@@ -1612,27 +1698,25 @@ const VillageFormSurveyEdit = props => {
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
                                             setBankingPostOfficeNearby(text);
-                                            setFieldValue('BankingPostOfficeNearby', text);
+                                            setFieldValue('bankingPostOfficeNearby', text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.BankingPostOfficeNearby
+                                              ? values?.bankingPostOfficeNearby
                                               : BankingPostOfficeNearby
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.BankingPostOfficeNearby}
+                                          {errors?.bankingPostOfficeNearby}
                                         </Text>
-                  
-                  
-                                       </View>)}
-                                       
+                                      </View>
+                                    )}
                   
                                     {/* Four question start */}
                                     {currentQuestion === 8 && (
                                       <View>
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                           {'H. '+t('Water Resource & Irrigation Structures')}
+                                          {'H. '+t('Water Resource & Irrigation Structures')}
                                         </Text>
                                         <Spacing space={SH(10)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1644,17 +1728,17 @@ const VillageFormSurveyEdit = props => {
                                         <RadioButton
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
-                                            setFieldValue('WaterFromIrrigationProject', text);
+                                            setFieldValue('waterFromIrrigationProject', text);
                                             setWaterFromIrrigationProject(text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.WaterFromIrrigationProject
+                                              ? values?.waterFromIrrigationProject
                                               : WaterFromIrrigationProject
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.WaterFromIrrigationProject}
+                                          {errors?.waterFromIrrigationProject}
                                         </Text>
                                         {/* <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1680,9 +1764,9 @@ const VillageFormSurveyEdit = props => {
                                         <Text style={{color: 'red'}}>
                                           {errors?.RepairOrNewDistributionCanalRequired}
                                         </Text> */}
-                                        {RepairOrNewDistributionCanalRequired && (
+                                        {/* {RepairOrNewDistributionCanalRequired && (
                                           <Spacing space={SH(5)} />
-                                        )}
+                                        )} */}
                                         {/* {RepairOrNewDistributionCanalRequired && (
                                           <Input
                                             title={
@@ -1757,17 +1841,17 @@ const VillageFormSurveyEdit = props => {
                                         <RadioButton
                                           arrayData={selfHelpData}
                                           onChangeText={text => {
-                                            setFieldValue('FunctionalCheckDams', text);
+                                            setFieldValue('functionalCheckDams', text);
                                             setFunctionalCheckDams(text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.FunctionalCheckDams
+                                              ? values?.functionalCheckDams
                                               : FunctionalCheckDams
                                           }
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.FunctionalCheckDams}
+                                          {errors?.functionalCheckDams}
                                         </Text>
                                         {/* <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1811,7 +1895,7 @@ const VillageFormSurveyEdit = props => {
                                           {errors?.FunctionalDistributionCanal}
                                         </Text> */}
                                         <Spacing space={SH(5)} />
-                                        {values.FunctionalDistributionCanal == true && (
+                                        {/* {values.functionalDistributionCanal == true && (
                                           <Input
                                             title={t(
                                               'If Yes, Scope of new distribution canal in the village in RMT?',
@@ -1825,7 +1909,7 @@ const VillageFormSurveyEdit = props => {
                                             value={values?.ScopeOfNewDistributionCanal}
                                             titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                           />
-                                        )}
+                                        )} */}
                   
                                         <Spacing space={SH(5)} />
                                         {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_46")}</Text>
@@ -1860,21 +1944,28 @@ const VillageFormSurveyEdit = props => {
                                     {currentQuestion === 9 && (
                                       <View>
                                         <Text style={AnalyaticsStyles.TitleStyle}>
-                                            {'I. '+t('Respondent Details')}
+                                          {'I. '+t('Respondent Details')}
                                         </Text>
                                         <Spacing space={SH(5)} />
-                                        <Input
-                                          title={'33. ' + t('Respondent Name')}
-                                          placeholder={t('Respondent Name')}
-                                          onChangeText={text => {
-                                            setFieldValue('RespondentName', text);
-                                          }}
-                                          value={values?.RespondentName}
-                                          maxLength={200}
-                                          titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                        />
+                                       <Input
+                    title={'33. ' + t('Respondent Name')}
+                    placeholder={t('Respondent Name')}
+                    onChangeText={text => {
+                      // [^a-zA-Z.] means: "Match anything that is NOT a letter or a dot"
+                      // The 'g' flag replaces all occurrences
+                      const filtered = text.replace(/[^a-zA-Z.]/g, '');
+                      
+                      setFieldValue('respondentName', filtered);
+                    }}
+                    onFocus={() => {
+                      scrollRef.current?.scrollTo({ y: 0, animated: true });
+                    }}
+                    value={values?.respondentName}
+                    maxLength={200}
+                    titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                  />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.RespondentName}
+                                          {errors?.respondentName}
                                         </Text>
                                         <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1883,16 +1974,17 @@ const VillageFormSurveyEdit = props => {
                                         <RadioButton
                                           arrayData={identityData}
                                           onChangeText={text => {
-                                            setFieldValue('IdentityRole', text);
+                                            setFieldValue('identityRole', text);
                                             setIdentityRole(text);
                                           }}
                                           value={
                                             editData != undefined
-                                              ? values?.IdentityRole
+                                              ? values?.identityRole
                                               : IdentityRole
                                           }
+                                          type={1}
                                         />
-                                        <Text style={{color: 'red'}}>{errors?.IdentityRole}</Text>
+                                        <Text style={{color: 'red'}}>{errors?.identityRole}</Text>
                                         {/* <Spacing space={SH(5)} />
                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                           47. {t('Process Adopted for Survey')}
@@ -1917,15 +2009,15 @@ const VillageFormSurveyEdit = props => {
                                           title={'35. ' + t('Respondent contact mobile no.?')}
                                           placeholder={t('Respondent contact mobile no.?')}
                                           onChangeText={text => {
-                                            setFieldValue('RespondentMobile', text);
+                                            setFieldValue('respondentMobile', text);
                                           }}
-                                          value={values?.RespondentMobile}
+                                          value={values?.respondentMobile}
                                           inputType="numeric"
                                           maxLength={10}
                                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.RespondentMobile}
+                                          {errors?.respondentMobile}
                                         </Text>
                                         {/* <Spacing space={SH(10)} /> */}
                                         {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1988,9 +2080,9 @@ const VillageFormSurveyEdit = props => {
                                   </View> */}
                                         <Spacing space={SH(5)} />
                                         <View style={AnalyaticsStyles.PaddingHori}>
-                                           <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                          36. {t('Click on the icon to capture GEO location')}
-                                        </Text>
+                                          <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                                            36. {t('Click on the icon to capture GEO location')}
+                                          </Text>
                                           <View style={Style.FlexEditView}>
                                             <TouchableOpacity
                                               onPress={() =>
@@ -2030,14 +2122,14 @@ const VillageFormSurveyEdit = props => {
                                           title={'37. ' + t('Enumerator Name')}
                                           placeholder={t('Enumerator Name')}
                                           onChangeText={text =>
-                                            setFieldValue('EnumeratorName', text)
+                                            setFieldValue('enumeratorName', text)
                                           }
-                                          value={values?.EnumeratorName}
+                                          value={values?.enumeratorName}
                                           maxLength={200}
                                           titleStyle={AnalyaticsStyles.PleaseEnterDate}
                                         />
                                         <Text style={{color: 'red'}}>
-                                          {errors?.EnumeratorName}
+                                          {errors?.enumeratorName}
                                         </Text>
                                         {/* <Spacing space={SH(5)} />
                                   <Input

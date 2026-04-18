@@ -628,8 +628,8 @@ const VillageFormSurveyTab = props => {
     setLoading(false);
     console.log('response', JSON.stringify(response));
     
-    return
-    if (response != null && response != undefined) {
+    // return
+    if (response != null && response != undefined && response.success) {
       setLoading(false);
       setAlertVisible(true);
       setAlertMessage(t('Survey_Submit_Successfully_village'));
@@ -2811,7 +2811,8 @@ const goToTop = () => {
         setModalVisible={setAlertVisible}
         onPressCancel={() => setAlertVisible(!alertVisible)}
         onPress={() => {
-          setAlertVisible(!alertVisible), onoknutton();
+          setAlertVisible(!alertVisible);
+          onoknutton();
         }}
         buttonText={t('Ok')}
         buttonminview={Style.ButtonCenter}

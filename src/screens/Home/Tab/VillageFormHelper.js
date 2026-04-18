@@ -74,7 +74,12 @@ export const VillageFormValidationSchema = (props)=>{
   //   otherwise: schema => schema.notRequired()
   // }),
 //   LengthAllWeatherRoadToGP: Yup.number().typeError('Length to GP must be a number').required('Length to GP is required'),
-  lengthAllWeatherRoadToHighway: Yup.number().typeError('Length to Highway must be a number').required('Length to Highway is required'),
+lengthAllWeatherRoadToHighway: Yup.number()
+  .typeError('Length to Highway must be a number')
+  .required('Length to Highway is required')
+  .min(100, 'Length must be at least 100 RMT')
+  .max(4000, 'Length cannot exceed 4000 RMT'),
+ 
   // DrinkingWaterSource: Yup.string().required('Drinking Water Source is required'),
 //   DistanceOfPDS: Yup.number().typeError('Distance of PDS must be a number').required('Distance of PDS is required'),
 //   LengthOfDistributionCanal: Yup.number().typeError('Length of Distribution Canal must be a number').required('Length of Distribution Canal is required'),
