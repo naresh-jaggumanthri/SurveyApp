@@ -52,6 +52,7 @@ import {BackHandler} from 'react-native';
 import Loader from '../../../components/commonComponents/Loader';
 import DeviceHelper from '../../../utils/DeviceHelper';
 import {v4 as uuidv4} from 'uuid';
+import { getMasterLocationData } from '../../Authantication/LoginScreen/LoginHelper';
 // import { VillageFormSurveyTab } from '.';
 
 const VillageFormSurveyEdit = props => {
@@ -67,6 +68,7 @@ const VillageFormSurveyEdit = props => {
   };
   const {loginData} = useSelector(state => state.DataReducer) || {};
   useEffect(() => {
+     loadWaterSourceData();
     getMasterState();
   }, []);
   const [state, setState] = useState(stateArray);
@@ -227,14 +229,39 @@ const VillageFormSurveyEdit = props => {
     // Add more options as needed
   ]);
 
-   const [checkboxes4, setCheckboxes4] = useState([
-      {label: t('Well'), checked: false},
-      {label: t('Tube Well'), checked: false},
-      {label: t('Piped Water Supply'), checked: false},
-      {label: t('Others'), checked: false},
+  //  const [checkboxes4, setCheckboxes4] = useState([
+  //     {label: t('Well'), checked: false},
+  //     {label: t('Tube Well'), checked: false},
+  //     {label: t('Piped Water Supply'), checked: false},
+  //     {label: t('Others'), checked: false},
   
-      // Add more options as needed
-    ]);
+  //     // Add more options as needed
+  //   ]);
+    const [checkboxes4, setCheckboxes4] = useState([]);
+         const loadWaterSourceData = async () => {
+          let token = loginData?.token;
+            const currentLanguage = i18n.language;
+          //  const language = await getLanguage();
+          const waterSources = await getMasterData(
+            'drinkingWaterSource',
+            5, // The index you assigned in saveMasters
+            api.master.getDrinkingWaterSource,
+            token,
+          );
+          const result = waterSources.map(waterSource => {
+            return {
+              id: waterSource.id,
+              label:
+                currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+              value:
+                currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+            };
+          }); // Sort alphabetically
+      
+          // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+          // setWaterSourceData(result);
+          setCheckboxes4(result.map(source => ({label: source.label, checked: false})));
+        };
   const handleCheckboxChange = index => {
     const updatedCheckboxes = [...checkboxes];
     updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
@@ -528,59 +555,48 @@ const labelsArray2 = drinkingWater.split(",").map(s => s.trim());
       const result = data?.item;
     }
   };
-  const getMasterState = async () => {
-    let token = loginData?.token;
+ 
+  // Get Districts
+const getMasterState = async () => {
+  const token = loginData?.token;
+  const districts = await getMasterLocationData('district',null,() => api.master.getDistricts(token));
+  setDistrict(districts.map(m => ({ label: m.districtName, value: m.districtCode })));
+};
 
-    const res = await api.master.getDistricts(token);
+  // Get Blocks
+const getBlocks = async (districtId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('block', districtId, () => api.master.getBlocksByDistrictId(districtId, token));
+  setBlocks(data.map(m => ({ label: m.blockName, value: m.blockCode })));
+};
+ 
 
-    const result = res.map(m => {
-      return {
-        label: m.districtName,
-        value: m.districtCode,
-      };
-    });
-    setDistrict(result);
-  };
+  // Get Panchayats
+const getPanchayats = async (blockId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('panchayat', blockId, () => api.master.getGramPanchayats(blockId, token));
+  setPanchayats(data.map(m => ({
+    label: m.panchayatName,
+    value: m.panchayatCode,
+    blockId: m.blockCode,
+  })));
+};
 
-  const getBlocks = async districtId => {
-    let token = loginData?.token;
-    const res = await api.master.getBlocksByDistrictId(districtId, token);
-    const result = res.map(m => {
-      return {
-        label: m.blockName,
-        value: m.blockCode,
-      };
-    });
-    // Alert.alert("Blocks",JSON.stringify(result));
-    setBlocks(result);
-  };
-  const getPanchayats = async blockId => {
-    let token = loginData?.token;
-    const res = await api.master.getGramPanchayats(blockId, token);
+ // Get Villages
+const getVillages = async (panchayatId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('village', panchayatId, () => api.master.getVillagesByPanchayatId(panchayatId, token));
+  setVillages(data.map(m => ({
+    label: m.villageName,
+    value: m.villageCode,
+    panchayatId: m.panchayatCode,
+  })));
+};
 
-    const result = res.map(m => {
-      return {
-        label: m.panchayatName,
-        value: m.panchayatCode,
-        blockId: m.blockCode,
-      };
-    });
 
-    setPanchayats(result);
-  };
-  const getVillages = async panchayatId => {
-    let token = loginData?.token;
-    const res = await api.master.getVillagesByPanchayatId(panchayatId, token);
-    const result = res.map(m => {
-      return {
-        label: m.villageName,
-        value: m.villageCode,
-        panchayatId: m.panchayatCode,
-      };
-    });
-    //Alert.alert("Villages",JSON.stringify(result));
-    setVillages(result);
-  };
+
+
+
   const saveSurveyOffline = async (values, imagePath) => {
     const repo = AppDataSource.getRepository(VillageSurvey);
 
@@ -2156,476 +2172,476 @@ setFieldValue('lengthAllWeatherRoadToHighway', number);
                 </View>
               </KeyboardAvoidingView>
             </ScrollView>
-            <Modal visible={showConfirmModal} transparent animationType="slide">
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  justifyContent: 'center',
-                  padding: 20,
-                }}>
-                <View
-                  style={{
-                    backgroundColor: '#fff',
-                    borderRadius: 10,
-                    padding: 20,
-                    maxHeight: '80%',
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 'bold',
-                      marginBottom: 10,
-                    }}>
-                    Confirm Survey Details
-                  </Text>
-
-                 <ScrollView>
-                                    <Text style={AnalyaticsStyles.TitleStyle}>
-                                      {t('Basic Details')}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>District:</Text>{' '}
-                                      {previewData?.District}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>Block:</Text>{' '}
-                                      {previewData?.Block}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Gram Panchayat')}:
-                                      </Text>{' '}
-                                      {previewData?.GramPanchayat}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Revenue Village')}:
-                                      </Text>{' '}
-                                      {previewData?.RevenueVillage}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Total number of households')}:
-                                      </Text>{' '}
-                                      {previewData?.TotalHouseholds}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>{t('Male')}:</Text>{' '}
-                                      {previewData?.MalePopulation}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>{t('Female')}:</Text>{' '}
-                                      {previewData?.FemalePopulation}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Total Population')}:
-                                      </Text>{' '}
-                                      {previewData?.TotalPopulation}
-                                    </Text>
-                
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Are internal village roads pucca (concrete)?')}:
-                                      </Text>{' '}
-                                      {previewData?.InternalVillageRoads}
-                                    </Text> */}
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'If No or Partially, requirement of internal village pucca roads (in RMT)?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.InternalVillageRoadsRequirement}
-                                    </Text> */}
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Are internal drains available?')}:
-                                      </Text>{' '}
-                                      {previewData?.InternalDrainsAvailable}
-                                    </Text> */}
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('If Yes, Are drains properly functional?')}:
-                                      </Text>{' '}
-                                      {previewData?.DrainsProperlyFunctional}
-                                    </Text> */}
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Is the village electrified?')}:
-                                      </Text>{' '}
-                                      {previewData?.IsElectrified}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Is street lighting available?')}:
-                                      </Text>{' '}
-                                      {previewData?.StreetLightingAvailable}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('What type of street lighting is provided?')}:
-                                      </Text>{' '}
-                                      {previewData?.StreetLightingType}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'Is the village connected to the GP headquarters by an all weather road?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.VillageConnectedToGP}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.LengthAllWeatherRoadToGP}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'Is the GP head quarter connected to any PWD road or State highway or Nation Highway by an all weather road?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.GPConnectedToPWDOrHighway}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.LengthAllWeatherRoadToHighway}
-                                    </Text>
-                
-                                    <Text style={AnalyaticsStyles.TitleStyle}>
-                                      {t('Information Related to Migration')}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('No of men currently in migration?')}:
-                                      </Text>{' '}
-                                      {previewData?.MenInMigration}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('No of women currently in migration?')}:
-                                      </Text>{' '}
-                                      {previewData?.WomenInMigration}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'No of minor children below 18 yrs age currently in migration?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.MinorChildrenInMigration}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Total No. of person currently in migration?')}:
-                                      </Text>{' '}
-                                      {JSON.stringify(
-                                        parseInt(previewData?.MenInMigration) +
-                                          parseInt(previewData?.WomenInMigration) +
-                                          parseInt(previewData?.MinorChildrenInMigration),
-                                      )}
-                                    </Text>
-                                    <Text style={AnalyaticsStyles.TitleStyle}>
-                                      {t('Water Supply & Sanitation')}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Main source of drinking water?')}:
-                                      </Text>{' '}
-                                      {previewData?.DrinkingWaterSource}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Are all households having toilets?')}:
-                                      </Text>{' '}
-                                      {previewData?.AllHouseholdsWithToilets}
-                                    </Text>
-                                    <Text style={AnalyaticsStyles.TitleStyle}>
-                                      {t('Education & Health Facilities')}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Is there a functioning Anganwadi Centre?')}:
-                                      </Text>{' '}
-                                      {previewData?.AnganwadiCentre}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Is Primary school available within the village?')}:
-                                      </Text>{' '}
-                                      {previewData?.PrimarySchoolAvailable}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Is Secondary school within 3 km distance?')}:
-                                      </Text>{' '}
-                                      {previewData?.SecondarySchoolWithin3km}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {' '}
-                                        {t('Is there a Sub Health Centre in the village?')}:
-                                      </Text>{' '}
-                                      {previewData?.SubHealthCentre}
-                                    </Text>
-                                    <Text style={AnalyaticsStyles.TitleStyle}>
-                                      {t('Community & Social Infrastructure')}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Community Centre available?')}:
-                                      </Text>{' '}
-                                      {previewData?.CommunityCentreAvailable}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Common shed for WSHG available?')}:
-                                      </Text>{' '}
-                                      {previewData?.CommonShedForWSHG}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Availability of playground in the village?')}:
-                                      </Text>{' '}
-                                      {previewData?.PlaygroundAvailable}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('No. of community tanks available in the village?')}:
-                                      </Text>{' '}
-                                      {previewData?.CommunityTanks}
-                                    </Text>
-                                    <Text style={AnalyaticsStyles.TitleStyle}>
-                                      {t('Livelihood & Service Infrastructure')}
-                                    </Text>
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Is mobile network coverage available?')}:
-                                      </Text>{' '}
-                                      {previewData?.MobileNetworkCoverage}
-                                    </Text> */}
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'Is Digital last mile connectivity (internet facility) available?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.DigitalConnectivity}
-                                    </Text>
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Is there a drying yard available?')}:
-                                      </Text>{' '}
-                                      {previewData?.DryingYard}
-                                    </Text> */}
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Is there a PDS (ration shop) in the village?')}:
-                                      </Text>{' '}
-                                      {previewData?.PDSAvailable}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {' '}
-                                        {t(
-                                          'If No, distance of PDS (ration shop) from the village (in km)?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.DistanceOfPDS}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'Whether banking or post office or KIOSK or mini bank services are available within 3 km distance from the village?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.BankingPostOfficeNearby}
-                                    </Text>
-                
-                                    <Text style={AnalyaticsStyles.TitleStyle}>
-                                      {t('Water Resource & Irrigation Structures')}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'Is water from any mega, medium or minor irrigation project available to the village?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.WaterFromIrrigationProject}
-                                    </Text>
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'If Yes, Whether repair or construction of a new distribution canal is required?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.RepairOrNewDistributionCanalRequired}
-                                    </Text> */}
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'If Yes, Length of distribution canal requiring repair or new construction in RMT?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.LengthOfDistributionCanal}
-                                    </Text> */}
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'Is there functional lift irrigation project available?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.FunctionalLiftIrrigation}
-                                    </Text> */}
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Scope of new lift irrigation project?')}:
-                                      </Text>{' '}
-                                      {previewData?.ScopeOfNewLiftIrrigation}
-                                    </Text> */}
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'Availability of functional Check Dams in the village?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.FunctionalCheckDams}
-                                    </Text>
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Scope of new Check Dams in the village?')}:
-                                      </Text>{' '}
-                                      {previewData?.ScopeOfNewCheckDams}
-                                    </Text> */}
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'Availability of functional distribution canal in the village in RMT?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.FunctionalDistributionCanal}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t(
-                                          'If Yes, Scope of new distribution canal in the village in RMT?',
-                                        )}
-                                        :
-                                      </Text>{' '}
-                                      {previewData?.ScopeOfNewDistributionCanal}
-                                    </Text>
-                                    <Text style={AnalyaticsStyles.TitleStyle}>
-                                      {t('Respondent Details')}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Respondent Name')}:
-                                      </Text>{' '}
-                                      {previewData?.RespondentName}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>{t('Identity')}:</Text>{' '}
-                                      {previewData?.IdentityRole}
-                                    </Text>
-                                    {/* <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Process Adopted for Survey')}:
-                                      </Text>{' '}
-                                      {previewData?.SurveyProcess}
-                                    </Text> */}
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Respondent contact mobile no.?')}:
-                                      </Text>{' '}
-                                      {previewData?.RespondentMobile}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Capture a photo of the meeting/FGD')}:
-                                      </Text>{' '}
-                                      {previewData?.MeetingPhotoPath}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>{t('Location')}:</Text>{' '}
-                                      {previewData?.GeoLocation}
-                                    </Text>
-                
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Enumerator Name')}:
-                                      </Text>{' '}
-                                      {previewData?.EnumeratorName}
-                                    </Text>
-                                    <Text>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {t('Survey Date and Time')}:
-                                      </Text>{' '}
-                                      {previewData?.SurveyDate}
-                                    </Text>
-                                  </ScrollView>
-
-                  <Spacing space={SH(15)} />
-
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}>
-                    <TouchableOpacity
-                      onPress={() => setShowConfirmModal(false)}
-                      style={{padding: 10}}>
-                      <Text style={{color: 'red'}}>Edit</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      onPress={() => {
-                        setShowConfirmModal(false);
-                        handleSubmit(); // ✅ FINAL SUBMIT
-                      }}
-                      style={{padding: 10}}>
-                      <Text style={{color: 'green'}}>Confirm & Submit</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </Modal>
+             <Modal visible={showConfirmModal} transparent animationType="slide">
+                         <View
+                           style={{
+                             flex: 1,
+                             backgroundColor: 'rgba(0,0,0,0.5)',
+                             justifyContent: 'center',
+                             padding: 20,
+                           }}>
+                           <View
+                             style={{
+                               backgroundColor: '#fff',
+                               borderRadius: 10,
+                               padding: 20,
+                               maxHeight: '80%',
+                             }}>
+                             <Text
+                               style={{
+                                 fontSize: 18,
+                                 fontWeight: 'bold',
+                                 marginBottom: 10,
+                               }}>
+                               Confirm Survey Details
+                             </Text>
+           
+                             <ScrollView>
+                               <Text style={AnalyaticsStyles.TitleStyle}>
+                                 {t('Basic Details')}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>District:</Text>{' '}
+                                 {previewData?.district}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>Block:</Text>{' '}
+                                 {previewData?.block}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Gram Panchayat')}:
+                                 </Text>{' '}
+                                 {previewData?.gramPanchayat}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Revenue Village')}:
+                                 </Text>{' '}
+                                 {previewData?.revenueVillage}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Total number of households')}:
+                                 </Text>{' '}
+                                 {previewData?.totalHouseholds}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>{t('Male')}:</Text>{' '}
+                                 {previewData?.malePopulation}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>{t('Female')}:</Text>{' '}
+                                 {previewData?.femalePopulation}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Total Population')}:
+                                 </Text>{' '}
+                                 {previewData?.totalPopulation}
+                               </Text>
+           
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Are internal village roads pucca (concrete)?')}:
+                                 </Text>{' '}
+                                 {previewData?.InternalVillageRoads}
+                               </Text> */}
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'If No or Partially, requirement of internal village pucca roads (in RMT)?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.InternalVillageRoadsRequirement}
+                               </Text> */}
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Are internal drains available?')}:
+                                 </Text>{' '}
+                                 {previewData?.InternalDrainsAvailable}
+                               </Text> */}
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('If Yes, Are drains properly functional?')}:
+                                 </Text>{' '}
+                                 {previewData?.DrainsProperlyFunctional}
+                               </Text> */}
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Is the village electrified?')}:
+                                 </Text>{' '}
+                                 {previewData?.isElectrified}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Is street lighting available?')}:
+                                 </Text>{' '}
+                                 {previewData?.streetLightingAvailable}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('What type of street lighting is provided?')}:
+                                 </Text>{' '}
+                                 {previewData?.streetLightingType}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'Is the village connected to the GP headquarters by an all weather road?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.villageConnectedToGP}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'If No/partial, What is the length of all weather road required to connect the village with GP headquarters in RMT?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.lengthAllWeatherRoadToGP}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'Is the GP head quarter connected to any PWD road or State highway or Nation Highway by an all weather road?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.gpConnectedToPWDOrHighway}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.lengthAllWeatherRoadToHighway}
+                               </Text>
+           
+                               <Text style={AnalyaticsStyles.TitleStyle}>
+                                 {t('Information Related to Migration')}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('No of men currently in migration?')}:
+                                 </Text>{' '}
+                                 {previewData?.menInMigration}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('No of women currently in migration?')}:
+                                 </Text>{' '}
+                                 {previewData?.womenInMigration}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'No of minor children below 18 yrs age currently in migration?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.minorChildrenInMigration}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Total No. of person currently in migration?')}:
+                                 </Text>{' '}
+                                 {JSON.stringify(
+                                   parseInt(previewData?.menInMigration) +
+                                     parseInt(previewData?.womenInMigration) +
+                                     parseInt(previewData?.minorChildrenInMigration),
+                                 )}
+                               </Text>
+                               <Text style={AnalyaticsStyles.TitleStyle}>
+                                 {t('Water Supply & Sanitation')}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Main source of drinking water?')}:
+                                 </Text>{' '}
+                                 {previewData?.drinkingWaterSource}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Are all households having toilets?')}:
+                                 </Text>{' '}
+                                 {previewData?.allHouseholdsWithToilets}
+                               </Text>
+                               <Text style={AnalyaticsStyles.TitleStyle}>
+                                 {t('Education & Health Facilities')}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Is there a functioning Anganwadi Centre?')}:
+                                 </Text>{' '}
+                                 {previewData?.anganwadiCentre}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Is Primary school available within the village?')}:
+                                 </Text>{' '}
+                                 {previewData?.primarySchoolAvailable}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Is Secondary school within 3 km distance?')}:
+                                 </Text>{' '}
+                                 {previewData?.secondarySchoolWithin3km}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {' '}
+                                   {t('Is there a Sub Health Centre in the village?')}:
+                                 </Text>{' '}
+                                 {previewData?.subHealthCentre}
+                               </Text>
+                               <Text style={AnalyaticsStyles.TitleStyle}>
+                                 {t('Community & Social Infrastructure')}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Community Centre available?')}:
+                                 </Text>{' '}
+                                 {previewData?.communityCentreAvailable}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Common shed for WSHG available?')}:
+                                 </Text>{' '}
+                                 {previewData?.commonShedForWSHG}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Availability of playground in the village?')}:
+                                 </Text>{' '}
+                                 {previewData?.playgroundAvailable}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('No. of community tanks available in the village?')}:
+                                 </Text>{' '}
+                                 {previewData?.communityTanks}
+                               </Text>
+                               <Text style={AnalyaticsStyles.TitleStyle}>
+                                 {t('Livelihood & Service Infrastructure')}
+                               </Text>
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Is mobile network coverage available?')}:
+                                 </Text>{' '}
+                                 {previewData?.MobileNetworkCoverage}
+                               </Text> */}
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'Is Digital last mile connectivity (internet facility) available?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.digitalConnectivity}
+                               </Text>
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Is there a drying yard available?')}:
+                                 </Text>{' '}
+                                 {previewData?.DryingYard}
+                               </Text> */}
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Is there a PDS (ration shop) in the village?')}:
+                                 </Text>{' '}
+                                 {previewData?.pdsAvailable}
+                               </Text>
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {' '}
+                                   {t(
+                                     'If No, distance of PDS (ration shop) from the village (in km)?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.DistanceOfPDS}
+                               </Text> */}
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'Whether banking or post office or KIOSK or mini bank services are available within 3 km distance from the village?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.bankingPostOfficeNearby}
+                               </Text>
+           
+                               <Text style={AnalyaticsStyles.TitleStyle}>
+                                 {t('Water Resource & Irrigation Structures')}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'Is water from any mega, medium or minor irrigation project available to the village?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.waterFromIrrigationProject}
+                               </Text>
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'If Yes, Whether repair or construction of a new distribution canal is required?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.RepairOrNewDistributionCanalRequired}
+                               </Text> */}
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'If Yes, Length of distribution canal requiring repair or new construction in RMT?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.LengthOfDistributionCanal}
+                               </Text> */}
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'Is there functional lift irrigation project available?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.FunctionalLiftIrrigation}
+                               </Text> */}
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Scope of new lift irrigation project?')}:
+                                 </Text>{' '}
+                                 {previewData?.ScopeOfNewLiftIrrigation}
+                               </Text> */}
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'Availability of functional Check Dams in the village?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.functionalCheckDams}
+                               </Text>
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Scope of new Check Dams in the village?')}:
+                                 </Text>{' '}
+                                 {previewData?.ScopeOfNewCheckDams}
+                               </Text> */}
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'Availability of functional distribution canal in the village in RMT?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.FunctionalDistributionCanal}
+                               </Text> */}
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t(
+                                     'If Yes, Scope of new distribution canal in the village in RMT?',
+                                   )}
+                                   :
+                                 </Text>{' '}
+                                 {previewData?.ScopeOfNewDistributionCanal}
+                               </Text> */}
+                               <Text style={AnalyaticsStyles.TitleStyle}>
+                                 {t('Respondent Details')}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Respondent Name')}:
+                                 </Text>{' '}
+                                 {previewData?.respondentName}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>{t('Identity')}:</Text>{' '}
+                                 {previewData?.identityRole}
+                               </Text>
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Process Adopted for Survey')}:
+                                 </Text>{' '}
+                                 {previewData?.SurveyProcess}
+                               </Text> */}
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Respondent contact mobile no.?')}:
+                                 </Text>{' '}
+                                 {previewData?.respondentMobile}
+                               </Text>
+                               {/* <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Capture a photo of the meeting/FGD')}:
+                                 </Text>{' '}
+                                 {previewData?.MeetingPhotoPath}
+                               </Text> */}
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>{t('Location')}:</Text>{' '}
+                                 {previewData?.geoLocation}
+                               </Text>
+           
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Enumerator Name')}:
+                                 </Text>{' '}
+                                 {previewData?.enumeratorName}
+                               </Text>
+                               <Text>
+                                 <Text style={{fontWeight: 'bold'}}>
+                                   {t('Survey Date and Time')}:
+                                 </Text>{' '}
+                                 {previewData?.surveyDate}
+                               </Text>
+                             </ScrollView>
+           
+                             <Spacing space={SH(15)} />
+           
+                             <View
+                               style={{
+                                 flexDirection: 'row',
+                                 justifyContent: 'space-between',
+                               }}>
+                               <TouchableOpacity
+                                 onPress={() => setShowConfirmModal(false)}
+                                 style={{padding: 10}}>
+                                 <Text style={{color: 'red'}}>Edit</Text>
+                               </TouchableOpacity>
+           
+                               <TouchableOpacity
+                                 onPress={() => {
+                                   setShowConfirmModal(false);
+                                   handleSubmit(); // ✅ FINAL SUBMIT
+                                 }}
+                                 style={{padding: 10}}>
+                                 <Text style={{color: 'green'}}>Confirm & Submit</Text>
+                               </TouchableOpacity>
+                             </View>
+                           </View>
+                         </View>
+                       </Modal>
 
             <View style={AnalyaticsStyles.NavigationButtons}>
               <TouchableOpacity

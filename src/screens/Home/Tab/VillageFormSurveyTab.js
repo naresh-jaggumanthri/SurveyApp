@@ -55,10 +55,12 @@ import {v4 as uuidv4} from 'uuid';
 import {VillageSurvey} from '../../../database/entities/VillageSurvey';
 import {AppOkAlert} from '../../../utils/AlertHelper';
 import { isEligibleForNext } from './FamilyFormHelper';
+import { getMasterData } from './HomeHelper';
+import { getMasterLocationData } from '../../Authantication/LoginScreen/LoginHelper';
 // import { VillageFormSurveyTab } from '.';
 
 const VillageFormSurveyTab = props => {
-  const {t} = useTranslation();
+  const {t,i18n} = useTranslation();
   const {navigation} = props;
 
   const stateArray = {
@@ -70,6 +72,7 @@ const VillageFormSurveyTab = props => {
   };
   const {loginData} = useSelector(state => state.DataReducer) || {};
   useEffect(() => {
+    loadWaterSourceData();
     getMasterState();
   }, []);
   const [state, setState] = useState(stateArray);
@@ -231,14 +234,39 @@ const VillageFormSurveyTab = props => {
 
     // Add more options as needed
   ]);
-  const [checkboxes4, setCheckboxes4] = useState([
-    {label: t('Well'), checked: false},
-    {label: t('Tube Well'), checked: false},
-    {label: t('Piped Water Supply'), checked: false},
-    {label: t('Others'), checked: false},
+  // const [checkboxes4, setCheckboxes4] = useState([
+  //   {label: t('Well'), checked: false},
+  //   {label: t('Tube Well'), checked: false},
+  //   {label: t('Piped Water Supply'), checked: false},
+  //   {label: t('Others'), checked: false},
 
-    // Add more options as needed
-  ]);
+  //   // Add more options as needed
+  // ]);
+  const [checkboxes4, setCheckboxes4] = useState([]);
+     const loadWaterSourceData = async () => {
+      let token = loginData?.token;
+        const currentLanguage = i18n.language;
+      //  const language = await getLanguage();
+      const waterSources = await getMasterData(
+        'drinkingWaterSource',
+        5, // The index you assigned in saveMasters
+        api.master.getDrinkingWaterSource,
+        token,
+      );
+      const result = waterSources.map(waterSource => {
+        return {
+          id: waterSource.id,
+          label:
+            currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+          value:
+            currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+        };
+      }); // Sort alphabetically
+  
+      // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+      // setWaterSourceData(result);
+      setCheckboxes4(result.map(source => ({label: source.label, checked: false})));
+    };
   const handleCheckboxChange = index => {
     const updatedCheckboxes = [...checkboxes];
     updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
@@ -528,59 +556,48 @@ const VillageFormSurveyTab = props => {
       const result = data?.item;
     }
   };
-  const getMasterState = async () => {
-    let token = loginData?.token;
 
-    const res = await api.master.getDistricts(token);
+ 
+  // Get Districts
+const getMasterState = async () => {
+  const token = loginData?.token;
+  const districts = await getMasterLocationData('district',null,() => api.master.getDistricts(token));
+  setDistrict(districts.map(m => ({ label: m.districtName, value: m.districtCode })));
+};
 
-    const result = res.map(m => {
-      return {
-        label: m.districtName,
-        value: m.districtCode,
-      };
-    });
-    setDistrict(result);
-  };
+  // Get Blocks
+const getBlocks = async (districtId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('block', districtId, () => api.master.getBlocksByDistrictId(districtId, token));
+  setBlocks(data.map(m => ({ label: m.blockName, value: m.blockCode })));
+};
+ 
 
-  const getBlocks = async districtId => {
-    let token = loginData?.token;
-    const res = await api.master.getBlocksByDistrictId(districtId, token);
-    const result = res.map(m => {
-      return {
-        label: m.blockName,
-        value: m.blockCode,
-      };
-    });
-    // Alert.alert("Blocks",JSON.stringify(result));
-    setBlocks(result);
-  };
-  const getPanchayats = async blockId => {
-    let token = loginData?.token;
-    const res = await api.master.getGramPanchayats(blockId, token);
+  // Get Panchayats
+const getPanchayats = async (blockId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('panchayat', blockId, () => api.master.getGramPanchayats(blockId, token));
+  setPanchayats(data.map(m => ({
+    label: m.panchayatName,
+    value: m.panchayatCode,
+    blockId: m.blockCode,
+  })));
+};
 
-    const result = res.map(m => {
-      return {
-        label: m.panchayatName,
-        value: m.panchayatCode,
-        blockId: m.blockCode,
-      };
-    });
+ // Get Villages
+const getVillages = async (panchayatId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('village', panchayatId, () => api.master.getVillagesByPanchayatId(panchayatId, token));
+  setVillages(data.map(m => ({
+    label: m.villageName,
+    value: m.villageCode,
+    panchayatId: m.panchayatCode,
+  })));
+};
 
-    setPanchayats(result);
-  };
-  const getVillages = async panchayatId => {
-    let token = loginData?.token;
-    const res = await api.master.getVillagesByPanchayatId(panchayatId, token);
-    const result = res.map(m => {
-      return {
-        label: m.villageName,
-        value: m.villageCode,
-        panchayatId: m.panchayatCode,
-      };
-    });
-    //Alert.alert("Villages",JSON.stringify(result));
-    setVillages(result);
-  };
+
+
+
   const saveSurveyOffline = async (values, imagePath) => {
     const repo = AppDataSource.getRepository(VillageSurvey);
 
@@ -2174,46 +2191,46 @@ const goToTop = () => {
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>District:</Text>{' '}
-                      {previewData?.District}
+                      {previewData?.district}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>Block:</Text>{' '}
-                      {previewData?.Block}
+                      {previewData?.block}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Gram Panchayat')}:
                       </Text>{' '}
-                      {previewData?.GramPanchayat}
+                      {previewData?.gramPanchayat}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Revenue Village')}:
                       </Text>{' '}
-                      {previewData?.RevenueVillage}
+                      {previewData?.revenueVillage}
                     </Text>
 
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Total number of households')}:
                       </Text>{' '}
-                      {previewData?.TotalHouseholds}
+                      {previewData?.totalHouseholds}
                     </Text>
 
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>{t('Male')}:</Text>{' '}
-                      {previewData?.MalePopulation}
+                      {previewData?.malePopulation}
                     </Text>
 
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>{t('Female')}:</Text>{' '}
-                      {previewData?.FemalePopulation}
+                      {previewData?.femalePopulation}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Total Population')}:
                       </Text>{' '}
-                      {previewData?.TotalPopulation}
+                      {previewData?.totalPopulation}
                     </Text>
 
                     {/* <Text>
@@ -2247,19 +2264,19 @@ const goToTop = () => {
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Is the village electrified?')}:
                       </Text>{' '}
-                      {previewData?.IsElectrified}
+                      {previewData?.isElectrified}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Is street lighting available?')}:
                       </Text>{' '}
-                      {previewData?.StreetLightingAvailable}
+                      {previewData?.streetLightingAvailable}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('What type of street lighting is provided?')}:
                       </Text>{' '}
-                      {previewData?.StreetLightingType}
+                      {previewData?.streetLightingType}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -2268,7 +2285,7 @@ const goToTop = () => {
                         )}
                         :
                       </Text>{' '}
-                      {previewData?.VillageConnectedToGP}
+                      {previewData?.villageConnectedToGP}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -2277,7 +2294,7 @@ const goToTop = () => {
                         )}
                         :
                       </Text>{' '}
-                      {previewData?.LengthAllWeatherRoadToGP}
+                      {previewData?.lengthAllWeatherRoadToGP}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -2286,7 +2303,7 @@ const goToTop = () => {
                         )}
                         :
                       </Text>{' '}
-                      {previewData?.GPConnectedToPWDOrHighway}
+                      {previewData?.gpConnectedToPWDOrHighway}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -2295,7 +2312,7 @@ const goToTop = () => {
                         )}
                         :
                       </Text>{' '}
-                      {previewData?.LengthAllWeatherRoadToHighway}
+                      {previewData?.lengthAllWeatherRoadToHighway}
                     </Text>
 
                     <Text style={AnalyaticsStyles.TitleStyle}>
@@ -2306,14 +2323,14 @@ const goToTop = () => {
                       <Text style={{fontWeight: 'bold'}}>
                         {t('No of men currently in migration?')}:
                       </Text>{' '}
-                      {previewData?.MenInMigration}
+                      {previewData?.menInMigration}
                     </Text>
 
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('No of women currently in migration?')}:
                       </Text>{' '}
-                      {previewData?.WomenInMigration}
+                      {previewData?.womenInMigration}
                     </Text>
 
                     <Text>
@@ -2323,16 +2340,16 @@ const goToTop = () => {
                         )}
                         :
                       </Text>{' '}
-                      {previewData?.MinorChildrenInMigration}
+                      {previewData?.minorChildrenInMigration}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Total No. of person currently in migration?')}:
                       </Text>{' '}
                       {JSON.stringify(
-                        parseInt(previewData?.MenInMigration) +
-                          parseInt(previewData?.WomenInMigration) +
-                          parseInt(previewData?.MinorChildrenInMigration),
+                        parseInt(previewData?.menInMigration) +
+                          parseInt(previewData?.womenInMigration) +
+                          parseInt(previewData?.minorChildrenInMigration),
                       )}
                     </Text>
                     <Text style={AnalyaticsStyles.TitleStyle}>
@@ -2342,13 +2359,13 @@ const goToTop = () => {
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Main source of drinking water?')}:
                       </Text>{' '}
-                      {previewData?.DrinkingWaterSource}
+                      {previewData?.drinkingWaterSource}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Are all households having toilets?')}:
                       </Text>{' '}
-                      {previewData?.AllHouseholdsWithToilets}
+                      {previewData?.allHouseholdsWithToilets}
                     </Text>
                     <Text style={AnalyaticsStyles.TitleStyle}>
                       {t('Education & Health Facilities')}
@@ -2357,27 +2374,27 @@ const goToTop = () => {
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Is there a functioning Anganwadi Centre?')}:
                       </Text>{' '}
-                      {previewData?.AnganwadiCentre}
+                      {previewData?.anganwadiCentre}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Is Primary school available within the village?')}:
                       </Text>{' '}
-                      {previewData?.PrimarySchoolAvailable}
+                      {previewData?.primarySchoolAvailable}
                     </Text>
 
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Is Secondary school within 3 km distance?')}:
                       </Text>{' '}
-                      {previewData?.SecondarySchoolWithin3km}
+                      {previewData?.secondarySchoolWithin3km}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {' '}
                         {t('Is there a Sub Health Centre in the village?')}:
                       </Text>{' '}
-                      {previewData?.SubHealthCentre}
+                      {previewData?.subHealthCentre}
                     </Text>
                     <Text style={AnalyaticsStyles.TitleStyle}>
                       {t('Community & Social Infrastructure')}
@@ -2386,25 +2403,25 @@ const goToTop = () => {
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Community Centre available?')}:
                       </Text>{' '}
-                      {previewData?.CommunityCentreAvailable}
+                      {previewData?.communityCentreAvailable}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Common shed for WSHG available?')}:
                       </Text>{' '}
-                      {previewData?.CommonShedForWSHG}
+                      {previewData?.commonShedForWSHG}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Availability of playground in the village?')}:
                       </Text>{' '}
-                      {previewData?.PlaygroundAvailable}
+                      {previewData?.playgroundAvailable}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('No. of community tanks available in the village?')}:
                       </Text>{' '}
-                      {previewData?.CommunityTanks}
+                      {previewData?.communityTanks}
                     </Text>
                     <Text style={AnalyaticsStyles.TitleStyle}>
                       {t('Livelihood & Service Infrastructure')}
@@ -2422,7 +2439,7 @@ const goToTop = () => {
                         )}
                         :
                       </Text>{' '}
-                      {previewData?.DigitalConnectivity}
+                      {previewData?.digitalConnectivity}
                     </Text>
                     {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -2434,9 +2451,9 @@ const goToTop = () => {
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Is there a PDS (ration shop) in the village?')}:
                       </Text>{' '}
-                      {previewData?.PDSAvailable}
+                      {previewData?.pdsAvailable}
                     </Text>
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {' '}
                         {t(
@@ -2445,7 +2462,7 @@ const goToTop = () => {
                         :
                       </Text>{' '}
                       {previewData?.DistanceOfPDS}
-                    </Text>
+                    </Text> */}
 
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -2454,7 +2471,7 @@ const goToTop = () => {
                         )}
                         :
                       </Text>{' '}
-                      {previewData?.BankingPostOfficeNearby}
+                      {previewData?.bankingPostOfficeNearby}
                     </Text>
 
                     <Text style={AnalyaticsStyles.TitleStyle}>
@@ -2468,7 +2485,7 @@ const goToTop = () => {
                         )}
                         :
                       </Text>{' '}
-                      {previewData?.WaterFromIrrigationProject}
+                      {previewData?.waterFromIrrigationProject}
                     </Text>
                     {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -2510,7 +2527,7 @@ const goToTop = () => {
                         )}
                         :
                       </Text>{' '}
-                      {previewData?.FunctionalCheckDams}
+                      {previewData?.functionalCheckDams}
                     </Text>
                     {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -2518,7 +2535,7 @@ const goToTop = () => {
                       </Text>{' '}
                       {previewData?.ScopeOfNewCheckDams}
                     </Text> */}
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'Availability of functional distribution canal in the village in RMT?',
@@ -2526,8 +2543,8 @@ const goToTop = () => {
                         :
                       </Text>{' '}
                       {previewData?.FunctionalDistributionCanal}
-                    </Text>
-                    <Text>
+                    </Text> */}
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
                           'If Yes, Scope of new distribution canal in the village in RMT?',
@@ -2535,7 +2552,7 @@ const goToTop = () => {
                         :
                       </Text>{' '}
                       {previewData?.ScopeOfNewDistributionCanal}
-                    </Text>
+                    </Text> */}
                     <Text style={AnalyaticsStyles.TitleStyle}>
                       {t('Respondent Details')}
                     </Text>
@@ -2544,12 +2561,12 @@ const goToTop = () => {
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Respondent Name')}:
                       </Text>{' '}
-                      {previewData?.RespondentName}
+                      {previewData?.respondentName}
                     </Text>
 
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>{t('Identity')}:</Text>{' '}
-                      {previewData?.IdentityRole}
+                      {previewData?.identityRole}
                     </Text>
                     {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -2561,31 +2578,31 @@ const goToTop = () => {
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Respondent contact mobile no.?')}:
                       </Text>{' '}
-                      {previewData?.RespondentMobile}
+                      {previewData?.respondentMobile}
                     </Text>
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Capture a photo of the meeting/FGD')}:
                       </Text>{' '}
                       {previewData?.MeetingPhotoPath}
-                    </Text>
+                    </Text> */}
 
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>{t('Location')}:</Text>{' '}
-                      {previewData?.GeoLocation}
+                      {previewData?.geoLocation}
                     </Text>
 
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Enumerator Name')}:
                       </Text>{' '}
-                      {previewData?.EnumeratorName}
+                      {previewData?.enumeratorName}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Survey Date and Time')}:
                       </Text>{' '}
-                      {previewData?.SurveyDate}
+                      {previewData?.surveyDate}
                     </Text>
                   </ScrollView>
 

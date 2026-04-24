@@ -18,6 +18,7 @@ import { AppDataSource } from '../../../database/database';
 import { VillageSurvey } from '../../../database/entities/VillageSurvey';
 import { v4 as uuidv4 } from 'uuid';
 import UserProfileCard from '../../../components/commonComponents/UserProfileCard';
+import SyncModal from '../../../components/commonComponents/SyncModal';
 
 const VillageFormList = (props) => {
   const { navigation } = props;
@@ -25,6 +26,7 @@ const VillageFormList = (props) => {
   const { loginData } = useSelector(state => state.DataReducer) || {};
    useEffect(()=>{
   getVillageList();
+  fetchStats();
     },[]);
   const data = [
     { name: t("Home_Title_1"), population: 21500000, color: '#f16c26' },
@@ -91,6 +93,10 @@ const VillageFormList = (props) => {
    const [villageList,setVillageList]=useState([]);
     const [isConnected, setIsConnected] = useState(true);
       const [loading, setLoading] = useState(false);
+      /* sync status can be "PENDING", "SYNCED", "FAILED" */
+      const [isSyncing, setIsSyncing] = useState(false);
+const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0 });
+const [syncModalVisible, setSyncModalVisible] = useState(false);
        const getOfflineSurveys = async () => {
         const repo = AppDataSource.getRepository(VillageSurvey);
         return await repo.find({
@@ -195,46 +201,57 @@ const VillageFormList = (props) => {
          setVillageList(result.reverse());
    
      };
-      const syncPendingSurveys = async () => {
-       const repo = AppDataSource.getRepository(VillageSurvey);
-       const pending = await repo.findBy({ status: 'PENDING' });
-     
-       for (const item of pending) {
-         try {
-           const formData = new FormData();
-     
-           formData.append(
-             'householdJson',
-             JSON.stringify(JSON.parse(item.surveyJson))
-           );
-     
-           if (item.imagePath) {
-             formData.append('respondentPhoto', {
-               uri: item.imagePath,
-               name: 'photo.jpg',
-               type: 'image/jpeg',
-             });
-           }
-     
-           // Alert.alert("Syncing",JSON.stringify(formData));
-     onSavePress(formData);
-           // await fetch(API_URL, {
-           //   method: 'POST',
-           //   headers: {
-           //     Authorization: `Bearer ${token}`,
-           //   },
-           //   body: formData,
-           // });
-     
-           item.status = 'SYNCED';
-           await repo.save(item);
-     
-         } catch (e) {
-           item.status = 'FAILED';
-           await repo.save(item);
-         }
-       }
-     };
+     const [stats, setStats] = useState({ pending: 0, synced: 0 });
+     const fetchStats = async () => {
+    const repo = AppDataSource.getRepository(VillageSurvey);
+    const pending = await repo.countBy({ status: 'PENDING' });
+    const synced = await repo.countBy({ status: 'SYNCED' });
+    if(pending > 0) setSyncModalVisible(true);
+    setStats({ pending, synced });
+};
+     const syncPendingSurveys = async () => {
+    const repo = AppDataSource.getRepository(VillageSurvey);
+    const pending = await repo.findBy({ status: 'PENDING' });
+    
+    if (pending.length === 0) {
+        Alert.alert("Info", "No pending surveys to sync.");
+        return;
+    }
+
+    setSyncProgress({ current: 0, total: pending.length });
+    setIsSyncing(true);
+
+    for (let i = 0; i < pending.length; i++) {
+        const item = pending[i];
+        try {
+            const formData = new FormData();
+            formData.append('householdJson', JSON.stringify(JSON.parse(item.surveyJson)));
+
+            if (item.imagePath) {
+                formData.append('respondentPhoto', {
+                    uri: item.imagePath,
+                    name: 'photo.jpg',
+                    type: 'image/jpeg',
+                });
+            }
+
+            // Execute the save
+            await onSavePress(formData);
+
+            item.status = 'SYNCED';
+            await repo.save(item);
+        } catch (e) {
+            console.error("Sync Error:", e);
+            item.status = 'FAILED';
+            await repo.save(item);
+        }
+        // Update progress for the UI
+        setSyncProgress(prev => ({ ...prev, current: i + 1 }));
+    }
+
+    setIsSyncing(false);
+    Alert.alert("Success", "Sync process completed.");
+};
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(20)} />
@@ -243,6 +260,14 @@ const VillageFormList = (props) => {
       {/* <Text style={HomeTabStyles.MyDashBoardText}>{t("Home_Title_16")}</Text> */}
       <ScrollView>
         <View style={Style.Container}>
+          <SyncModal
+            visible={syncModalVisible}
+            onClose={() => setSyncModalVisible(false)}
+            stats={stats}
+            onStartSync={syncPendingSurveys}
+            isSyncing={isSyncing}
+            progress={syncProgress}
+          />
           <View style={Style.MinViewContent}>
             {/* <Spacing space={SH(40)} />
             <View style={HomeTabStyles.FlexDirection}>

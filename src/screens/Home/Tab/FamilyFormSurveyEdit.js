@@ -55,6 +55,7 @@ import {AppDataSource} from '../../../database/database';
 import {HouseholdSurvey} from '../../../database/entities/HouseholdSurvey';
 import {v4 as uuidv4} from 'uuid';
 import { AppOkAlert } from '../../../utils/AlertHelper';
+import { getMasterLocationData } from '../../Authantication/LoginScreen/LoginHelper';
 
 const FamilyFormSurveyEdit = props => {
   const {t} = useTranslation();
@@ -187,13 +188,38 @@ const FamilyFormSurveyEdit = props => {
     {label: 'Item 7', value: '7'},
     {label: 'Item 8', value: '8'},
   ];
-  const socialCatData = [
-    {label: 'ST', value: 'ST'},
-    {label: 'SC', value: 'SC'},
-    {label: 'OBC', value: 'OBC'},
-    {label: 'General', value: 'General'},
-    {label: 'PVTGS', value: 'PVTGS'},
-  ];
+  // const socialCatData = [
+  //   {label: 'ST', value: 'ST'},
+  //   {label: 'SC', value: 'SC'},
+  //   {label: 'OBC', value: 'OBC'},
+  //   {label: 'General', value: 'General'},
+  //   {label: 'PVTGS', value: 'PVTGS'},
+  // ];
+    const [socialCatData, setSocialCatData] = useState([]);
+     const loadSocialCategories = async () => {
+      let token = loginData?.token;
+      const currentLanguage = i18n.language;
+      //  const language = await getLanguage();
+      const categories = await getMasterData(
+        'socialCategory',
+        4, // The index you assigned in saveMasters
+        api.master.getSocialCategory,
+        token,
+      );
+      const result = categories.map(category => {
+        return {
+          id: category.id,
+          label:
+            currentLanguage === 'en' ? category.categoryName : category.categoryNameLocal,
+          value:
+            currentLanguage === 'en' ? category.categoryName : category.categoryNameLocal,
+        };
+      }); // Sort alphabetically
+  
+      // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+      setSocialCatData(result);
+    };
+  
 
   const maritalStatusData = [
     {label: 'Married', value: 'Married'},
@@ -219,13 +245,37 @@ const FamilyFormSurveyEdit = props => {
     // {label: t('Earlier'), value: false},
   
   ];
-  const occupationDropDownData = [
-    {label: 'Agriculture', value: 'Agriculture'},
-    {label: 'Daily Wage Labour', value: 'Daily Wage Labour'},
-    {label: 'Self employed', value: 'Self employed'},
-    {label: 'Govt./Private Service', value: 'Govt./Private Service'},
-    {label: 'Other User entry', value: 'Other User entry'},
-  ];
+  // const occupationDropDownData = [
+  //   {label: 'Agriculture', value: 'Agriculture'},
+  //   {label: 'Daily Wage Labour', value: 'Daily Wage Labour'},
+  //   {label: 'Self employed', value: 'Self employed'},
+  //   {label: 'Govt./Private Service', value: 'Govt./Private Service'},
+  //   {label: 'Other User entry', value: 'Other User entry'},
+  // ];
+  const [occupationDropDownData, setOccupationData] = useState([]);
+    const loadOccupations = async () => {
+      let token = loginData?.token;
+      const currentLanguage = i18n.language;
+      //  const language = await getLanguage();
+      const occupations = await getMasterData(
+        'primaryOccupation',
+        10, // The index you assigned in saveMasters
+        api.master.getPrimaryOccupation,
+        token,
+      );
+      const result = occupations.map(occupation => {
+        return {
+          id: occupation.id,
+          label:
+            currentLanguage === 'en' ? occupation.occupationName : occupation.occupationNameLocal,
+          value:
+            currentLanguage === 'en' ? occupation.occupationName : occupation.occupationNameLocal,
+        };
+      }); // Sort alphabetically
+  
+      // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+      setOccupationData(result);
+    };
   const arrayData = [
     {label: t('Survey_Title_21'), value: 'option1'},
     {label: t('Survey_Title_22'), value: 'option2'},
@@ -239,43 +289,76 @@ const FamilyFormSurveyEdit = props => {
     {label: t('FRA Claimant'), value: t('FRA Claimant')},
     {label: t('Not a FRA Claimant'), value: t('Not a FRA Claimant')},
   ];
-  const privateLandData = [
-    {label: t('Landless'), value: 'Landless'},
-    {label: t('0-0.5Acr'), value: '0- 0.5 Acr'},
-    {label: t('0.5-1Acr'), value: '0.5- 1 Acr'},
-    {label: t('1-2.5Acr'), value: '1 - 2.5 Acr'},
-    {label: t('more than 2.5Acr'), value: 'more than 2.5 Acr'},
-  ];
+
+  // const privateLandData = [
+  //   {label: t('Landless'), value: 'Landless'},
+  //   {label: t('0-0.5Acr'), value: '0- 0.5 Acr'},
+  //   {label: t('0.5-1Acr'), value: '0.5- 1 Acr'},
+  //   {label: t('1-2.5Acr'), value: '1 - 2.5 Acr'},
+  //   {label: t('more than 2.5Acr'), value: 'more than 2.5 Acr'},
+  // ];
+   const [privateLandData, setPrivateLandData] = useState([]);
+      const loadPrivateLandData = async () => {
+      let token = loginData?.token;
+      const currentLanguage = i18n.language;
+      //  const language = await getLanguage();
+      const holdings = await getMasterData(
+        'landHolding',
+        11, // The index you assigned in saveMasters
+        api.master.getLandHolding,
+        token,
+      );
+      const result = holdings.map(holding => {
+        return {
+          id: holding.id,
+          label:
+            currentLanguage === 'en' ? holding.holdingSize : holding.holdingSizeLocal,
+          value:
+            currentLanguage === 'en' ? holding.holdingSize : holding.holdingSizeLocal,
+        };
+      }); // Sort alphabetically
+  
+      // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+      setPrivateLandData(result);
+      };
+
   const waterSourceData = [
     {label: t('Well'), value: t('Well')},
     {label: t('Tube Well'), value: t('Tube Well')},
     {label: t('Piped Water Supply'), value: t('Piped Water Supply')},
     {label: t('Others'), value: t('Others')},
   ];
-  const schemeData = [
-    {label: t('PM Kishan'), value: t('PM Kishan')},
-    {label: t('CM Kishan'), value: t('CM Kishan')},
-    {label: t('Both'), value: t('Both')},
-  ];
- const genderData = [
-    {label: t('mMale'), value: t('mMale')},
-    {label: t('fFemale'), value: t('fFemale')},
-    {label: t('Others'), value: t('Others')},
-  ];
+ 
+ 
 
-  const respondantData = [
-    {label: t('Migrant Person himself'), value: t('Migrant Person himself')},
-    {
-      label: t('Other Adult family member'),
-      value: t('Other Adult family member'),
-    },
-    {
-      label: t('Village Head/Ward Member'),
-      value: t('Village Head/Ward Member'),
-    },
-    {label: t('Neighbour'), value: t('Neighbour')},
-    {label: t('Head of the household'), value: t('Head of the household')},
-  ];
+  const [respondantData, setRespondentData] = useState([]);
+
+  const loadRespondentData = async () => {
+    let token = loginData?.token;
+
+    const currentLanguage = i18n.language;
+
+    //  const language = await getLanguage();
+    const respondentIdentities = await getMasterData(
+      'respondentIdentity',
+      6, // The index you assigned in saveMasters
+      api.master.getRespondentIdentity,
+      token,
+    );
+
+    const result = respondentIdentities.map(respondentIdentity => {
+      return {
+        id: respondentIdentity.id,
+        label:
+          currentLanguage === 'en' ? respondentIdentity.identityName : respondentIdentity.identityNameLocal,
+        value:
+          currentLanguage === 'en' ? respondentIdentity.identityName : respondentIdentity.identityNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Gender data fetched successfully!'+JSON.stringify(result));
+    setRespondentData(result);
+  };
 
   const [checkboxes, setCheckboxes] = useState([
     {label: t('Survey_Title_24'), checked: false},
@@ -286,28 +369,82 @@ const FamilyFormSurveyEdit = props => {
 
     // Add more options as needed
   ]);
-  const [checkboxes2, setCheckboxes2] = useState([
-    {label: t('Major'), checked: false},
-    {label: t('Minor'), checked: false},
-    {label: t('Medium'), checked: false},
-    {label: t('Lift Irrigation'), checked: false},
-    {label: t('Check dam'), checked: false},
-    {label: t('Canal'), checked: false},
-    {label: t('Bore Well'), checked: false},
-    {label: t('Dug Well'), checked: false},
-    {label: t('Farm pond'), checked: false},
-    {label: t('Others'), checked: false},
+  const [checkboxes2, setCheckboxes2] = useState([]);
+  //   {label: t('Major'), checked: false},
+  //   {label: t('Minor'), checked: false},
+  //   {label: t('Medium'), checked: false},
+  //   {label: t('Lift Irrigation'), checked: false},
+  //   {label: t('Check dam'), checked: false},
+  //   {label: t('Canal'), checked: false},
+  //   {label: t('Bore Well'), checked: false},
+  //   {label: t('Dug Well'), checked: false},
+  //   {label: t('Farm pond'), checked: false},
+  //   {label: t('Others'), checked: false},
 
-    // Add more options as needed
-  ]);
-  const [checkboxes3, setCheckboxes3] = useState([
-    {label: t('Poultry'), checked: false},
-    {label: t('Goatery'), checked: false},
-    {label: t('Dairy'), checked: false},
-    {label: t('Others'), checked: false},
+  //   // Add more options as needed
+  // ]);
+  const [irrigationData, setIrrigationData] = useState([]);
+    const loadIrrigationData = async () => {
+      let token = loginData?.token;
+      const currentLanguage = i18n.language;
+      //  const language = await getLanguage();
+      const irrigationSources = await getMasterData(
+        'irrigationSource',
+        9, // The index you assigned in saveMasters
+        api.master.getIrrigationSource,
+        token,
+      );
+      const result = irrigationSources.map(source => {
+        return {
+          id: source.id,
+          label:
+            currentLanguage === 'en' ? source.sourceName : source.sourceNameLocal,
+          value:
+            currentLanguage === 'en' ? source.sourceName : source.sourceNameLocal,
+        };
+      }); // Sort alphabetically
+  
+      // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+      setIrrigationData(result);
+      setCheckboxes2(result.map(source => ({label: source.label, checked: false})));
+    };
+  // const [checkboxes3, setCheckboxes3] = useState([
+  //   {label: t('Poultry'), checked: false},
+  //   {label: t('Goatery'), checked: false},
+  //   {label: t('Dairy'), checked: false},
+  //   {label: t('Others'), checked: false},
 
-    // Add more options as needed
-  ]);
+  //   // Add more options as needed
+  // ]);
+const [checkboxes3, setCheckboxes3] = useState([]);
+const [livestockData, setLivestockData] = useState([]);
+   const loadLiveStockData = async () => {
+    let token = loginData?.token;
+    const currentLanguage = i18n.language;
+    //  const language = await getLanguage();
+    const livestockactivities = await getMasterData(
+      'livestockActivity',
+      12, // The index you assigned in saveMasters
+      api.master.getLivestockActivity,
+      token,
+    );
+    const result = livestockactivities.map(activity => {
+      return {
+        id: activity.id,
+        label:
+          currentLanguage === 'en' ? activity.activityType : activity.activityTypeLocal,
+        value:
+          currentLanguage === 'en' ? activity.activityType : activity.activityTypeLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+    setLivestockData(result);
+    setCheckboxes3(result.map(activity => ({label: activity.label, checked: false})));
+  };
+
+
+
   const {loginData} = useSelector(state => state.DataReducer) || {};
    const [headName,setHeadName]=useState('');
   const [dateSelectLocal, setDateSelectLocal] = useState(
@@ -365,22 +502,49 @@ const labelsArray2 = livestock.split(",").map(s => s.trim());
   };
 
   useEffect(() => {
+     loadGenders();
+    loadOccupations();
+    loadSocialCategories();
+    loadWaterSourceData();
+    loadRespondentData();
+    loadPrivateLandData();
+    loadIrrigationData();
+    loadLiveStockData();
+    loadSchemesData();
     getLocation();
     // Alert.alert("hi");
     getMasterState();
     getBankList();
   }, [isFocused]);
-  //  useEffect(() => {
-  //   if (editData && formikRef.current) {
-  //     formikRef.current.resetForm({
-  //       values: {
-  //         ...HouseHoldFormInitialValues(props),
-  //         ...editData,
-  //       }
+  const [genderData, setGenderData] = useState([]);
 
-  //     });
-  //   }
-  // });
+  // Example: Getting Gender List
+  const loadGenders = async () => {
+    let token = loginData?.token;
+
+    const currentLanguage = i18n.language;
+
+    //  const language = await getLanguage();
+    const genders = await getMasterData(
+      'gender',
+      2, // The index you assigned in saveMasters
+      api.master.getGender,
+      token,
+    );
+
+    const result = genders.map(gender => {
+      return {
+        id: gender.id,
+        label:
+          currentLanguage === 'en' ? gender.genderName : gender.genderNameLocal,
+        value:
+          currentLanguage === 'en' ? gender.genderName : gender.genderNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Gender data fetched successfully!'+JSON.stringify(result));
+    setGenderData(result);
+  };
   const handleCheckboxChange = index => {
     const updatedCheckboxes = [...checkboxes];
     updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
@@ -470,22 +634,76 @@ const labelsArray2 = livestock.split(",").map(s => s.trim());
       />
     ));
   };
-  const [checkboxes4, setCheckboxes4] = useState([
-    {label: t('Well'), checked: false},
-    {label: t('Tube Well'), checked: false},
-    {label: t('Piped Water Supply'), checked: false},
-    {label: t('Others'), checked: false},
+  // const [checkboxes4, setCheckboxes4] = useState([
+  //   {label: t('Well'), checked: false},
+  //   {label: t('Tube Well'), checked: false},
+  //   {label: t('Piped Water Supply'), checked: false},
+  //   {label: t('Others'), checked: false},
 
-    // Add more options as needed
-  ]);
-  const [checkboxes5, setCheckboxes5] = useState([
-    {label: t('PM Kishan'), checked: false},
-    {label: t('CM Kishan'), checked: false},
-    // {label: t('Both'), checked: false},
-    {label: t('None'), checked: false},
+  //   // Add more options as needed
+  // ]);
 
-    // Add more options as needed
-  ]);
+  const [checkboxes4, setCheckboxes4] = useState([]);
+     const loadWaterSourceData = async () => {
+      let token = loginData?.token;
+        const currentLanguage = i18n.language;
+      //  const language = await getLanguage();
+      const waterSources = await getMasterData(
+        'drinkingWaterSource',
+        5, // The index you assigned in saveMasters
+        api.master.getDrinkingWaterSource,
+        token,
+      );
+      const result = waterSources.map(waterSource => {
+        return {
+          id: waterSource.id,
+          label:
+            currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+          value:
+            currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+        };
+      }); // Sort alphabetically
+  
+      // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+      // setWaterSourceData(result);
+      setCheckboxes4(result.map(source => ({label: source.label, checked: false})));
+    };
+ 
+
+  const [checkboxes5, setCheckboxes5] = useState([]);
+    //   {label: t('PM Kishan'), checked: false},
+    //   {label: t('CM Kishan'), checked: false},
+    //   // {label: t('Both'), checked: false},
+    //   {label: t('None'), checked: false},
+  
+    //   // Add more options as needed
+    // ]);
+    const [schemeData, setSchemeData] = useState([]);
+     const loadSchemesData = async () => {
+    let token = loginData?.token;
+    const currentLanguage = i18n.language;
+    //  const language = await getLanguage();
+    const schemes = await getMasterData(
+      'kishanScheme',
+      12, // The index you assigned in saveMasters
+      api.master.getKishanScheme,
+      token,
+    );
+    const result = schemes.map(scheme => {
+      return {
+        id: scheme.id,
+        label:
+          currentLanguage === 'en' ? scheme.schemeName : scheme.schemeNameLocal,
+        value:
+          currentLanguage === 'en' ? scheme.schemeName : scheme.schemeNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+    let finalResult = result.filter(scheme => scheme.id !== 3);
+    setSchemeData(finalResult);
+    setCheckboxes5(finalResult.map(scheme => ({label: scheme.label, checked: false})));
+  };
 
   const toggleCheckbox5 = (label) => {
     const labelsToToggle = label.split(',').map(l => l.trim());
@@ -628,58 +846,60 @@ const labelsArray2 = livestock.split(",").map(s => s.trim());
 
 
 
-  const getMasterState = async () => {
+ 
+  // Get Districts
+const getMasterState = async () => {
+  const token = loginData?.token;
+  const districts = await getMasterLocationData('district',null,() => api.master.getDistricts(token));
+  setDistrict(districts.map(m => ({ label: m.districtName, value: m.districtCode })));
+};
+
+  // Get Blocks
+const getBlocks = async (districtId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('block', districtId, () => api.master.getBlocksByDistrictId(districtId, token));
+  setBlocks(data.map(m => ({ label: m.blockName, value: m.blockCode })));
+};
+ 
+
+  // Get Panchayats
+const getPanchayats = async (blockId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('panchayat', blockId, () => api.master.getGramPanchayats(blockId, token));
+  setPanchayats(data.map(m => ({
+    label: m.panchayatName,
+    value: m.panchayatCode,
+    blockId: m.blockCode,
+  })));
+};
+
+ // Get Villages
+const getVillages = async (panchayatId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('village', panchayatId, () => api.master.getVillagesByPanchayatId(panchayatId, token));
+  setVillages(data.map(m => ({
+    label: m.villageName,
+    value: m.villageCode,
+    panchayatId: m.panchayatCode,
+  })));
+};
+
+
+ const getBankList = async () => {
     let token = loginData?.token;
-
-    const res = await api.master.getDistricts(token);
-
-    const result = res.map(m => {
-      return {
-        label: m.districtName,
-        value: m.districtCode,
-      };
-    });
-    setDistrict(result);
-  };
-
-  const getBlocks = async districtId => {
-    let token = loginData?.token;
-    const res = await api.master.getBlocksByDistrictId(districtId, token);
-    const result = res.map(m => {
-      return {
-        label: m.blockName,
-        value: m.blockCode,
-      };
-    });
-    // Alert.alert("Blocks",JSON.stringify(result));
-    setBlocks(result);
-  };
-  const getPanchayats = async blockId => {
-    let token = loginData?.token;
-    const res = await api.master.getGramPanchayats(blockId, token);
-
-    const result = res.map(m => {
-      return {
-        label: m.panchayatName,
-        value: m.panchayatCode,
-        blockId: m.blockCode,
-      };
-    });
-
-    setPanchayats(result);
-  };
-  const getVillages = async panchayatId => {
-    let token = loginData?.token;
-    const res = await api.master.getVillagesByPanchayatId(panchayatId, token);
-    const result = res.map(m => {
-      return {
-        label: m.villageName,
-        value: m.villageCode,
-        panchayatId: m.panchayatCode,
-      };
-    });
-    //Alert.alert("Villages",JSON.stringify(result));
-    setVillages(result);
+    // const res = await api.master.getBanks(token);
+    // const result = res.map(m => {
+    //   return {
+    //     label: m.bankName,
+    //     value: m.id,
+    //   };
+    // });
+      const data = await getMasterLocationData('banks',null, () => api.master.getBanks(token));
+  setBankList(data.map(m => ({
+    label: m.bankName,
+    value: m.id,
+  })));
+    // setBankList(result);
   };
   const handleNext = () => {
      goToTop();
@@ -704,17 +924,7 @@ const labelsArray2 = livestock.split(",").map(s => s.trim());
     }
   };
 
-  const getBankList = async () => {
-    let token = loginData?.token;
-    const res = await api.master.getBanks(token);
-    const result = res.map(m => {
-      return {
-        label: m.bankName,
-        value: m.id,
-      };
-    });
-    setBankList(result);
-  };
+  
   var alertdata = {
     logout: t('Survey_Title_33'),
   };

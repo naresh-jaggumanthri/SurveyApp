@@ -25,6 +25,7 @@ import {
   decodeJWT,
   LoginFormInitialValues,
   LoginValidationSchema,
+  saveMasters,
 } from './LoginHelper';
 import api from '../../../api';
 import {APP_NAME, AppOkAlert} from '../../../utils/AlertHelper';
@@ -74,6 +75,7 @@ const LoginScreen = props => {
       try {
         setLoading(false);
         const token = res?.token;
+        await saveMasters(token);
         const userData = await decodeJWT(token);
 
         const user = {

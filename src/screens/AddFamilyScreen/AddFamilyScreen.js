@@ -40,6 +40,9 @@ import {validationSchema} from './AddFamilyHelper';
 import {RouteName} from '../../routes';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import { useSelector } from 'react-redux';
+import api from '../../api';
+import { getMasterData } from '../Home/Tab/HomeHelper';
+
 
 const AddFamilyScreen = props => {
   const {navigation} = props;
@@ -47,7 +50,7 @@ const AddFamilyScreen = props => {
   //   const { Colors } = useTheme();
   //   const ProfileTabStyle = useMemo(() => ProfileTabStyles(Colors), [Colors]);
 
-  const {t} = useTranslation();
+  const {t, i18n} = useTranslation();
   const [state, setState] = useState({});
   const AnalyaticsStyles = useMemo(() => AnalyaticsStyle(Colors), [Colors]);
 
@@ -58,9 +61,16 @@ const AddFamilyScreen = props => {
   const [type,setType]=useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const isFocused = useIsFocused();
-   const { familyData } = useSelector(state => state.DataReducer) || {};
+   const { familyData,loginData } = useSelector(state => state.DataReducer) || {};
+  
+   
 
   useEffect(() => {
+    loadRelationshipData(); //1
+    loadGenders(); //2
+    loadEducationData(); //3
+    loadSectorsData(); //7
+    // Alert.alert('Success', JSON.stringify(loginData));
     const token = PubSub.subscribe('count', (msg, data) => {
       console.log('Received count:', data);
       setCount(data?.count);
@@ -74,79 +84,131 @@ const AddFamilyScreen = props => {
       PubSub.unsubscribe(token);
     };
   }, [isFocused]);
-  const genderData = [
-    {label: t('mMale'), value: t('mMale')},
-    {label: t('fFemale'), value: t('fFemale')},
-    {label: t('Others'), value: t('Others')},
-  ];
+  // const genderData = [
+  //   {label: t('mMale'), value: t('mMale')},
+  //   {label: t('fFemale'), value: t('fFemale')},
+  //   {label: t('Others'), value: t('Others')},
+  // ];
+  const [genderData, setGenderData] = useState([]);
+   const loadGenders = async () => {
+      let token = loginData?.token;
+  
+      const currentLanguage = i18n.language;
+  
+      //  const language = await getLanguage();
+      const genders = await getMasterData(
+        'gender',
+        2, // The index you assigned in saveMasters
+        api.master.getGender,
+        token,
+      );
+  
+      const result = genders.map(gender => {
+        return {
+          id: gender.id,
+          label:
+            currentLanguage === 'en' ? gender.genderName : gender.genderNameLocal,
+          value:
+            currentLanguage === 'en' ? gender.genderName : gender.genderNameLocal,
+        };
+      }); // Sort alphabetically
+  
+      // Alert.alert('Success', 'Gender data fetched successfully!'+JSON.stringify(result));
+      setGenderData(result);
+    };
   const selfHelpData = [
     {label: t('Yes'), value: true},
     {label: t('No'), value: false},
   ];
-  const sectorData = [
-    {label: t('Brick Kiln'), value: 'Brick Kiln'},
-    {label: t('Construction Labour'), value: 'Construction Labour'},
-    {label: t('Agri Labour'), value: 'Agri Labour'},
-    {label: t('Mason'), value: 'Mason'},
-    {label: t('Domestic Support'), value: 'Domestic Support'},
-    {label: t('Domestic Support'), value: 'Domestic Support'},
-    {label: t('Manufacturing'), value: 'Manufacturing'},
-    {
-      label: t('Service Sector(Hotel,Hospital,Security)'),
-      value: 'Service Sector(Hotel,Hospital,Security)',
-    },
-    {label: t('Other'), value: 'Other'},
-  ];
+ 
   const migrationData = [
     {label: t('1-3months'), value: '1-3 months'},
     {label: t('4-6months'), value: '4-6 months'},
     {label: t('7-12months'), value: '7-12 months'},
   ];
-  const [checkboxes, setCheckboxes] = useState([
-    {label: t('DDUGKY'), checked: false, mainIndex: 0},
-    {label: t('RSETI'), checked: false, mainIndex: 0},
-    {label: t('Other'), checked: false, mainIndex: 0},
-    {label: t('None'), checked: false, mainIndex: 0},
-
-    // Add more options as needed
-  ]);
-  const [checkboxes2, setCheckboxes2] = useState([
-    {label: t('Brick Kiln'), checked: false},
-    {label: t('Construction Labour'), checked: false},
-    {label: t('Agri Labour'), checked: false},
-    {label: t('Mason'), checked: false},
-    {label: t('Domestic Support'), checked: false},
-    {label: t('Manufacturing'), checked: false},
-    {label: t('Service Sector(Hotel,Hospital,Security)'), checked: false},
-    {label: t('Other'), checked: false},
-
-    // Add more options as needed
-  ]);
-  const educationData = [
-    {label: 'Illiterate', value: 'Illiterate'},
-    {label: 'Never attended school', value: 'Never attended school'},
-    {
-      label: 'Literate but no formal schooling',
-      value: 'Literate but no formal schooling',
-    },
-    {label: 'Primary(Class 1-5)', value: 'Primary(Class 1-5)'},
-    {label: 'Upper Primary(Class 6-8)', value: 'Upper Primary(Class 6-8)'},
-    {label: 'Secondary(Class 9-10)', value: 'Secondary(Class 9-10)'},
-    {
-      label: 'Higher Secondary(Class 11-12)',
-      value: 'Higher Secondary(Class 11-12)',
-    },
-    {label: 'Graduate & Others Diploma', value: 'Graduate & Others Diploma'},
-    {label: 'ITI', value: 'ITI'},
-    {label: 'Vocational Training', value: 'Vocational Training'},
-  ];
-  const relationshipData = [
-    {label: 'Self', value: 'Self'},
-    {label: 'Parents', value: 'Parents'},
-    {label: 'Children', value: 'Children'},
-    {label: 'Spouse', value: 'Spouse'},
-    {label: 'Other', value: 'Other'},
-  ];
+ 
+  const [educationData, setEducationData] = useState([]);
+   const loadEducationData = async () => {
+   
+      let token = loginData?.token;
+  
+      const currentLanguage = i18n.language;
+  
+      //  const language = await getLanguage();
+      const educations = await getMasterData(
+        'education',
+        3, // The index you assigned in saveMasters
+        api.master.getEducation,
+        token,
+      );
+    
+  
+      const result = educations.map(education => {
+        return {
+          id: education.id,
+          label:
+            currentLanguage === 'en' ? education.qualificationName : education.qualificationNameLocal,
+          value:
+            currentLanguage === 'en' ? education.qualificationName : education.qualificationNameLocal,
+        };
+      }); // Sort alphabetically
+  
+       
+      setEducationData(result);
+    };
+  // const educationData = [
+  //   {label: 'Illiterate', value: 'Illiterate'},
+  //   {label: 'Never attended school', value: 'Never attended school'},
+  //   {
+  //     label: 'Literate but no formal schooling',
+  //     value: 'Literate but no formal schooling',
+  //   },
+  //   {label: 'Primary(Class 1-5)', value: 'Primary(Class 1-5)'},
+  //   {label: 'Upper Primary(Class 6-8)', value: 'Upper Primary(Class 6-8)'},
+  //   {label: 'Secondary(Class 9-10)', value: 'Secondary(Class 9-10)'},
+  //   {
+  //     label: 'Higher Secondary(Class 11-12)',
+  //     value: 'Higher Secondary(Class 11-12)',
+  //   },
+  //   {label: 'Graduate & Others Diploma', value: 'Graduate & Others Diploma'},
+  //   {label: 'ITI', value: 'ITI'},
+  //   {label: 'Vocational Training', value: 'Vocational Training'},
+  // ];
+  const [relationshipData, setRelationshipData] = useState([]);
+   const loadRelationshipData = async () => {
+      let token = loginData?.token;
+  
+      const currentLanguage = i18n.language;
+  
+      //  const language = await getLanguage();
+      const relations = await getMasterData(
+        'relationship',
+        1, // The index you assigned in saveMasters
+        api.master.getRelationship,
+        token,
+      );
+  
+      const result = relations.map(relation => {
+        return {
+          id: relation.id,
+          label:
+            currentLanguage === 'en' ? relation.relationshipName : relation.relationshipNameLocal,
+          value:
+            currentLanguage === 'en' ? relation.relationshipName : relation.relationshipNameLocal,
+        };
+      }); // Sort alphabetically
+  
+      // Alert.alert('Success', 'Education data fetched successfully!'+JSON.stringify(result));
+      setRelationshipData(result);
+    };
+ 
+  // const relationshipData = [
+  //   {label: 'Self', value: 'Self'},
+  //   {label: 'Parents', value: 'Parents'},
+  //   {label: 'Children', value: 'Children'},
+  //   {label: 'Spouse', value: 'Spouse'},
+  //   {label: 'Other', value: 'Other'},
+  // ];
   const statesData = [
     {label: 'Andhra Pradesh', value: 'Andhra Pradesh'},
     {label: 'Arunachal Pradesh', value: 'Arunachal Pradesh'},
@@ -193,19 +255,47 @@ const AddFamilyScreen = props => {
     {label: 'Intra-state', value: 'Intra-state'},
     {label: 'Other', value: 'Other'},
   ];
-  const sectorsData = [
-    {label: 'Brick Kiln', value: 'Brick Kiln'},
-    {label: 'Construction Labour', value: 'Construction Labour'},
-    {label: 'Agri Labour', value: 'Agri Labour'},
-    {label: 'Mason', value: 'Mason'},
-    {label: 'Domestic Support', value: 'Domestic Support'},
-    {label: 'Manufacturing', value: 'Manufacturing'},
-    {
-      label: 'Service Sector(Hotel,Hospital,Security)',
-      value: 'Service Sector(Hotel,Hospital,Security)',
-    },
-    {label: 'Other', value: 'Other'},
-  ];
+  const [sectorsData, setSectorsData] = useState([]);
+   const loadSectorsData = async () => {
+      let token = loginData?.token;
+  
+      const currentLanguage = i18n.language;
+  
+      //  const language = await getLanguage();
+      const sectors = await getMasterData(
+        'migrationSector',
+        7, // The index you assigned in saveMasters
+        api.master.getMigrationSector,
+        token,
+      );
+  
+      const result = sectors.map(sector => {
+        return {
+          id: sector.id,
+          label:
+            currentLanguage === 'en' ? sector.sectorName : sector.sectorNameLocal,
+          value:
+            currentLanguage === 'en' ? sector.sectorName : sector.sectorNameLocal,
+        };
+      }); // Sort alphabetically
+  
+      // Alert.alert('Success', 'Education data fetched successfully!'+JSON.stringify(result));
+      setSectorsData(result);
+    };
+
+  // const sectorsData = [
+  //   {label: 'Brick Kiln', value: 'Brick Kiln'},
+  //   {label: 'Construction Labour', value: 'Construction Labour'},
+  //   {label: 'Agri Labour', value: 'Agri Labour'},
+  //   {label: 'Mason', value: 'Mason'},
+  //   {label: 'Domestic Support', value: 'Domestic Support'},
+  //   {label: 'Manufacturing', value: 'Manufacturing'},
+  //   {
+  //     label: 'Service Sector(Hotel,Hospital,Security)',
+  //     value: 'Service Sector(Hotel,Hospital,Security)',
+  //   },
+  //   {label: 'Other', value: 'Other'},
+  // ];
   const monthlyIncomeData = [
     {label: '3000', value: '3000'},
     {label: '4000', value: '4000'},
@@ -479,7 +569,7 @@ const AddFamilyScreen = props => {
                   arrayData={selfHelpData}
                   value={member?.migratedInLast3Years}
                   onChangeText={(val) => {
-                    Alert.alert("val",JSON.stringify(val));
+                    // Alert.alert("val",JSON.stringify(val));
                     setFieldValue(
                       `familyMembers[${currentIndex}].migratedInLast3Years`,
                       val,

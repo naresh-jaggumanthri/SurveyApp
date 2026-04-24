@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { HouseholdSurvey } from './entities/HouseholdSurvey';
 import { VillageSurvey } from './entities/VillageSurvey';
+import { MasterSurvey } from './entities/MasterSurvey';
 
 export const AppDataSource = new DataSource({
   type: 'react-native',
@@ -9,5 +10,5 @@ export const AppDataSource = new DataSource({
   location: 'default',
   synchronize: true,   // auto create tables (dev)
   logging: false,
-  entities: [HouseholdSurvey,VillageSurvey],
+  entities: [HouseholdSurvey,VillageSurvey,MasterSurvey],
 });

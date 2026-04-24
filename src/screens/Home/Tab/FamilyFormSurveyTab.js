@@ -62,10 +62,12 @@ import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import {AppOkAlert} from '../../../utils/AlertHelper';
 import {err} from 'react-native-svg';
 import propTypes from 'prop-types';
-import { counterEvent } from 'react-native/Libraries/Performance/Systrace';
+import {counterEvent} from 'react-native/Libraries/Performance/Systrace';
+import {getMasterData} from './HomeHelper';
+import { getMasterLocationData } from '../../Authantication/LoginScreen/LoginHelper';
 
 const FamilyFormSurveyTab = props => {
-  const {t} = useTranslation();
+  const {t, i18n} = useTranslation();
   const {navigation} = props;
 
   const stateArray = {
@@ -170,27 +172,23 @@ const FamilyFormSurveyTab = props => {
   const isFocused = useIsFocused();
   const [nameError, setNameError] = useState('');
 
-  
-    const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-   
     getLocation();
     // if (isFocused) {
-     
-     const token = PubSub.subscribe('familyData', (msg, data) => {
-  Alert.alert('Family Data Received', JSON.stringify(data));
-setFamilyMembers(data);
-     });
 
-     return () => {
-           PubSub.unsubscribe(token);
-         };
-      
+    const token = PubSub.subscribe('familyData', (msg, data) => {
+      // Alert.alert('Family Data Received', JSON.stringify(data));
+      setFamilyMembers(data);
+    });
+
+    return () => {
+      PubSub.unsubscribe(token);
+    };
+
     // }
-     
   }, [isFocused]);
-  
 
   const dropDownData = [
     {label: 'Item 1', value: '1'},
@@ -202,13 +200,38 @@ setFamilyMembers(data);
     {label: 'Item 7', value: '7'},
     {label: 'Item 8', value: '8'},
   ];
-  const socialCatData = [
-    {label: 'ST', value: 'ST'},
-    {label: 'SC', value: 'SC'},
-    {label: 'OBC', value: 'OBC'},
-    {label: 'General', value: 'General'},
-    {label: 'PVTGS', value: 'PVTGS'},
-  ];
+
+  // const socialCatData = [
+  //   {label: 'ST', value: 'ST'},
+  //   {label: 'SC', value: 'SC'},
+  //   {label: 'OBC', value: 'OBC'},
+  //   {label: 'General', value: 'General'},
+  //   {label: 'PVTGS', value: 'PVTGS'},
+  // ];
+  const [socialCatData, setSocialCatData] = useState([]);
+   const loadSocialCategories = async () => {
+    let token = loginData?.token;
+    const currentLanguage = i18n.language;
+    //  const language = await getLanguage();
+    const categories = await getMasterData(
+      'socialCategory',
+      4, // The index you assigned in saveMasters
+      api.master.getSocialCategory,
+      token,
+    );
+    const result = categories.map(category => {
+      return {
+        id: category.id,
+        label:
+          currentLanguage === 'en' ? category.categoryName : category.categoryNameLocal,
+        value:
+          currentLanguage === 'en' ? category.categoryName : category.categoryNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+    setSocialCatData(result);
+  };
 
   const maritalStatusData = [
     {label: 'Married', value: 'Married'},
@@ -226,14 +249,40 @@ setFamilyMembers(data);
     {label: 'Mother', value: 'Mother'},
     {label: 'Self', value: 'Self'},
   ];
+const [occupationDropDownData, setOccupationData] = useState([]);
+  const loadOccupations = async () => {
+    let token = loginData?.token;
+    const currentLanguage = i18n.language;
+    //  const language = await getLanguage();
+    const occupations = await getMasterData(
+      'primaryOccupation',
+      10, // The index you assigned in saveMasters
+      api.master.getPrimaryOccupation,
+      token,
+    );
+    const result = occupations.map(occupation => {
+      return {
+        id: occupation.id,
+        label:
+          currentLanguage === 'en' ? occupation.occupationName : occupation.occupationNameLocal,
+        value:
+          currentLanguage === 'en' ? occupation.occupationName : occupation.occupationNameLocal,
+      };
+    }); // Sort alphabetically
 
-  const occupationDropDownData = [
-    {label: 'Agriculture', value: 'Agriculture'},
-    {label: 'Daily Wage Labour', value: 'Daily Wage Labour'},
-    {label: 'Self employed', value: 'Self employed'},
-    {label: 'Govt./Private Service', value: 'Govt./Private Service'},
-    {label: 'Other User entry', value: 'Other User entry'},
-  ];
+    // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+    setOccupationData(result);
+  };
+
+  
+
+  // const occupationDropDownData = [
+  //   {label: 'Agriculture', value: 'Agriculture'},
+  //   {label: 'Daily Wage Labour', value: 'Daily Wage Labour'},
+  //   {label: 'Self employed', value: 'Self employed'},
+  //   {label: 'Govt./Private Service', value: 'Govt./Private Service'},
+  //   {label: 'Other User entry', value: 'Other User entry'},
+  // ];
   const arrayData = [
     {label: t('Survey_Title_21'), value: 'option1'},
     {label: t('Survey_Title_22'), value: 'option2'},
@@ -254,43 +303,155 @@ setFamilyMembers(data);
     {label: t('FRA Claimant'), value: t('FRA Claimant')},
     {label: t('Not a FRA Claimant'), value: t('Not a FRA Claimant')},
   ];
-  const privateLandData = [
-    {label: t('Landless'), value: 'Landless'},
-    {label: t('0-0.5Acr'), value: '0- 0.5 Acr'},
-    {label: t('0.5-1Acr'), value: '0.5- 1 Acr'},
-    {label: t('1-2.5Acr'), value: '1 - 2.5 Acr'},
-    {label: t('more than 2.5Acr'), value: 'more than 2.5 Acr'},
-  ];
-  const waterSourceData = [
-    {label: t('Well'), value: t('Well')},
-    {label: t('Tube Well'), value: t('Tube Well')},
-    {label: t('Piped Water Supply'), value: t('Piped Water Supply')},
-    {label: t('Others'), value: t('Others')},
-  ];
-  const schemeData = [
-    {label: t('PM Kishan'), value: t('PM Kishan')},
-    {label: t('CM Kishan'), value: t('CM Kishan')},
-    {label: t('Both'), value: t('Both')},
-  ];
-  const genderData = [
-    {label: t('mMale'), value: t('mMale')},
-    {label: t('fFemale'), value: t('fFemale')},
-    {label: t('Others'), value: t('Others')},
-  ];
+  
+  // const privateLandData = [
+  //   {label: t('Landless'), value: 'Landless'},
+  //   {label: t('0-0.5Acr'), value: '0- 0.5 Acr'},
+  //   {label: t('0.5-1Acr'), value: '0.5- 1 Acr'},
+  //   {label: t('1-2.5Acr'), value: '1 - 2.5 Acr'},
+  //   {label: t('more than 2.5Acr'), value: 'more than 2.5 Acr'},
+  // ];
+  const [privateLandData, setPrivateLandData] = useState([]);
+    const loadPrivateLandData = async () => {
+    let token = loginData?.token;
+    const currentLanguage = i18n.language;
+    //  const language = await getLanguage();
+    const holdings = await getMasterData(
+      'landHolding',
+      11, // The index you assigned in saveMasters
+      api.master.getLandHolding,
+      token,
+    );
+    const result = holdings.map(holding => {
+      return {
+        id: holding.id,
+        label:
+          currentLanguage === 'en' ? holding.holdingSize : holding.holdingSizeLocal,
+        value:
+          currentLanguage === 'en' ? holding.holdingSize : holding.holdingSizeLocal,
+      };
+    }); // Sort alphabetically
 
-  const respondantData = [
-    {label: t('Migrant Person himself'), value: t('Migrant Person himself')},
-    {
-      label: t('Others'),
-      value: t('Others'),
-    },
-    {
-      label: t('Village Head/Ward Member'),
-      value: t('Village Head/Ward Member'),
-    },
-    {label: t('Neighbour'), value: t('Neighbour')},
-    {label: t('Head of the household'), value: t('Head of the household')},
-  ];
+    // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+    setPrivateLandData(result);
+    };
+ 
+  // const waterSourceData = [
+  //   {label: t('Well'), value: t('Well')},
+  //   {label: t('Tube Well'), value: t('Tube Well')},
+  //   {label: t('Piped Water Supply'), value: t('Piped Water Supply')},
+  //   {label: t('Others'), value: t('Others')},
+  // ];
+   const [waterSourceData, setWaterSourceData] = useState([]);
+   const [checkboxes4, setCheckboxes4] = useState([]);
+   const loadWaterSourceData = async () => {
+    let token = loginData?.token;
+      const currentLanguage = i18n.language;
+    //  const language = await getLanguage();
+    const waterSources = await getMasterData(
+      'drinkingWaterSource',
+      5, // The index you assigned in saveMasters
+      api.master.getDrinkingWaterSource,
+      token,
+    );
+    const result = waterSources.map(waterSource => {
+      return {
+        id: waterSource.id,
+        label:
+          currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+        value:
+          currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+    setWaterSourceData(result);
+    setCheckboxes4(result.map(source => ({label: source.label, checked: false})));
+  };
+
+  // const schemeData = [
+  //   {label: t('PM Kishan'), value: t('PM Kishan')},
+  //   {label: t('CM Kishan'), value: t('CM Kishan')},
+  //   {label: t('Both'), value: t('Both')},
+  // ];
+  // const genderData = [
+  //   {label: t('mMale'), value: t('mMale')},
+  //   {label: t('fFemale'), value: t('fFemale')},
+  //   {label: t('Others'), value: t('Others')},
+  // ];
+
+  const [genderData, setGenderData] = useState([]);
+
+  // Example: Getting Gender List
+  const loadGenders = async () => {
+    let token = loginData?.token;
+
+    const currentLanguage = i18n.language;
+
+    //  const language = await getLanguage();
+    const genders = await getMasterData(
+      'gender',
+      2, // The index you assigned in saveMasters
+      api.master.getGender,
+      token,
+    );
+
+    const result = genders.map(gender => {
+      return {
+        id: gender.id,
+        label:
+          currentLanguage === 'en' ? gender.genderName : gender.genderNameLocal,
+        value:
+          currentLanguage === 'en' ? gender.genderName : gender.genderNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Gender data fetched successfully!'+JSON.stringify(result));
+    setGenderData(result);
+  };
+
+  
+  // const respondantData = [
+  //   {label: t('Migrant Person himself'), value: t('Migrant Person himself')},
+  //   {
+  //     label: t('Others'),
+  //     value: t('Others'),
+  //   },
+  //   {
+  //     label: t('Village Head/Ward Member'),
+  //     value: t('Village Head/Ward Member'),
+  //   },
+  //   {label: t('Neighbour'), value: t('Neighbour')},
+  //   {label: t('Head of the household'), value: t('Head of the household')},
+  // ];
+  const [respondantData, setRespondentData] = useState([]);
+  const loadRespondentData = async () => {
+    let token = loginData?.token;
+
+    const currentLanguage = i18n.language;
+
+    //  const language = await getLanguage();
+    const respondentIdentities = await getMasterData(
+      'respondentIdentity',
+      6, // The index you assigned in saveMasters
+      api.master.getRespondentIdentity,
+      token,
+    );
+
+    const result = respondentIdentities.map(respondentIdentity => {
+      return {
+        id: respondentIdentity.id,
+        label:
+          currentLanguage === 'en' ? respondentIdentity.identityName : respondentIdentity.identityNameLocal,
+        value:
+          currentLanguage === 'en' ? respondentIdentity.identityName : respondentIdentity.identityNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Gender data fetched successfully!'+JSON.stringify(result));
+    setRespondentData(result);
+  };
+
 
   const [checkboxes, setCheckboxes] = useState([
     {label: t('Survey_Title_24'), checked: false},
@@ -301,72 +462,158 @@ setFamilyMembers(data);
 
     // Add more options as needed
   ]);
-  const [checkboxes2, setCheckboxes2] = useState([
-    {label: t('Major'), checked: false},
-    {label: t('Minor'), checked: false},
-    {label: t('Medium'), checked: false},
-    {label: t('Lift Irrigation'), checked: false},
-    {label: t('Check dam'), checked: false},
-    {label: t('Canal'), checked: false},
-    {label: t('Bore Well'), checked: false},
-    {label: t('Dug Well'), checked: false},
-    {label: t('Farm pond'), checked: false},
-    {label: t('Others'), checked: false},
-
-    // Add more options as needed
-  ]);
-  const [checkboxes3, setCheckboxes3] = useState([
-    {label: t('Poultry'), checked: false},
-    {label: t('Goatery'), checked: false},
-    {label: t('Dairy'), checked: false},
-    {label: t('Others'), checked: false},
-    {label: t('None'), checked: false},
-
-    // Add more options as needed
-  ]);
-
-  const [checkboxes4, setCheckboxes4] = useState([
-    {label: t('Well'), checked: false},
-    {label: t('Tube Well'), checked: false},
-    {label: t('Piped Water Supply'), checked: false},
-    {label: t('Others'), checked: false},
-
-    // Add more options as needed
-  ]);
-  const [checkboxes5, setCheckboxes5] = useState([
-    {label: t('PM Kishan'), checked: false},
-    {label: t('CM Kishan'), checked: false},
-    // {label: t('Both'), checked: false},
-    {label: t('None'), checked: false},
-
-    // Add more options as needed
-  ]);
-
-    const migrationData = [
-      {label: t('1-3months'), value: '1-3 months'},
-      {label: t('4-6months'), value: '4-6 months'},
-      {label: t('7-12months'), value: '7-12 months'},
-    ];
-    const [checkboxesSkill, setCheckboxesSkill] = useState([
-      {label: t('DDUGKY'), checked: false, mainIndex: 0},
-      {label: t('RSETI'), checked: false, mainIndex: 0},
-      {label: t('Other'), checked: false, mainIndex: 0},
-      {label: t('None'), checked: false, mainIndex: 0},
   
-      // Add more options as needed
-    ]);
-    const [checkboxesSector, setCheckboxesSector] = useState([
-      {label: t('Brick Kiln'), checked: false},
-      {label: t('Construction Labour'), checked: false},
-      {label: t('Agri Labour'), checked: false},
-      {label: t('Mason'), checked: false},
-      {label: t('Domestic Support'), checked: false},
-      {label: t('Manufacturing'), checked: false},
-      {label: t('Service Sector(Hotel,Hospital,Security)'), checked: false},
-      {label: t('Other'), checked: false},
+  const [checkboxes2, setCheckboxes2] = useState([]);
+
+  //   {label: t('Major'), checked: false},
+  //   {label: t('Minor'), checked: false},
+  //   {label: t('Medium'), checked: false},
+  //   {label: t('Lift Irrigation'), checked: false},
+  //   {label: t('Check dam'), checked: false},
+  //   {label: t('Canal'), checked: false},
+  //   {label: t('Bore Well'), checked: false},
+  //   {label: t('Dug Well'), checked: false},
+  //   {label: t('Farm pond'), checked: false},
+  //   {label: t('Others'), checked: false},
+
+  //   // Add more options as needed
+  // ]);
   
-      // Add more options as needed
-    ]);
+
+  const [irrigationData, setIrrigationData] = useState([]);
+  const loadIrrigationData = async () => {
+    let token = loginData?.token;
+    const currentLanguage = i18n.language;
+    //  const language = await getLanguage();
+    const irrigationSources = await getMasterData(
+      'irrigationSource',
+      9, // The index you assigned in saveMasters
+      api.master.getIrrigationSource,
+      token,
+    );
+    const result = irrigationSources.map(source => {
+      return {
+        id: source.id,
+        label:
+          currentLanguage === 'en' ? source.sourceName : source.sourceNameLocal,
+        value:
+          currentLanguage === 'en' ? source.sourceName : source.sourceNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+    setIrrigationData(result);
+    setCheckboxes2(result.map(source => ({label: source.label, checked: false})));
+  };
+
+
+  
+  //   {label: t('Poultry'), checked: false},
+  //   {label: t('Goatery'), checked: false},
+  //   {label: t('Dairy'), checked: false},
+  //   {label: t('Others'), checked: false},
+  //   {label: t('None'), checked: false},
+
+  //   // Add more options as needed
+  // ]);
+const [checkboxes3, setCheckboxes3] = useState([]);
+const [livestockData, setLivestockData] = useState([]);
+   const loadLiveStockData = async () => {
+    let token = loginData?.token;
+    const currentLanguage = i18n.language;
+    //  const language = await getLanguage();
+    const livestockactivities = await getMasterData(
+      'livestockActivity',
+      12, // The index you assigned in saveMasters
+      api.master.getLivestockActivity,
+      token,
+    );
+    const result = livestockactivities.map(activity => {
+      return {
+        id: activity.id,
+        label:
+          currentLanguage === 'en' ? activity.activityType : activity.activityTypeLocal,
+        value:
+          currentLanguage === 'en' ? activity.activityType : activity.activityTypeLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+    setLivestockData(result);
+    setCheckboxes3(result.map(activity => ({label: activity.label, checked: false})));
+  };
+
+ 
+  
+
+  // const [checkboxes4, setCheckboxes4] = useState([
+  //   {label: t('Well'), checked: false},
+  //   {label: t('Tube Well'), checked: false},
+  //   {label: t('Piped Water Supply'), checked: false},
+  //   {label: t('Others'), checked: false},
+
+  //   // Add more options as needed
+  // ]);
+  const [checkboxes5, setCheckboxes5] = useState([]);
+  //   {label: t('PM Kishan'), checked: false},
+  //   {label: t('CM Kishan'), checked: false},
+  //   // {label: t('Both'), checked: false},
+  //   {label: t('None'), checked: false},
+
+  //   // Add more options as needed
+  // ]);
+  const [schemeData, setSchemeData] = useState([]);
+   const loadSchemesData = async () => {
+    let token = loginData?.token;
+    const currentLanguage = i18n.language;
+    //  const language = await getLanguage();
+    const schemes = await getMasterData(
+      'kishanScheme',
+      12, // The index you assigned in saveMasters
+      api.master.getKishanScheme,
+      token,
+    );
+    const result = schemes.map(scheme => {
+      return {
+        id: scheme.id,
+        label:
+          currentLanguage === 'en' ? scheme.schemeName : scheme.schemeNameLocal,
+        value:
+          currentLanguage === 'en' ? scheme.schemeName : scheme.schemeNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
+    let finalResult = result.filter(scheme => scheme.id !== 3);
+    setSchemeData(finalResult);
+    setCheckboxes5(finalResult.map(scheme => ({label: scheme.label, checked: false})));
+  };
+
+  const migrationData = [
+    {label: t('1-3months'), value: '1-3 months'},
+    {label: t('4-6months'), value: '4-6 months'},
+    {label: t('7-12months'), value: '7-12 months'},
+  ];
+  const [checkboxesSkill, setCheckboxesSkill] = useState([
+    {label: t('DDUGKY'), checked: false, mainIndex: 0},
+    {label: t('RSETI'), checked: false, mainIndex: 0},
+    {label: t('Other'), checked: false, mainIndex: 0},
+    {label: t('None'), checked: false, mainIndex: 0},
+
+    // Add more options as needed
+  ]);
+  const [checkboxesSector, setCheckboxesSector] = useState([
+    {label: t('Brick Kiln'), checked: false},
+    {label: t('Construction Labour'), checked: false},
+    {label: t('Agri Labour'), checked: false},
+    {label: t('Mason'), checked: false},
+    {label: t('Domestic Support'), checked: false},
+    {label: t('Manufacturing'), checked: false},
+    {label: t('Service Sector(Hotel,Hospital,Security)'), checked: false},
+    {label: t('Other'), checked: false},
+
+    // Add more options as needed
+  ]);
   const {loginData} = useSelector(state => state.DataReducer) || {};
 
   const [dateSelectLocal, setDateSelectLocal] = useState(
@@ -397,6 +644,15 @@ setFamilyMembers(data);
   useEffect(() => {
     // getLocation();
     // Alert.alert("hi");
+    loadGenders();
+    loadOccupations();
+    loadSocialCategories();
+    loadWaterSourceData();
+    loadRespondentData();
+    loadPrivateLandData();
+    loadIrrigationData();
+    loadLiveStockData();
+    loadSchemesData();
     getMasterState();
     getBankList();
   }, []);
@@ -555,96 +811,98 @@ setFamilyMembers(data);
     },
   ]);
 
- 
-
   const [currentQuestion, setCurrentQuestion] = useState(1); // Track the current question number
 
   // Your state and other variables...
   const [familyAlertVisible, setFamilyAlertVisible] = useState(false);
   const [familyMembers, setFamilyMembers] = useState([]);
   const [familyMemberCount, setFamilyMemberCount] = useState(0);
-  const [headName,setHeadName]=useState('');
+  const [headName, setHeadName] = useState('');
 
   const handleAddFamilyMember = () => {
     // Alert.alert('headName',JSON.stringify(headName));
-   try{
-    const res={
-      name: headName,
-      count: familyMemberCount,
-      type:1
+    try {
+      const res = {
+        name: headName,
+        count: familyMemberCount,
+        type: 1,
+      };
+      if (!headName) {
+        setNameError(t('Please enter the name of the head of the household'));
+        return;
+      }
+      setTimeout(() => {
+        PubSub.publish('count', res);
+      }, 10);
+
+      navigation.navigate(RouteName.ADD_FAMILY_SCREEN);
+    } catch (err) {
+      Alert.alert(
+        'Error',
+        'An error occurred while adding family member. Please try again.',
+      );
     }
-    if(!headName){
-      setNameError(t('Please enter the name of the head of the household'));
-      return;
-    }
-    setTimeout(() => {
-       PubSub.publish('count', res);  
-    } , 10);
-   
-    navigation.navigate(RouteName.ADD_FAMILY_SCREEN);
-  }catch(err){
-    Alert.alert("Error", "An error occurred while adding family member. Please try again.");  
-  }
-}
-   
-
-
-  const getMasterState = async () => {
-    let token = loginData?.token;
-
-    const res = await api.master.getDistricts(token);
-
-    const result = res.map(m => {
-      return {
-        label: m.districtName,
-        value: m.districtCode,
-      };
-    });
-    setDistrict(result);
   };
 
-  const getBlocks = async districtId => {
-    let token = loginData?.token;
-    const res = await api.master.getBlocksByDistrictId(districtId, token);
-    const result = res.map(m => {
-      return {
-        label: m.blockName,
-        value: m.blockCode,
-      };
-    });
-    // Alert.alert("Blocks",JSON.stringify(result));
-    setBlocks(result);
-  };
-  const getPanchayats = async blockId => {
-    let token = loginData?.token;
-    const res = await api.master.getGramPanchayats(blockId, token);
+ 
+  // Get Districts
+const getMasterState = async () => {
+  const token = loginData?.token;
+  const districts = await getMasterLocationData('district',null,() => api.master.getDistricts(token));
+  setDistrict(districts.map(m => ({ label: m.districtName, value: m.districtCode })));
+};
 
-    const result = res.map(m => {
-      return {
-        label: m.panchayatName,
-        value: m.panchayatCode,
-        blockId: m.blockCode,
-      };
-    });
+  // Get Blocks
+const getBlocks = async (districtId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('block', districtId, () => api.master.getBlocksByDistrictId(districtId, token));
+  setBlocks(data.map(m => ({ label: m.blockName, value: m.blockCode })));
+};
+ 
 
-    setPanchayats(result);
-  };
-  const getVillages = async panchayatId => {
+  // Get Panchayats
+const getPanchayats = async (blockId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('panchayat', blockId, () => api.master.getGramPanchayats(blockId, token));
+  setPanchayats(data.map(m => ({
+    label: m.panchayatName,
+    value: m.panchayatCode,
+    blockId: m.blockCode,
+  })));
+};
+
+ // Get Villages
+const getVillages = async (panchayatId) => {
+  const token = loginData?.token;
+  const data = await getMasterLocationData('village', panchayatId, () => api.master.getVillagesByPanchayatId(panchayatId, token));
+  setVillages(data.map(m => ({
+    label: m.villageName,
+    value: m.villageCode,
+    panchayatId: m.panchayatCode,
+  })));
+};
+
+
+ const getBankList = async () => {
     let token = loginData?.token;
-    const res = await api.master.getVillagesByPanchayatId(panchayatId, token);
-    const result = res.map(m => {
-      return {
-        label: m.villageName,
-        value: m.villageCode,
-        panchayatId: m.panchayatCode,
-      };
-    });
-    //Alert.alert("Villages",JSON.stringify(result));
-    setVillages(result);
+    // const res = await api.master.getBanks(token);
+    // const result = res.map(m => {
+    //   return {
+    //     label: m.bankName,
+    //     value: m.id,
+    //   };
+    // });
+      const data = await getMasterLocationData('banks',null, () => api.master.getBanks(token));
+  setBankList(data.map(m => ({
+    label: m.bankName,
+    value: m.id,
+  })));
+    // setBankList(result);
   };
-  const handleNext = () => {
+
+const handleNext = () => {
     // goToTop();
-    
+
     if (currentQuestion == 1) {
       twoRef.current?.focus();
     }
@@ -691,17 +949,7 @@ setFamilyMembers(data);
     }
   };
 
-  const getBankList = async () => {
-    let token = loginData?.token;
-    const res = await api.master.getBanks(token);
-    const result = res.map(m => {
-      return {
-        label: m.bankName,
-        value: m.id,
-      };
-    });
-    setBankList(result);
-  };
+ 
   var alertdata = {
     logout: t('Survey_Title_33'),
   };
@@ -755,7 +1003,7 @@ setFamilyMembers(data);
     //   token,
     //   false
     // );
-    
+
     const response = await api.user.postHouseholdSurveyDataFilesUpload(
       values,
       null,
@@ -793,12 +1041,11 @@ setFamilyMembers(data);
               console.log(error.message);
             },
             {
-              enableHighAccuracy:false,
-              timeout:60000,
-              maximumAge:10000,
-              distanceFilter:500
+              enableHighAccuracy: false,
+              timeout: 60000,
+              maximumAge: 10000,
+              distanceFilter: 500,
             },
-           
           );
           // Geolocation.getCurrentPosition(
           //   position => {
@@ -841,10 +1088,8 @@ setFamilyMembers(data);
       return false;
     }
   };
-  
 
-  
-  const getBankIfscCodeByBankName = async(bankName,setFieldValue) => {
+  const getBankIfscCodeByBankName = async (bankName, setFieldValue) => {
     let token = loginData?.token;
     const res = await api.user.getBankIfscCodeByBankName(bankName, token);
 
@@ -859,25 +1104,22 @@ setFamilyMembers(data);
     // Alert.alert("IFSC Codes",JSON.stringify(result));
 
     setIfscCode(result[0]?.ifscCode || null);
-    setFieldValue('householdBasicProfile.ifscCodeOrBranch',ifscCode);
+    setFieldValue('householdBasicProfile.ifscCodeOrBranch', ifscCode);
   };
- 
 
   const handleAddPress = () => {
-    setAlertVisible(!alertVisible)
-  onoknutton();
-  }
+    setAlertVisible(!alertVisible);
+    onoknutton();
+  };
 
-  
- 
- const scrollRef = useRef(null);
- const goToTop = () => {
-     // 2. Call the scrollTo method
-     scrollRef?.current?.scrollTop({
-       y: 0,
-       animated: true,
-     });
-   };
+  const scrollRef = useRef(null);
+  const goToTop = () => {
+    // 2. Call the scrollTo method
+    scrollRef?.current?.scrollTop({
+      y: 0,
+      animated: true,
+    });
+  };
   return (
     <View style={Style.BgColorWhiteAll}>
       <Spacing space={SH(10)} />
@@ -917,7 +1159,7 @@ setFamilyMembers(data);
 
           const finalValues = {
             ...values,
-            householdFamilyMember:finalFamilyMembers,
+            householdFamilyMember: finalFamilyMembers,
           };
 
           const formData = new FormData();
@@ -1042,7 +1284,7 @@ setFamilyMembers(data);
         }) => (
           <>
             <KeyboardAwareScrollView
-            ref={scrollRef}
+              ref={scrollRef}
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={Style.ScrollViewStyles}>
               {/* <KeyboardAwareScrollView> */}
@@ -1052,7 +1294,7 @@ setFamilyMembers(data);
                   <View>
                     {/* District */}
                     <Text ref={oneRef} style={AnalyaticsStyles.TitleStyle}>
-                      {'A. '+t('Demographic Profile')}
+                      {'A. ' + t('Demographic Profile')}
                     </Text>
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
                       1. {t('District')}
@@ -1077,7 +1319,6 @@ setFamilyMembers(data);
                           obj.label,
                         );
                       }}
-                     
                     />
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.district}
@@ -1103,7 +1344,6 @@ setFamilyMembers(data);
                         getPanchayats(obj.value);
                         setFieldValue('householdBasicProfile.block', obj.label);
                       }}
-                      
                     />
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.block}
@@ -1168,8 +1408,10 @@ setFamilyMembers(data);
                       title={'5. ' + t('Hamlet')}
                       placeholder={t('Hamlet')}
                       onChangeText={text => {
-                       
-                        const filteredText = text.replace(/[^a-zA-Z\s!@#$%^&*()_+=\-{}[\]:;"'<>,.?/\\|]/g, '');
+                        const filteredText = text.replace(
+                          /[^a-zA-Z\s!@#$%^&*()_+=\-{}[\]:;"'<>,.?/\\|]/g,
+                          '',
+                        );
                         setFieldValue(
                           'householdBasicProfile.hamlet',
                           filteredText,
@@ -1187,7 +1429,10 @@ setFamilyMembers(data);
                       title={'6. ' + t('Nearest Landmark')}
                       placeholder={t('Nearest Landmark')}
                       onChangeText={text => {
-                       const filteredText = text.replace(/[^a-zA-Z\s!@#$%^&*()_+=\-{}[\]:;"'<>,.?/\\|]/g, '');
+                        const filteredText = text.replace(
+                          /[^a-zA-Z\s!@#$%^&*()_+=\-{}[\]:;"'<>,.?/\\|]/g,
+                          '',
+                        );
                         setFieldValue(
                           'householdBasicProfile.nearestLandmark',
                           filteredText,
@@ -1210,7 +1455,10 @@ setFamilyMembers(data);
                         'Name of Head of the Household as per Aadhar Card ?',
                       )}
                       onChangeText={text => {
-                        const filteredText = text.replace(/[^a-zA-Z\s!@#$%^&*()_+=\-{}[\]:;"'<>,.?/\\|]/g, '');
+                        const filteredText = text.replace(
+                          /[^a-zA-Z\s!@#$%^&*()_+=\-{}[\]:;"'<>,.?/\\|]/g,
+                          '',
+                        );
                         setFieldValue(
                           'householdBasicProfile.headOfTheHouseholdNameAsPerAadhar',
                           filteredText,
@@ -1315,7 +1563,7 @@ setFamilyMembers(data);
                 {currentQuestion === 2 && (
                   <View>
                     <Text refs={twoRef} style={AnalyaticsStyles.TitleStyle}>
-                      {'B. '+t('Bank Account Details of Head of Household')}
+                      {'B. ' + t('Bank Account Details of Head of Household')}
                     </Text>
                     <Spacing space={SH(5)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1334,9 +1582,8 @@ setFamilyMembers(data);
                         t('Select Bank Name')
                       }
                       onChange={obj => {
-                         
-                        getBankIfscCodeByBankName(obj.label,setFieldValue);
-                       
+                        getBankIfscCodeByBankName(obj.label, setFieldValue);
+
                         //  setIfscCode(result[0]?.ifscCode || null);
 
                         setFieldValue(
@@ -1344,9 +1591,9 @@ setFamilyMembers(data);
                           obj.label,
                         );
                         // Alert.alert("Selected Bank",JSON.stringify(ifscCode));
-                         setFieldValue(
+                        setFieldValue(
                           'householdBasicProfile.ifscCodeOrBranch',
-                          ifscCode
+                          ifscCode,
                         );
                       }}
                       searchPlaceholder={'Search ...'}
@@ -1360,8 +1607,8 @@ setFamilyMembers(data);
                     <Input
                       title={'12. ' + t('Bank Account No')}
                       placeholder={t('Bank Account No')}
-                      onChangeText={(text) => {
-                         const filteredText = text.replace(/[^0-9]/g, '');
+                      onChangeText={text => {
+                        const filteredText = text.replace(/[^0-9]/g, '');
                         setFieldValue(
                           'householdBasicProfile.bankAccountNumber',
                           filteredText,
@@ -1376,140 +1623,169 @@ setFamilyMembers(data);
                       {errors?.householdBasicProfile?.bankAccountNumber}
                     </Text>
                     <Spacing space={SH(5)} />
-                    {ifscCodeList?.length > 1 && (<Text style={AnalyaticsStyles.PleaseEnterDate}>
-                      13. {t('IFSC code / Branch')}
-                    </Text>)}
+                    {ifscCodeList?.length > 1 && (
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        13. {t('IFSC code / Branch')}
+                      </Text>
+                    )}
                     <Spacing space={SH(5)} />
-                    {ifscCodeList?.length > 1 && (<DropDown
-                      data={ifscCodeList}
-                      dropdownStyle={{marginLeft: SH(10)}}
-                      width={SW(345)}
-                      labelField="label"
-                      valueField="value"
-                      value={
-                        ifscCode ||
-                        values?.householdBasicProfile?.ifscCodeOrBranch
-                      }
-                      placeholder={
-                        values?.householdBasicProfile?.bankName ||
-                        t('Select IFSC Code')
-                      }
-                      onChange={obj => {
-                        //  Alert.alert("Selected Bank",JSON.stringify(obj));
-                        // getBankIfscCodeByBankName(obj.label);
-                        setIfscCode(obj.label);
-                        setFieldValue(
-                          'householdBasicProfile.ifscCodeOrBranch',
-                          obj.label,
-                        );
-                      }}
-                      searchPlaceholder={'Search ...'}
-                    />)}
-                    {ifscCode!=null && ifscCodeList.length>0 && ifscCodeList.length==1 &&<Input
-                      title={
-                        '13. ' + t('IFSC code / Branch')
-                      }
-                      placeholder={t('IFSC code / Branch')}
-                      maxLength={15}
-                      autoCapitalize="characters"
-                      onChangeText={text => {
-                        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-
-                        if (ifscRegex.test(text)) {
-                          // console.log('Valid IFSC');
-                          setFieldValue(
-                            'householdBasicProfile.ifscCodeOrBranch',
-                            text,
-                          );
-                          setIfscCode(text);
-                          if(text.length>10){
-                              if(bankList.length==0){
-                            getBankDetailsByIfscCode(text);
-                              }
-                            async function getBankDetailsByIfscCode(ifscCode) {
-                              let token = loginData?.token;
-                              const res = await api.user.getBankDetailsByIfscCode(ifscCode, token);
-                              //  Alert.alert("Bank Details",JSON.stringify(res));
-                                setBankList([...bankList, ...res]);
-                                let bankName = res[0]?.bankName || "";
-                                setFieldValue("householdBasicProfile.bankName", bankName);
-                             
-                              return res;
-                            }
-                          }
-                        } else {
-                          setFieldValue(
-                            'householdBasicProfile.ifscCodeOrBranch',
-                            text,
-                          );
-                          setIfscCode(text);
-                          console.log('Invalid IFSC');
+                    {ifscCodeList?.length > 1 && (
+                      <DropDown
+                        data={ifscCodeList}
+                        dropdownStyle={{marginLeft: SH(10)}}
+                        width={SW(345)}
+                        labelField="label"
+                        valueField="value"
+                        value={
+                          ifscCode ||
+                          values?.householdBasicProfile?.ifscCodeOrBranch
                         }
-                        // const formattedText = text
-                        //   .toUpperCase()
-                        //   .replace(/^[A-Z]{4}0[A-Z0-9]{6}$/, ''); // ❌ removes special chars
-                      }}
-                      value={
-                        ifscCode ||
-                        values?.householdBasicProfile?.ifscCodeOrBranch
-                      }
-                      titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                    />}
-                     {values?.householdBasicProfile?.bankName==null &&<Input
-                      title={
-                        '13. ' + t('IFSC code / Branch')
-                      }
-                      placeholder={t('IFSC code / Branch')}
-                      maxLength={15}
-                      autoCapitalize="characters"
-                      onChangeText={text => {
-                        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-
-                        if (ifscRegex.test(text)) {
-                          // console.log('Valid IFSC');
+                        placeholder={
+                          values?.householdBasicProfile?.bankName ||
+                          t('Select IFSC Code')
+                        }
+                        onChange={obj => {
+                          //  Alert.alert("Selected Bank",JSON.stringify(obj));
+                          // getBankIfscCodeByBankName(obj.label);
+                          setIfscCode(obj.label);
                           setFieldValue(
                             'householdBasicProfile.ifscCodeOrBranch',
-                            text,
+                            obj.label,
                           );
-                          setIfscCode(text);
-                          if(text.length>10){
-                              // if(bankList.length==0){
-                            getBankDetailsByIfscCode(text);
-                              // }
-                            async function getBankDetailsByIfscCode(ifscCode) {
-                              let token = loginData?.token;
-                              const res = await api.user.getBankDetailsByIfscCode(ifscCode, token);
-                              //  Alert.alert("Bank Details",JSON.stringify(res));
-                                setBankList([...bankList, ...res]);
-                                let bankName = res[0]?.bankName || "";
-                                if(bankName!=="" && bankName!=null && bankName!=undefined) {
+                        }}
+                        searchPlaceholder={'Search ...'}
+                      />
+                    )}
+                    {ifscCode != null &&
+                      ifscCodeList.length > 0 &&
+                      ifscCodeList.length == 1 && (
+                        <Input
+                          title={'13. ' + t('IFSC code / Branch')}
+                          placeholder={t('IFSC code / Branch')}
+                          maxLength={15}
+                          autoCapitalize="characters"
+                          onChangeText={text => {
+                            const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
+                            if (ifscRegex.test(text)) {
+                              // console.log('Valid IFSC');
+                              setFieldValue(
+                                'householdBasicProfile.ifscCodeOrBranch',
+                                text,
+                              );
                               setIfscCode(text);
-                              setIfscCodeList([{label:text,value:text,ifscCode:text}]);     
-                              }
-                                setFieldValue("householdBasicProfile.bankName", bankName);
+                              if (text.length > 10) {
+                                if (bankList.length == 0) {
+                                  getBankDetailsByIfscCode(text);
+                                }
+                                async function getBankDetailsByIfscCode(
+                                  ifscCode,
+                                ) {
+                                  let token = loginData?.token;
+                                  const res =
+                                    await api.user.getBankDetailsByIfscCode(
+                                      ifscCode,
+                                      token,
+                                    );
+                                  //  Alert.alert("Bank Details",JSON.stringify(res));
+                                  setBankList([...bankList, ...res]);
+                                  let bankName = res[0]?.bankName || '';
+                                  setFieldValue(
+                                    'householdBasicProfile.bankName',
+                                    bankName,
+                                  );
 
-                             
-                              return res;
+                                  return res;
+                                }
+                              }
+                            } else {
+                              setFieldValue(
+                                'householdBasicProfile.ifscCodeOrBranch',
+                                text,
+                              );
+                              setIfscCode(text);
+                              console.log('Invalid IFSC');
                             }
+                            // const formattedText = text
+                            //   .toUpperCase()
+                            //   .replace(/^[A-Z]{4}0[A-Z0-9]{6}$/, ''); // ❌ removes special chars
+                          }}
+                          value={
+                            ifscCode ||
+                            values?.householdBasicProfile?.ifscCodeOrBranch
                           }
-                        } else {
-                          setFieldValue(
-                            'householdBasicProfile.ifscCodeOrBranch',
-                            text,
-                          );
-                          setIfscCode(text);
-                          console.log('Invalid IFSC');
+                          titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                        />
+                      )}
+                    {values?.householdBasicProfile?.bankName == null && (
+                      <Input
+                        title={'13. ' + t('IFSC code / Branch')}
+                        placeholder={t('IFSC code / Branch')}
+                        maxLength={15}
+                        autoCapitalize="characters"
+                        onChangeText={text => {
+                          const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
+                          if (ifscRegex.test(text)) {
+                            // console.log('Valid IFSC');
+                            setFieldValue(
+                              'householdBasicProfile.ifscCodeOrBranch',
+                              text,
+                            );
+                            setIfscCode(text);
+                            if (text.length > 10) {
+                              // if(bankList.length==0){
+                              getBankDetailsByIfscCode(text);
+                              // }
+                              async function getBankDetailsByIfscCode(
+                                ifscCode,
+                              ) {
+                                let token = loginData?.token;
+                                const res =
+                                  await api.user.getBankDetailsByIfscCode(
+                                    ifscCode,
+                                    token,
+                                  );
+                                //  Alert.alert("Bank Details",JSON.stringify(res));
+                                setBankList([...bankList, ...res]);
+                                let bankName = res[0]?.bankName || '';
+                                if (
+                                  bankName !== '' &&
+                                  bankName != null &&
+                                  bankName != undefined
+                                ) {
+                                  setIfscCode(text);
+                                  setIfscCodeList([
+                                    {label: text, value: text, ifscCode: text},
+                                  ]);
+                                }
+                                setFieldValue(
+                                  'householdBasicProfile.bankName',
+                                  bankName,
+                                );
+
+                                return res;
+                              }
+                            }
+                          } else {
+                            setFieldValue(
+                              'householdBasicProfile.ifscCodeOrBranch',
+                              text,
+                            );
+                            setIfscCode(text);
+                            console.log('Invalid IFSC');
+                          }
+                          // const formattedText = text
+                          //   .toUpperCase()
+                          //   .replace(/^[A-Z]{4}0[A-Z0-9]{6}$/, ''); // ❌ removes special chars
+                        }}
+                        value={
+                          ifscCode ||
+                          values?.householdBasicProfile?.ifscCodeOrBranch
                         }
-                        // const formattedText = text
-                        //   .toUpperCase()
-                        //   .replace(/^[A-Z]{4}0[A-Z0-9]{6}$/, ''); // ❌ removes special chars
-                      }}
-                      value={
-                        ifscCode ||
-                        values?.householdBasicProfile?.ifscCodeOrBranch
-                      }
-                      titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                    />}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                    )}
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.ifscCodeOrBranch}
                     </Text>
@@ -1517,30 +1793,30 @@ setFamilyMembers(data);
                     <Input
                       title={'14. ' + t('Total Number of Family Members')}
                       placeholder={t('Total Number of Family Members')}
-                      onChangeText={(text) => {
-                        try{
-                        // Allow only numbers
-                        const numericText = text.replace(/[^0-9]/g, '');
+                      onChangeText={text => {
+                        try {
+                          // Allow only numbers
+                          const numericText = text.replace(/[^0-9]/g, '');
 
-                        // Convert to number
-                        const age = parseInt(
-                          numericText == '' ? '0' : numericText,
-                          10,
-                        );
+                          // Convert to number
+                          const age = parseInt(
+                            numericText == '' ? '0' : numericText,
+                            10,
+                          );
 
-                        // Optional: Age range validation (1–120)
-                        if (!numericText) {
-                          setFieldValue(
-                            'householdBasicProfile.totalFamilyMembers',
-                            '',
-                          );
-                        } else if (age >= 1 && age <= 15) {
-                          setFieldValue(
-                            'householdBasicProfile.totalFamilyMembers',
-                            age,
-                          );
-                        }
-                        
+                          // Optional: Age range validation (1–120)
+                          if (!numericText) {
+                            setFieldValue(
+                              'householdBasicProfile.totalFamilyMembers',
+                              '',
+                            );
+                          } else if (age >= 1 && age <= 15) {
+                            setFieldValue(
+                              'householdBasicProfile.totalFamilyMembers',
+                              age,
+                            );
+                          }
+
                           setFamilyMemberCount(age);
                         } catch (e) {}
 
@@ -1549,7 +1825,8 @@ setFamilyMembers(data);
                         //   text,
                         // );
                       }}
-                      value={values?.householdBasicProfile?.totalFamilyMembers ||
+                      value={
+                        values?.householdBasicProfile?.totalFamilyMembers ||
                         familyMemberCount?.toString()
                       }
                       inputType="numeric"
@@ -1560,28 +1837,31 @@ setFamilyMembers(data);
                     {familyMemberCount > 0 && (
                       <TouchableOpacity
                         style={AnalyaticsStyles.addButton}
-                        onPress={()=>{handleAddFamilyMember()}}>
+                        onPress={() => {
+                          handleAddFamilyMember();
+                        }}>
                         <Text style={AnalyaticsStyles.PreviousTextStyle}>
                           {t('Add Member')}
                         </Text>
                       </TouchableOpacity>
                     )}
-                      <Text style={{fontWeight: 'bold'}}>{t('House hold Members')}:</Text>
-                                                     {familyMembers?.map((m, i) => (
-                                                       <Text key={i}>
-                                                         {i + 1}. {m.name} | Age: {m.age} | Gender: {m.gender}
-                                                       </Text>
-                                                     ))}
+                    <Text style={{fontWeight: 'bold'}}>
+                      {t('House hold Members')}:
+                    </Text>
+                    {familyMembers?.map((m, i) => (
+                      <Text key={i}>
+                        {i + 1}. {m.name} | Age: {m.age} | Gender: {m.gender}
+                      </Text>
+                    ))}
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.totalFamilyMembers}
                     </Text>
-                    
                   </View>
                 )}
                 {currentQuestion === 3 && (
                   <View>
                     <Text refs={threeRef} style={AnalyaticsStyles.TitleStyle}>
-                      {'C. '+t('Social Protection')}
+                      {'C. ' + t('Social Protection')}
                     </Text>
                     <Spacing space={SH(5)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -1691,7 +1971,7 @@ setFamilyMembers(data);
                         value={values?.householdBasicProfile?.rationCardNumber}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                         autoCapitalize="characters"
-                        inputType={"numeric"}
+                        inputType={'numeric'}
                         keyboardType="numeric"
                         maxLength={12}
                       />
@@ -1707,22 +1987,22 @@ setFamilyMembers(data);
                       )}
                     </Text>
                     {/* {renderCheckboxes4()} */}
-                     <RadioButton
-                        arrayData={waterSourceData}
-                        onChangeText={text => {
-                          setFieldValue(
-                            'householdBasicProfile.drinkingWaterSource',
-                            text,
-                          );
-                          setDrinkingWaterSource(text);
-                        }}
-                        value={
-                          editData != undefined
-                            ? values.householdBasicProfile.drinkingWaterSource
-                            : drinkingWaterSource
-                        }
-                        type={1}
-                      /> 
+                    <RadioButton
+                      arrayData={waterSourceData}
+                      onChangeText={text => {
+                        setFieldValue(
+                          'householdBasicProfile.drinkingWaterSource',
+                          text,
+                        );
+                        setDrinkingWaterSource(text);
+                      }}
+                      value={
+                        editData != undefined
+                          ? values.householdBasicProfile.drinkingWaterSource
+                          : drinkingWaterSource
+                      }
+                      type={1}
+                    />
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.drinkingWaterSource}
                     </Text>
@@ -1833,17 +2113,17 @@ setFamilyMembers(data);
                         placeholder={t(
                           'Mention the Full Job card No (after Revenue Village code)',
                         )}
-                        onChangeText={(text) => {
+                        onChangeText={text => {
                           // ✅ Allow only digits
-    let cleaned = text.replace(/[^0-9]/g, '');
+                          let cleaned = text.replace(/[^0-9]/g, '');
 
-    // ✅ Restrict max length to 7
-    if (cleaned.length > 7) return;
+                          // ✅ Restrict max length to 7
+                          if (cleaned.length > 7) return;
 
-    setFieldValue(
-      'householdEntitlement.fullJobCardNumber',
-      cleaned,
-    );
+                          setFieldValue(
+                            'householdEntitlement.fullJobCardNumber',
+                            cleaned,
+                          );
                         }}
                         value={values?.householdEntitlement?.fullJobCardNumber}
                         inputType="numeric"
@@ -2055,10 +2335,7 @@ setFamilyMembers(data);
                       onChangeText={text => {
                         setIsAtalPensionYojana(text);
                         // Alert.alert("text",JSON.stringify(text));
-                        setFieldValue(
-                          'householdEntitlement.atalPension',
-                          text,
-                        );
+                        setFieldValue('householdEntitlement.atalPension', text);
                       }}
                       value={
                         editData != undefined
@@ -2153,10 +2430,9 @@ setFamilyMembers(data);
                 {currentQuestion === 4 && (
                   <View>
                     <Text refs={threeRef} style={AnalyaticsStyles.TitleStyle}>
-                    {'D. '+t('Occupation & Resources')}
+                      {'D. ' + t('Occupation & Resources')}
                     </Text>
 
-                    
                     <Spacing space={SH(10)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
                       36. {t('What is the Primary Occupation of the family?')}
@@ -2222,8 +2498,6 @@ setFamilyMembers(data);
                           ?.otherPrimaryOccupationDetails
                       }
                     </Text>
-
-                    
 
                     {/* <Spacing space={SH(5)} /> */}
                     {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -2433,18 +2707,16 @@ setFamilyMembers(data);
                       }
                     </Text>
                     {<Spacing space={SH(5)} />}
-
-                    
                   </View>
                 )}
-                
+
                 {/*five question start */}
                 {currentQuestion === 5 && (
                   <View>
                     <Text style={AnalyaticsStyles.TitleStyle}>
-                      {'E. '+t('Additional Information of HH on Migration')}
+                      {'E. ' + t('Additional Information of HH on Migration')}
                     </Text>
-                   
+
                     <Spacing space={SH(5)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
                       41.{' '}
@@ -2493,7 +2765,9 @@ setFamilyMembers(data);
                       keyboardType="number-pad"
                       onChangeText={text => {
                         // allow only digits
-                        const digitsOnly = text.replace(/[^0-4]/g, '').slice(0, 1);
+                        const digitsOnly = text
+                          .replace(/[^0-4]/g, '')
+                          .slice(0, 1);
 
                         // allow first digit only if 6-9
                         if (digitsOnly.length === 0) {
@@ -2532,7 +2806,7 @@ setFamilyMembers(data);
                           ?.minorChildrenAccompaniedMigration
                       }
                     </Text>
-                    
+
                     <Spacing space={SH(5)} />
                     <Input
                       title={'43. ' + t('Household contact mobile no.?')}
@@ -2602,7 +2876,7 @@ setFamilyMembers(data);
                     <Text style={{color: 'red'}}>
                       {errors?.householdMigrationStatus?.respondentIdentity}
                     </Text>
-                    
+
                     <Spacing space={SH(10)} />
                     <View style={AnalyaticsStyles.PaddingHori}>
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -2622,16 +2896,13 @@ setFamilyMembers(data);
                               size={SF(20)}
                               color={Colors.theme_background}
                             />{' '}
-                           {
-  location
-    ? parseFloat(location.coords.latitude.toFixed(6))
-    : null
-},
-{
-  location
-    ? parseFloat(location.coords.longitude.toFixed(6))
-    : null
-}
+                            {location
+                              ? parseFloat(location.coords.latitude.toFixed(6))
+                              : null}
+                            ,
+                            {location
+                              ? parseFloat(location.coords.longitude.toFixed(6))
+                              : null}
                           </Text>
                         </TouchableOpacity>
                         {/* <TouchableOpacity
@@ -2804,7 +3075,7 @@ setFamilyMembers(data);
                       </Text>{' '}
                       {previewData?.householdBasicProfile?.ifscCodeOrBranch}
                     </Text>
-                    
+
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {' '}
@@ -2872,7 +3143,7 @@ setFamilyMembers(data);
                         previewData?.householdBasicProfile
                           ?.hasUjjwalaLPGConnection}
                     </Text>
-                   
+
                     <Text style={AnalyaticsStyles.TitleStyle}>
                       {t('Occupation & Resources')}
                     </Text>
@@ -2893,7 +3164,7 @@ setFamilyMembers(data);
                           ?.otherPrimaryOccupationDetails
                       }
                     </Text>
-                    
+
                     {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t(
@@ -3083,8 +3354,7 @@ setFamilyMembers(data);
                         )}
                         :
                       </Text>{' '}
-                      {'' +
-                        previewData?.householdEntitlement?.atalPension}
+                      {'' + previewData?.householdEntitlement?.atalPension}
                     </Text>
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
@@ -3237,7 +3507,9 @@ setFamilyMembers(data);
                         handleSubmit(); // ✅ FINAL SUBMIT
                       }}
                       style={{padding: 10}}>
-                      <Text style={{color: 'green'}}>{t('Confirm & Submit')}</Text>
+                      <Text style={{color: 'green'}}>
+                        {t('Confirm & Submit')}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -3252,507 +3524,534 @@ setFamilyMembers(data);
                   {t('Survey_Title_47')}
                 </Text>
               </TouchableOpacity>
-              {currentQuestion < 5 && isEligibleForNext(currentQuestion,values,involvedWaterSource,involvedInLivestockActivity,selectedSchemes) && (
-                <TouchableOpacity
-                  style={AnalyaticsStyles.PreviousButton}
-                  onPress={handleNext}>
-                  <Text style={AnalyaticsStyles.PreviousTextStyle}>
-                    {t('Survey_Title_48')}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              {currentQuestion == 5 && isEligibleForNext(currentQuestion,values,involvedWaterSource,involvedInLivestockActivity,selectedSchemes) && (
-                <TouchableOpacity
-                  style={AnalyaticsStyles.SubmitButton}
-                  onPress={() => {
-                    // Alert.alert('errors',JSON.stringify(errors));
-                    if (involvedInLivestockActivity?.length > 0) {
-                      let livestockArray = '';
-                      involvedInLivestockActivity?.forEach(item => {
-                        livestockArray =
-                          involvedInLivestockActivity.length > 1
-                            ? livestockArray.concat(item + ', ')
-                            : livestockArray.concat(item);
-                      });
-                      //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
+              {currentQuestion < 5 &&
+                isEligibleForNext(
+                  currentQuestion,
+                  values,
+                  involvedWaterSource,
+                  involvedInLivestockActivity,
+                  selectedSchemes,
+                ) && (
+                  <TouchableOpacity
+                    style={AnalyaticsStyles.PreviousButton}
+                    onPress={handleNext}>
+                    <Text style={AnalyaticsStyles.PreviousTextStyle}>
+                      {t('Survey_Title_48')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              {currentQuestion == 5 &&
+                isEligibleForNext(
+                  currentQuestion,
+                  values,
+                  involvedWaterSource,
+                  involvedInLivestockActivity,
+                  selectedSchemes,
+                ) && (
+                  <TouchableOpacity
+                    style={AnalyaticsStyles.SubmitButton}
+                    onPress={() => {
+                      // Alert.alert('errors',JSON.stringify(errors));
+                      if (involvedInLivestockActivity?.length > 0) {
+                        let livestockArray = '';
+                        involvedInLivestockActivity?.forEach(item => {
+                          livestockArray =
+                            involvedInLivestockActivity.length > 1
+                              ? livestockArray.concat(item + ', ')
+                              : livestockArray.concat(item);
+                        });
+                        //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
+                        setFieldValue(
+                          'householdOccupationAndLand.involvedInLivestockActivity',
+                          livestockArray,
+                        );
+                      }
+                      if (sourcesOfIrrigation?.length > 0) {
+                        let irrigationArray = '';
+                        sourcesOfIrrigation?.forEach(item => {
+                          irrigationArray =
+                            sourcesOfIrrigation.length > 1
+                              ? irrigationArray.concat(item + ', ')
+                              : irrigationArray.concat(item);
+                        });
+                        //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
+                        setFieldValue(
+                          'householdOccupationAndLand.sourcesOfIrrigation',
+                          irrigationArray,
+                        );
+                      }
+                      if (involvedWaterSource?.length > 0) {
+                        let waterArray = '';
+                        involvedWaterSource?.forEach(item => {
+                          waterArray =
+                            involvedWaterSource.length > 1
+                              ? waterArray.concat(item + ', ')
+                              : waterArray.concat(item);
+                        });
+                        //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
+                        setFieldValue(
+                          'householdBasicProfile.drinkingWaterSource',
+                          waterArray,
+                        );
+                        setDrinkingWaterSource(waterArray);
+                      }
+                      if (selectedSchemes?.length > 0) {
+                        let schemaArray = '';
+                        selectedSchemes?.forEach(item => {
+                          schemaArray =
+                            selectedSchemes.length > 1
+                              ? schemaArray.concat(item + ', ')
+                              : schemaArray.concat(item);
+                        });
+                        //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
+                        setFieldValue(
+                          'householdEntitlement.kishanSchemeCoverage',
+                          schemaArray,
+                        );
+                        //  setSelectedSchemesArray(schemaArray);
+                      }
+
+                      // setFieldValue(
+                      //   'householdOccupationAndLand.sourcesOfIrrigation',
+                      //   sourcesOfIrrigation,
+                      // );
+
+                      //  setFieldValue(
+                      //         'householdBasicProfile.drinkingWaterSource',
+                      //         text,
+                      //       );
+                      //       setDrinkingWaterSource(text);
+
                       setFieldValue(
-                        'householdOccupationAndLand.involvedInLivestockActivity',
-                        livestockArray,
+                        'householdBasicProfile.surveyDate',
+                        dateSelectLocal,
                       );
-                    }
-                    if (sourcesOfIrrigation?.length > 0) {
-                      let irrigationArray = '';
-                      sourcesOfIrrigation?.forEach(item => {
-                        irrigationArray =
-                          sourcesOfIrrigation.length > 1
-                            ? irrigationArray.concat(item + ', ')
-                            : irrigationArray.concat(item);
-                      });
-                      //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
+                      let res =
+                        (location ? location.coords.latitude : null) +
+                        ',' +
+                        (location ? location.coords.longitude : null);
+                      setFieldValue('householdBasicProfile.geoLocation', res);
+
                       setFieldValue(
-                        'householdOccupationAndLand.sourcesOfIrrigation',
-                        irrigationArray,
+                        'householdMigrationStatus.respondentPhotoPathOrUrl',
+                        imgpathselect,
                       );
-                    }
-                    if (involvedWaterSource?.length > 0) {
-                      let waterArray = '';
-                      involvedWaterSource?.forEach(item => {
-                        waterArray =
-                          involvedWaterSource.length > 1
-                            ? waterArray.concat(item + ', ')
-                            : waterArray.concat(item);
-                      });
-                      //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
-                      setFieldValue(
-                        'householdBasicProfile.drinkingWaterSource',
-                        waterArray,
-                      );
-                      setDrinkingWaterSource(waterArray);
-                    }
-                    if (selectedSchemes?.length > 0) {
-                      let schemaArray = '';
-                      selectedSchemes?.forEach(item => {
-                        schemaArray =
-                          selectedSchemes.length > 1
-                            ? schemaArray.concat(item + ', ')
-                            : schemaArray.concat(item);
-                      });
-                      //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
-                      setFieldValue(
-                        'householdEntitlement.kishanSchemeCoverage',
-                        schemaArray,
-                      );
-                      //  setSelectedSchemesArray(schemaArray);
-                    }
 
-                    // setFieldValue(
-                    //   'householdOccupationAndLand.sourcesOfIrrigation',
-                    //   sourcesOfIrrigation,
-                    // );
+                      let finalValuesPreview = {
+                        ...values,
+                        householdFamilyMember: familyMembers,
+                      };
 
-                    //  setFieldValue(
-                    //         'householdBasicProfile.drinkingWaterSource',
-                    //         text,
-                    //       );
-                    //       setDrinkingWaterSource(text);
+                      if (errors && errors?.householdBasicProfile?.district) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.district,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (errors && errors?.householdBasicProfile?.block) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.block,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.gramPanchayat
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.gramPanchayat,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.revenueVillage
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.revenueVillage,
+                          () => {},
+                        );
+                        return;
+                      }
 
-                    setFieldValue(
-                      'householdBasicProfile.surveyDate',
-                      dateSelectLocal,
-                    );
-                    let res =
-                      (location ? location.coords.latitude : null) +
-                      ',' +
-                      (location ? location.coords.longitude : null);
-                    setFieldValue('householdBasicProfile.geoLocation', res);
+                      if (errors && errors?.householdBasicProfile?.hamlet) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.hamlet,
+                          () => {},
+                        );
+                        return;
+                      }
 
-                    setFieldValue(
-                      'householdMigrationStatus.respondentPhotoPathOrUrl',
-                      imgpathselect,
-                    );
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile
+                          ?.headOfTheHouseholdNameAsPerAadhar
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile
+                            .headOfTheHouseholdNameAsPerAadhar,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.headOfTheHouseholdGender
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.headOfTheHouseholdGender,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (errors && errors?.householdBasicProfile?.aadharNo) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.aadharNo,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.socialCategory
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.socialCategory,
+                          () => {},
+                        );
+                        return;
+                      }
 
-                    let finalValuesPreview = {
-                      ...values,
-                      householdFamilyMember: familyMembers,
-                    };
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.bankAccountNumber
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.bankAccountNumber,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (errors && errors?.householdBasicProfile?.bankName) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.bankName,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.ifscCodeOrBranch
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.ifscCodeOrBranch,
+                          () => {},
+                        );
+                        return;
+                      }
 
-                    if (errors && errors?.householdBasicProfile?.district) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.district,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (errors && errors?.householdBasicProfile?.block) {
-                      AppOkAlert(errors.householdBasicProfile.block, () => {});
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.gramPanchayat
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.gramPanchayat,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.revenueVillage
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.revenueVillage,
-                        () => {},
-                      );
-                      return;
-                    }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.isWomenCoveredUnderSHG
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.isWomenCoveredUnderSHG,
+                          () => {},
+                        );
+                        return;
+                      }
 
-                    if (errors && errors?.householdBasicProfile?.hamlet) {
-                      AppOkAlert(errors.householdBasicProfile.hamlet, () => {});
-                      return;
-                    }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile
+                          ?.isWomenCoveredUnderSubhadraYojana
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile
+                            .isWomenCoveredUnderSubhadraYojana,
+                          () => {},
+                        );
+                        return;
+                      }
 
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile
-                        ?.headOfTheHouseholdNameAsPerAadhar
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile
-                          .headOfTheHouseholdNameAsPerAadhar,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.headOfTheHouseholdGender
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.headOfTheHouseholdGender,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (errors && errors?.householdBasicProfile?.aadharNo) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.aadharNo,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.socialCategory
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.socialCategory,
-                        () => {},
-                      );
-                      return;
-                    }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.totalFamilyMembers
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.totalFamilyMembers,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.hasRationCard === false
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household has a ration card',
+                          () => {},
+                        );
+                        return;
+                      }
 
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.bankAccountNumber
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.bankAccountNumber,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (errors && errors?.householdBasicProfile?.bankName) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.bankName,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.ifscCodeOrBranch
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.ifscCodeOrBranch,
-                        () => {},
-                      );
-                      return;
-                    }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.rationCardNumber
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.rationCardNumber,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile?.drinkingWaterSource
+                      ) {
+                        AppOkAlert(
+                          errors.householdBasicProfile.drinkingWaterSource,
+                          () => {},
+                        );
+                        return;
+                      }
 
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.isWomenCoveredUnderSHG
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.isWomenCoveredUnderSHG,
-                        () => {},
-                      );
-                      return;
-                    }
+                      if (
+                        errors &&
+                        errors?.householdBasicProfile
+                          ?.hasUjjwalaLPGConnection === false
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household has Ujjwala LPG Connection',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdEntitlement?.hasRuralHousingSchemeHouse
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household has Rural Housing Scheme House',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdEntitlement?.hasRuralHousingSchemeHouse
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household has Rural Housing Scheme House',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdEntitlement
+                          ?.hasIndividualHouseholdLatrine
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household has Individual Household Latrine',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdEntitlement?.hasElectricityConnection
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household has Electricity Connection',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdEntitlement?.hasMGNREGSJobCard
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household has MGNREGS Job Card',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        values?.householdEntitlement?.hasMGNREGSJobCard &&
+                        errors &&
+                        errors?.householdEntitlement?.fullJobCardNumber
+                      ) {
+                        AppOkAlert(
+                          errors.householdEntitlement.fullJobCardNumber,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdEntitlement?.hasJanDhanYojanaAccount
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household has Jan Dhan Yojana Account',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdEntitlement
+                          ?.isCoveredUnderAyushmanBharat === false
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household is covered under Ayushman Bharat',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdEntitlement
+                          ?.isEnrolledUnderShramYogiMaandhan === false
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household is enrolled under Shram Yogi Maandhan',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdMigrationStatus
+                          ?.takenAdvanceForMigrationFromMiddleman === false
+                      ) {
+                        AppOkAlert(
+                          'Please select if the household has taken advance for migration from middleman',
+                          () => {},
+                        );
+                        return;
+                      }
 
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile
-                        ?.isWomenCoveredUnderSubhadraYojana
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile
-                          .isWomenCoveredUnderSubhadraYojana,
-                        () => {},
-                      );
-                      return;
-                    }
+                      if (
+                        errors &&
+                        errors?.householdMigrationStatus
+                          ?.minorChildrenAccompaniedMigration
+                      ) {
+                        AppOkAlert(
+                          'Please select Minor Children Accompanied Migration',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdMigrationStatus?.familyContactMobileNo
+                      ) {
+                        AppOkAlert(
+                          errors?.householdMigrationStatus
+                            ?.familyContactMobileNo,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdMigrationStatus?.respondentIdentity
+                      ) {
+                        AppOkAlert(
+                          'Please enter Respondent Identity',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdOccupationAndLand
+                          ?.primaryOccupationOfTheFamily
+                      ) {
+                        AppOkAlert(
+                          'Please enter Primary Occupation of the Family',
+                          () => {},
+                        );
+                        return;
+                      }
+                      // if (
+                      //   errors &&
+                      //   errors?.householdOccupationAndLand?.fraClaimantStatus
+                      // ) {
+                      //   AppOkAlert('Please enter FRA Claimant Status', () => {});
+                      //   return;
+                      // }
+                      if (
+                        values?.householdOccupationAndLand
+                          ?.fraClaimantStatus === 'FRA Claimant' &&
+                        errors &&
+                        errors?.householdOccupationAndLand
+                          ?.fra_LandAmountInAcres
+                      ) {
+                        AppOkAlert(
+                          errors.householdOccupationAndLand
+                            .fra_LandAmountInAcres,
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdOccupationAndLand
+                          ?.ownsHomesteadPattaLand
+                      ) {
+                        AppOkAlert(
+                          'Please select if the family owns Homestead Patta Land',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        errors &&
+                        errors?.householdOccupationAndLand
+                          ?.approximatePrivateLandHolding
+                      ) {
+                        AppOkAlert(
+                          'Please enter Approximate Private Land Holding',
+                          () => {},
+                        );
+                        return;
+                      }
+                      if (
+                        values?.householdOccupationAndLand
+                          ?.approximatePrivateLandHolding !== 'Landless' &&
+                        errors &&
+                        errors?.householdOccupationAndLand
+                          ?.isIrrigationFacilityAvailable
+                      ) {
+                        AppOkAlert(
+                          'Please select if the irrigation facility is available',
+                          () => {},
+                        );
+                        return;
+                      }
 
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.totalFamilyMembers
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.totalFamilyMembers,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.hasRationCard === false
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household has a ration card',
-                        () => {},
-                      );
-                      return;
-                    }
+                      setTimeout(() => {
+                        //  PubSub.publish('preview', finalValuesPreview);
+                        setPreviewData(finalValuesPreview);
+                      }, 50);
+                      // setPreviewData(finalValuesPreview);
 
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.rationCardNumber
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.rationCardNumber,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.drinkingWaterSource
-                    ) {
-                      AppOkAlert(
-                        errors.householdBasicProfile.drinkingWaterSource,
-                        () => {},
-                      );
-                      return;
-                    }
+                      setShowConfirmModal(true);
 
-                    if (
-                      errors &&
-                      errors?.householdBasicProfile?.hasUjjwalaLPGConnection ===
-                        false
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household has Ujjwala LPG Connection',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdEntitlement?.hasRuralHousingSchemeHouse
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household has Rural Housing Scheme House',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdEntitlement?.hasRuralHousingSchemeHouse
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household has Rural Housing Scheme House',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdEntitlement
-                        ?.hasIndividualHouseholdLatrine
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household has Individual Household Latrine',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdEntitlement?.hasElectricityConnection
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household has Electricity Connection',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdEntitlement?.hasMGNREGSJobCard
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household has MGNREGS Job Card',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      values?.householdEntitlement?.hasMGNREGSJobCard &&
-                      errors &&
-                      errors?.householdEntitlement?.fullJobCardNumber
-                    ) {
-                      AppOkAlert(
-                        errors.householdEntitlement.fullJobCardNumber,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdEntitlement?.hasJanDhanYojanaAccount
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household has Jan Dhan Yojana Account',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdEntitlement
-                        ?.isCoveredUnderAyushmanBharat === false
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household is covered under Ayushman Bharat',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdEntitlement
-                        ?.isEnrolledUnderShramYogiMaandhan === false
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household is enrolled under Shram Yogi Maandhan',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdMigrationStatus
-                        ?.takenAdvanceForMigrationFromMiddleman === false
-                    ) {
-                      AppOkAlert(
-                        'Please select if the household has taken advance for migration from middleman',
-                        () => {},
-                      );
-                      return;
-                    }
-
-                    if (
-                      errors &&
-                      errors?.householdMigrationStatus
-                        ?.minorChildrenAccompaniedMigration
-                    ) {
-                      AppOkAlert(
-                        'Please select Minor Children Accompanied Migration',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdMigrationStatus?.familyContactMobileNo
-                    ) {
-                      AppOkAlert(
-                        errors?.householdMigrationStatus?.familyContactMobileNo,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdMigrationStatus?.respondentIdentity
-                    ) {
-                      AppOkAlert('Please enter Respondent Identity', () => {});
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdOccupationAndLand
-                        ?.primaryOccupationOfTheFamily
-                    ) {
-                      AppOkAlert(
-                        'Please enter Primary Occupation of the Family',
-                        () => {},
-                      );
-                      return;
-                    }
-                    // if (
-                    //   errors &&
-                    //   errors?.householdOccupationAndLand?.fraClaimantStatus
-                    // ) {
-                    //   AppOkAlert('Please enter FRA Claimant Status', () => {});
-                    //   return;
-                    // }
-                    if (
-                      values?.householdOccupationAndLand?.fraClaimantStatus ===
-                        'FRA Claimant' &&
-                      errors &&
-                      errors?.householdOccupationAndLand?.fra_LandAmountInAcres
-                    ) {
-                      AppOkAlert(
-                        errors.householdOccupationAndLand.fra_LandAmountInAcres,
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdOccupationAndLand?.ownsHomesteadPattaLand
-                    ) {
-                      AppOkAlert(
-                        'Please select if the family owns Homestead Patta Land',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      errors &&
-                      errors?.householdOccupationAndLand
-                        ?.approximatePrivateLandHolding
-                    ) {
-                      AppOkAlert(
-                        'Please enter Approximate Private Land Holding',
-                        () => {},
-                      );
-                      return;
-                    }
-                    if (
-                      values?.householdOccupationAndLand
-                        ?.approximatePrivateLandHolding !== 'Landless' &&
-                      errors &&
-                      errors?.householdOccupationAndLand
-                        ?.isIrrigationFacilityAvailable
-                    ) {
-                      AppOkAlert(
-                        'Please select if the irrigation facility is available',
-                        () => {},
-                      );
-                      return;
-                    }
-
-                    setTimeout(() => {
-                      //  PubSub.publish('preview', finalValuesPreview);
-                       setPreviewData(finalValuesPreview);  
-                    } , 50);
-                    // setPreviewData(finalValuesPreview);
-
-                    setShowConfirmModal(true);
-
-                    //  return;
-                    // handleSubmit();
-                  }}>
-                  <Text style={AnalyaticsStyles.PreviousTextStyle}>
-                    {t('Submit')}
-                  </Text>
-                </TouchableOpacity>
-              )}
+                      //  return;
+                      // handleSubmit();
+                    }}>
+                    <Text style={AnalyaticsStyles.PreviousTextStyle}>
+                      {t('Submit')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               <Loader visible={loading} />
             </View>
           </>
@@ -3765,13 +4064,13 @@ setFamilyMembers(data);
         modalVisible={alertVisible}
         setModalVisible={setAlertVisible}
         onPressCancel={() => setAlertVisible(!alertVisible)}
-         onPress={() => {
+        onPress={() => {
           setAlertVisible(!alertVisible), onoknutton();
         }}
         buttonText={t('Ok')}
         buttonminview={Style.ButtonCenter}
       />
-       {/* <FamilyMemberAlert
+      {/* <FamilyMemberAlert
         message={''}
         modalVisible={familyAlertVisible}
         setModalVisible={setFamilyAlertVisible}
@@ -3792,29 +4091,29 @@ setFamilyMembers(data);
   );
 };
 
- const styles = StyleSheet.create({
-    card: {
-      backgroundColor: '#FFFFFF',
-      borderRadius: 10,
-      padding: 16,
-      marginBottom: 20,
-      elevation: 3, // Android shadow
-      shadowColor: '#000', // iOS shadow
-      shadowOffset: {width: 0, height: 2},
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-    },
-    title: {
-      fontSize: 16,
-      fontWeight: '600',
-      marginBottom: 12,
-      color: '#333',
-    },
-  
-    buttonRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginTop: 16,
-    },
-  });
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 3, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#333',
+  },
+
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+});
 export default FamilyFormSurveyTab;
