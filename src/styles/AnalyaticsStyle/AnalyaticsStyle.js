@@ -152,7 +152,7 @@ export default AnalyaticsStyle = (Colors) => StyleSheet.create({
     borderRadius: 300,
   },
   PaddingHori: {
-    paddingHorizontal: SH(10)
+    paddingHorizontal: SH(5)
   },
   SummaryText: {
     color: Colors.theme_background,

@@ -1033,8 +1033,8 @@ const handleNext = () => {
         try {
           Geolocation.getCurrentPosition(
             position => {
-              const {latitude, longitude} = position.coords;
-              console.log(latitude, longitude);
+              const {latitude, longitude,accuracy} = position.coords;
+              console.log(latitude, longitude,accuracy);
               setLocation(position);
             },
             error => {
@@ -1489,7 +1489,7 @@ const handleNext = () => {
                   titleStyle={AnalyaticsStyles.PleaseEnterDate}
                 /> */}
 
-                    <Spacing space={SH(15)} />
+                    {/* <Spacing space={SH(15)} />
                     <Input
                       title={'8. ' + t('AADHAR No.')}
                       placeholder={t('AADHAR No.')}
@@ -1503,7 +1503,7 @@ const handleNext = () => {
                     />
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.aadharNo}
-                    </Text>
+                    </Text> */}
 
                     <Spacing space={SH(15)} />
                     <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -2882,44 +2882,54 @@ const handleNext = () => {
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         45. {t('Click on the icon to capture GEO location')}
                       </Text>
-                      <View style={Style.FlexEditView}>
-                        <TouchableOpacity
-                          onPress={() =>
-                            // navigation.navigate(RouteName.MAP_SCREEN)
-                            getLocation()
-                          }>
-                          <Text style={Style.datetextstyles}>
-                            {' '}
-                            <VectorIcon
-                              icon="FontAwesome"
-                              name="map-marker"
-                              size={SF(20)}
-                              color={Colors.theme_background}
-                            />{' '}
-                            {location
-                              ? parseFloat(location.coords.latitude.toFixed(6))
-                              : null}
-                            ,
-                            {location
-                              ? parseFloat(location.coords.longitude.toFixed(6))
-                              : null}
-                          </Text>
-                        </TouchableOpacity>
-                        {/* <TouchableOpacity
-                            onPress={() =>
-                              navigation.navigate(
-                                RouteName.EDIT_LOCATION_SCREEN,
-                              )
-                            }
-                            style={Style.dobView}>
-                            <VectorIcon
-                              icon="AntDesign"
-                              name="edit"
-                              size={SF(30)}
-                              color={Colors.theme_background}
-                            />
-                          </TouchableOpacity> */}
-                      </View>
+                      <View style={{flexDirection:'column'}}>
+                                           <View style={AnalyaticsStyles.PaddingHori}>
+                                             <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                                               36. {t('Click on the icon to capture GEO location')}
+                                             </Text>
+                                             <View style={Style.FlexEditView}>
+                                               <TouchableOpacity
+                                                 onPress={() =>
+                                                   // navigation.navigate(RouteName.MAP_SCREEN)
+                                                   getLocation()
+                                                 }>
+                                                 <Text style={Style.datetextstyles}>
+                                                   {' '}
+                                                   <VectorIcon
+                                                     icon="FontAwesome"
+                                                     name="map-marker"
+                                                     size={SF(20)}
+                                                     color={Colors.theme_background}
+                                                   />{' '}
+                                                   {location ? location.coords.latitude : null},
+                                                   {location ? location.coords.longitude : null}
+                                                  
+                                                 </Text>
+                                               </TouchableOpacity>
+                                               
+                                               {/* <TouchableOpacity
+                                                                         onPress={() =>
+                                                                           navigation.navigate(
+                                                                             RouteName.EDIT_LOCATION_SCREEN,
+                                                                           )
+                                                                         }
+                                                                         style={Style.dobView}>
+                                                                         <VectorIcon
+                                                                           icon="AntDesign"
+                                                                           name="edit"
+                                                                           size={SF(30)}
+                                                                           color={Colors.theme_background}
+                                                                         />
+                                                                       </TouchableOpacity> */}
+                                             </View>
+                                             <View>
+                                                <Text style={{color: 'black',fontSize: SF(12)}}>
+                         Accuracy: {location.coords.accuracy.toFixed(1)} meters 
+                         (The actual location is within this radius)
+                       </Text>
+                                             </View>
+                                             </View>
+                                           </View>
                     </View>
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.geoLocation}
@@ -3045,12 +3055,12 @@ const handleNext = () => {
                       }
                     </Text>
 
-                    <Text>
+                    {/* <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('AADHAR No.')}:
                       </Text>{' '}
                       {previewData?.householdBasicProfile?.aadharNo}
-                    </Text>
+                    </Text> */}
                     <Text>
                       <Text style={{fontWeight: 'bold'}}>
                         {t('Social Category')}:
@@ -3627,9 +3637,10 @@ const handleNext = () => {
                         dateSelectLocal,
                       );
                       let res =
-                        (location ? location.coords.latitude : null) +
-                        ',' +
-                        (location ? location.coords.longitude : null);
+                      (location ? location.coords.latitude : null) +
+                      ',' +
+                      (location ? location.coords.longitude : null) + ',' + (location ? location.coords.accuracy.toFixed(1) : null);
+                   
                       setFieldValue('householdBasicProfile.geoLocation', res);
 
                       setFieldValue(
@@ -3707,13 +3718,13 @@ const handleNext = () => {
                         );
                         return;
                       }
-                      if (errors && errors?.householdBasicProfile?.aadharNo) {
-                        AppOkAlert(
-                          errors.householdBasicProfile.aadharNo,
-                          () => {},
-                        );
-                        return;
-                      }
+                      // if (errors && errors?.householdBasicProfile?.aadharNo) {
+                      //   AppOkAlert(
+                      //     errors.householdBasicProfile.aadharNo,
+                      //     () => {},
+                      //   );
+                      //   return;
+                      // }
                       if (
                         errors &&
                         errors?.householdBasicProfile?.socialCategory

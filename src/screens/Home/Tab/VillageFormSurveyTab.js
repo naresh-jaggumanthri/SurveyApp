@@ -666,8 +666,8 @@ const getVillages = async (panchayatId) => {
         try {
           Geolocation.getCurrentPosition(
             position => {
-              const {latitude, longitude} = position.coords;
-              console.log(latitude, longitude);
+              const {latitude, longitude,accuracy} = position.coords;
+              console.log(latitude, longitude, accuracy);
 
               setLocation(position);
             },
@@ -2084,6 +2084,7 @@ const goToTop = () => {
                   <Image source={images.Survey_Image_Four} style={AnalyaticsStyles.CaptureImageSet} />
                 </View> */}
                       <Spacing space={SH(5)} />
+                      <View style={{flexDirection:'column'}}>
                       <View style={AnalyaticsStyles.PaddingHori}>
                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
                           36. {t('Click on the icon to capture GEO location')}
@@ -2104,8 +2105,10 @@ const goToTop = () => {
                               />{' '}
                               {location ? location.coords.latitude : null},
                               {location ? location.coords.longitude : null}
+                             
                             </Text>
                           </TouchableOpacity>
+                          
                           {/* <TouchableOpacity
                                                     onPress={() =>
                                                       navigation.navigate(
@@ -2120,6 +2123,13 @@ const goToTop = () => {
                                                       color={Colors.theme_background}
                                                     />
                                                   </TouchableOpacity> */}
+                        </View>
+                        <View>
+                           <Text style={{color: 'black',fontSize: SF(12)}}>
+    Accuracy: {location.coords.accuracy.toFixed(1)} meters 
+    (The actual location is within this radius)
+  </Text>
+                        </View>
                         </View>
                       </View>
                       <Spacing space={SH(10)} />
@@ -2661,7 +2671,7 @@ const goToTop = () => {
                     let res =
                       (location ? location.coords.latitude : null) +
                       ',' +
-                      (location ? location.coords.longitude : null);
+                      (location ? location.coords.longitude : null) + ',' + (location ? location.coords.accuracy.toFixed(1) : null);
                     setFieldValue('geoLocation', res);
 
                     let finalValuesPreview = {

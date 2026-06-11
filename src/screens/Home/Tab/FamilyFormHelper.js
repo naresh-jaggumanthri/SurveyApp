@@ -98,9 +98,9 @@ export const HouseHoldFormValidationSchema = (props) =>{
       headOfTheHouseholdNameAsPerAadhar: Yup.string().min(3,'At least three characters required').required('Head of the Household Name is required'),
       headOfTheHouseholdGender: Yup.string().required('Head of the Household Gender is required'),
 
-      aadharNo: Yup.string()
-        .matches(/^\d{12}$/, 'Aadhaar must be 12 digits')
-        .required('Aadhaar Number is required'),
+      // aadharNo: Yup.string()
+      //   .matches(/^\d{12}$/, 'Aadhaar must be 12 digits')
+      //   .required('Aadhaar Number is required'),
 
       socialCategory: Yup.string().required('Social Category is required'),
 
@@ -249,7 +249,7 @@ export const isEligibleForNext = (currentQuestion,values,involvedWaterSource,inv
   try{
   switch(currentQuestion){
     case 1:
-      return values?.householdBasicProfile && Object.keys(values.householdBasicProfile).length > 0 && values.householdBasicProfile.district && values.householdBasicProfile.block && values.householdBasicProfile.gramPanchayat && values.householdBasicProfile.revenueVillage && values.householdBasicProfile.hamlet && values.householdBasicProfile.headOfTheHouseholdNameAsPerAadhar && values.householdBasicProfile.headOfTheHouseholdGender && values.householdBasicProfile.aadharNo && values.householdBasicProfile.socialCategory;
+      return values?.householdBasicProfile && Object.keys(values.householdBasicProfile).length > 0 && values.householdBasicProfile.district && values.householdBasicProfile.block && values.householdBasicProfile.gramPanchayat && values.householdBasicProfile.revenueVillage && values.householdBasicProfile.hamlet && values.householdBasicProfile.headOfTheHouseholdNameAsPerAadhar && values.householdBasicProfile.headOfTheHouseholdGender && values.householdBasicProfile.socialCategory;
     case 2:
      
       return values?.householdBasicProfile && Object.keys(values.householdBasicProfile).length > 0 && values.householdBasicProfile.bankName!=null && values.householdBasicProfile.bankAccountNumber!=null && values.householdBasicProfile.ifscCodeOrBranch!=null&&values.householdBasicProfile.totalFamilyMembers!=null;

@@ -207,9 +207,30 @@ const saveHouseholdsToLocalDB = async (res) => {
 
   };
 
+    /* sync status can be "PENDING", "SYNCED", "FAILED" */
+        const [isSyncing, setIsSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0 });
+  const [syncModalVisible, setSyncModalVisible] = useState(false);
+
+   const [stats, setStats] = useState({ pending: 0, synced: 0 });
+       const fetchStats = async () => {
+      const repo = AppDataSource.getRepository(HouseholdSurvey);
+      const pending = await repo.countBy({ status: 'PENDING' });
+      const synced = await repo.countBy({ status: 'SYNCED' });
+      if(pending > 0) setSyncModalVisible(true);
+      setStats({ pending, synced });
+  };
+
   const syncPendingSurveys = async () => {
   const repo = AppDataSource.getRepository(HouseholdSurvey);
   const pending = await repo.findBy({ status: 'PENDING' });
+   if (pending.length === 0) {
+          Alert.alert("Info", "No pending surveys to sync.");
+          return;
+      }
+  
+      setSyncProgress({ current: 0, total: pending.length });
+      setIsSyncing(true);
 
   for (const item of pending) {
     try {
@@ -229,7 +250,7 @@ const saveHouseholdsToLocalDB = async (res) => {
       }
 
       // Alert.alert("Syncing",JSON.stringify(formData));
-onSavePress(formData);
+await onSavePress(formData);
       // await fetch(API_URL, {
       //   method: 'POST',
       //   headers: {
@@ -245,7 +266,10 @@ onSavePress(formData);
       item.status = 'FAILED';
       await repo.save(item);
     }
+     setSyncProgress(prev => ({ ...prev, current: i + 1 }));
   }
+   setIsSyncing(false);
+      Alert.alert("Success", "Sync process completed.");
 };
  const onSavePress = async values => {
      setLoading(true);
@@ -292,6 +316,14 @@ onSavePress(formData);
       {/* <Text style={HomeTabStyles.MyDashBoardText}>{t("Home_Title_16")}</Text> */}
       <ScrollView>
         <View style={Style.Container}>
+           <SyncModal
+                      visible={syncModalVisible}
+                      onClose={() => setSyncModalVisible(false)}
+                      stats={stats}
+                      onStartSync={syncPendingSurveys}
+                      isSyncing={isSyncing}
+                      progress={syncProgress}
+                    />
           <View style={Style.MinViewContent}>
             {/* <Spacing space={SH(40)} />
             <View style={HomeTabStyles.FlexDirection}>

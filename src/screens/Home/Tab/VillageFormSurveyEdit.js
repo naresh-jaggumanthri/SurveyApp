@@ -652,8 +652,8 @@ const getVillages = async (panchayatId) => {
         try {
           Geolocation.getCurrentPosition(
             position => {
-              const {latitude, longitude} = position.coords;
-              console.log(latitude, longitude);
+              const {latitude, longitude,accuracy} = position.coords;
+              console.log(latitude, longitude,accuracy);
 
               setLocation(position);
             },
@@ -2099,39 +2099,54 @@ setFieldValue('lengthAllWeatherRoadToHighway', number);
                                           <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                             36. {t('Click on the icon to capture GEO location')}
                                           </Text>
-                                          <View style={Style.FlexEditView}>
-                                            <TouchableOpacity
-                                              onPress={() =>
-                                                // navigation.navigate(RouteName.MAP_SCREEN)
-                                                getLocation()
-                                              }>
-                                              <Text style={Style.datetextstyles}>
-                                                {' '}
-                                                <VectorIcon
-                                                  icon="FontAwesome"
-                                                  name="map-marker"
-                                                  size={SF(20)}
-                                                  color={Colors.theme_background}
-                                                />{' '}
-                                                {location ? location.coords.latitude : null},
-                                                {location ? location.coords.longitude : null}
-                                              </Text>
-                                            </TouchableOpacity>
-                                            {/* <TouchableOpacity
+                                           <View style={{flexDirection:'column'}}>
+                                                                <View style={AnalyaticsStyles.PaddingHori}>
+                                                                  <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                                                                    36. {t('Click on the icon to capture GEO location')}
+                                                                  </Text>
+                                                                  <View style={Style.FlexEditView}>
+                                                                    <TouchableOpacity
                                                                       onPress={() =>
-                                                                        navigation.navigate(
-                                                                          RouteName.EDIT_LOCATION_SCREEN,
-                                                                        )
-                                                                      }
-                                                                      style={Style.dobView}>
-                                                                      <VectorIcon
-                                                                        icon="AntDesign"
-                                                                        name="edit"
-                                                                        size={SF(30)}
-                                                                        color={Colors.theme_background}
-                                                                      />
-                                                                    </TouchableOpacity> */}
-                                          </View>
+                                                                        // navigation.navigate(RouteName.MAP_SCREEN)
+                                                                        getLocation()
+                                                                      }>
+                                                                      <Text style={Style.datetextstyles}>
+                                                                        {' '}
+                                                                        <VectorIcon
+                                                                          icon="FontAwesome"
+                                                                          name="map-marker"
+                                                                          size={SF(20)}
+                                                                          color={Colors.theme_background}
+                                                                        />{' '}
+                                                                        {location ? location.coords.latitude : null},
+                                                                        {location ? location.coords.longitude : null}
+                                                                       
+                                                                      </Text>
+                                                                    </TouchableOpacity>
+                                                                    
+                                                                    {/* <TouchableOpacity
+                                                                                              onPress={() =>
+                                                                                                navigation.navigate(
+                                                                                                  RouteName.EDIT_LOCATION_SCREEN,
+                                                                                                )
+                                                                                              }
+                                                                                              style={Style.dobView}>
+                                                                                              <VectorIcon
+                                                                                                icon="AntDesign"
+                                                                                                name="edit"
+                                                                                                size={SF(30)}
+                                                                                                color={Colors.theme_background}
+                                                                                              />
+                                                                                            </TouchableOpacity> */}
+                                                                  </View>
+                                                                  <View>
+                                                                     <Text style={{color: 'black',fontSize: SF(12)}}>
+                                              Accuracy: {location.coords.accuracy.toFixed(1)} meters 
+                                              (The actual location is within this radius)
+                                            </Text>
+                                                                  </View>
+                                                                  </View>
+                                                                </View>
                                         </View>
                                         <Spacing space={SH(10)} />
                                         <Input
@@ -2671,7 +2686,7 @@ setFieldValue('lengthAllWeatherRoadToHighway', number);
                     let res =
                       (location ? location.coords.latitude : null) +
                       ',' +
-                      (location ? location.coords.longitude : null);
+                      (location ? location.coords.longitude : null) + ',' + (location ? location.coords.accuracy.toFixed(1) : null);
                     setFieldValue('GeoLocation', res);
 
                     let finalValuesPreview = {
