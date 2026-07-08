@@ -67,11 +67,26 @@ const VillageFormSurveyEdit = props => {
     QuestionOne: '',
     about: '',
   };
+   const isFocused=useIsFocused();
   const {loginData} = useSelector(state => state.DataReducer) || {};
   useEffect(() => {
-    loadWaterSourceData();
     getMasterState();
   }, []);
+
+  useEffect(() => {
+  // Subscribe to the channel
+  const token = PubSub.subscribe('VillageItem', mySubscriber);
+  
+  // Clear the Formik form when focus changes if needed
+  if (isFocused && formikRef.current) {
+    formikRef.current.resetForm({ values: undefined });
+  }
+
+  // CLEANUP: Unsubscribe when component unmounts or focus changes
+  return () => {
+    PubSub.unsubscribe(token);
+  };
+}, [isFocused]);
   const [state, setState] = useState(stateArray);
 
    const [involvedWaterSource, setInvolvedWaterSource] = useState(null);
@@ -242,9 +257,10 @@ const VillageFormSurveyEdit = props => {
   //     // Add more options as needed
   //   ]);
   const [checkboxes4, setCheckboxes4] = useState([]);
-  const loadWaterSourceData = async () => {
+  const loadWaterSourceData = async (apiString) => {
   let token = loginData?.token;
-  const currentLanguage = i18n.language;
+  const currentLanguage = i18n?.language;
+ 
      
   const waterSources = await getMasterData(
     'drinkingWaterSource',
@@ -262,9 +278,13 @@ const VillageFormSurveyEdit = props => {
   });
 
   // FIX: Safely split the comma-separated string into a clean array, defaulting to an empty array if null
-  const activeLabels = involvedWaterSourceEdit 
-    ? involvedWaterSourceEdit.split(',').map(label => label.trim()) 
+  
+  const activeLabels = apiString 
+    ? apiString.split(',').map(label => label.trim()) 
     : [];
+  // Alert.alert("activeLabels",JSON.stringify(activeLabels));
+    
+   
 
   const updatedCheckboxes = result.map(checkbox => ({
     ...checkbox,
@@ -272,7 +292,8 @@ const VillageFormSurveyEdit = props => {
     checked: activeLabels.includes(checkbox.label) // Now securely checks against an array
   }));
 
-  setCheckboxes4(updatedCheckboxes);
+  setCheckboxes4([...updatedCheckboxes]);
+   
 };
   const handleCheckboxChange = index => {
     const updatedCheckboxes = [...checkboxes];
@@ -424,11 +445,8 @@ const VillageFormSurveyEdit = props => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [location, setLocation] = useState(false);
   const formikRef = useRef(null);
-  const isFocused=useIsFocused();
-  useEffect(() => {
-    var token = PubSub.subscribe('VillageItem', mySubscriber);
-    formikRef.current.resetForm({values: undefined});
-  }, [isFocused]);
+ 
+ 
   const toggleCheckbox4 = label => {
     const labelsToToggle = label.split(',').map(l => l.trim());
     setCheckboxes4(prev => {
@@ -454,20 +472,15 @@ const VillageFormSurveyEdit = props => {
     });
   };
  
-  var mySubscriber = function (msg, data) {
-    // console.log(msg, data);
-    // const drinkingWater = data?.item?.drinkingWaterSource || '';
-    //  Alert.alert("Drinking Water Source",JSON.stringify(drinkingWater));
-    // toggleCheckbox4(drinkingWater || '');
-    // const labelsArray2 = drinkingWater.split(',').map(s => s.trim());
-    // setDrinkingWaterSource(labelsArray2);
-   
+  const mySubscriber = (msg, data)=>{
+    try{
+  
     setEditData(data);
     if (data && formikRef.current) {
       const resultData = data?.item;
        const apiString = resultData?.drinkingWaterSource || '';
        setInvolvedWaterSourceEdit(apiString);
-      
+       
       
       const resetData = {
         district: resultData.district,
@@ -537,8 +550,14 @@ const VillageFormSurveyEdit = props => {
           
         },
       });
-      const result = data?.item;
+      loadWaterSourceData(apiString);
+      
     }
+    
+  }catch(e){
+    console.log("Error in mySubscriber:", e); 
+    // Alert.alert("Error in mySubscriber:", e.message);
+  }
   };
 
   // Get Districts
