@@ -75,6 +75,7 @@ const VillageFormSurveyEdit = props => {
   const [state, setState] = useState(stateArray);
 
    const [involvedWaterSource, setInvolvedWaterSource] = useState(null);
+   const [involvedWaterSourceEdit, setInvolvedWaterSourceEdit] = useState(null);
 
   const [blocks, setBlocks] = useState([]);
   const [districts, setDistrict] = useState([]);
@@ -269,7 +270,8 @@ const VillageFormSurveyEdit = props => {
             : waterSource.sourceNameLocal,
       };
     }); // Sort alphabetically
-  const activeLabels=involvedWaterSource;
+  const activeLabels=involvedWaterSourceEdit ;
+  // ? involvedWaterSourceEdit.split(',').map(label => label.trim()) : [];
    const updatedCheckboxes = result.map(checkbox => ({
     ...checkbox,
     label: checkbox.label,
@@ -282,45 +284,7 @@ const VillageFormSurveyEdit = props => {
     updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
     setCheckboxes(updatedCheckboxes);
   };
-  const renderCheckboxes = () => {
-    return checkboxes.map((checkbox, index) => (
-      <CheckBox
-        key={index}
-        title={checkbox.label}
-        iconType="material-community"
-        checkedIcon="checkbox-marked"
-        uncheckedIcon="checkbox-blank-outline"
-        checked={checkbox.checked}
-        onPress={() => handleCheckboxChange(index)}
-      />
-    ));
-  };
-  const renderCheckboxes2 = () => {
-    return checkboxes2.map((checkbox, index) => (
-      <CheckBox
-        key={index}
-        title={checkbox.label}
-        iconType="material-community"
-        checkedIcon="checkbox-marked"
-        uncheckedIcon="checkbox-blank-outline"
-        checked={checkbox.checked}
-        onPress={() => handleCheckboxChange(index)}
-      />
-    ));
-  };
-  const renderCheckboxes3 = () => {
-    return checkboxes3.map((checkbox, index) => (
-      <CheckBox
-        key={index}
-        title={checkbox.label}
-        iconType="material-community"
-        checkedIcon="checkbox-marked"
-        uncheckedIcon="checkbox-blank-outline"
-        checked={checkbox.checked}
-        onPress={() => handleCheckboxChange(index)}
-      />
-    ));
-  };
+ 
   const [checked, setChecked] = React.useState(true);
   const toggleCheckbox = () => setChecked(!checked);
   const [data, setData] = useState([
@@ -506,9 +470,9 @@ const VillageFormSurveyEdit = props => {
     if (data && formikRef.current) {
       const resultData = data?.item;
        const apiString = resultData?.drinkingWaterSource || '';
-       setInvolvedWaterSource(apiString);
+       setInvolvedWaterSourceEdit(apiString);
       
-      //  toggleCheckboxesFromString(apiString,checkboxes4);
+      
       const resetData = {
         district: resultData.district,
         block: resultData.block,
@@ -573,6 +537,8 @@ const VillageFormSurveyEdit = props => {
         values: {
           ...VillageFormInitialValues(props),
           ...resetData,
+         
+          
         },
       });
       const result = data?.item;
