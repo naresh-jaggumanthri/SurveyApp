@@ -21,6 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { save_family_data } from '../../../redux/action/DataAction';
 import { useDispatch } from 'react-redux';
 import UserProfileCard from '../../../components/commonComponents/UserProfileCard';
+import SyncModal from '../../../components/commonComponents/SyncModal';
 
 const FamilyFormList = (props) => {
   const { navigation } = props;

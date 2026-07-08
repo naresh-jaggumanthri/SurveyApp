@@ -59,13 +59,14 @@ const LoginScreen = props => {
       null,
       null,
       {
-        username: values.username,
-        password: values.password,
+        username: values?.username,
+        password: values?.password,
       },
       undefined,
     );
   
-
+    // Alert.alert('Login Response', JSON.stringify(res), [{text: 'OK'}]);
+    // return;
     if (res?.status == 'CODE_ERROR') {
       setLoading(false);
       AppOkAlert('Login Failed', () => {}, 'OK', APP_NAME);
@@ -118,6 +119,10 @@ const LoginScreen = props => {
       navigation.navigate(RouteName.HOME_SCREEN);
       return;
         } catch (e) {}
+    }else {
+      setLoading(false);
+      AppOkAlert('Login Failed,Invalid credentials', () => {}, 'OK', APP_NAME);
+      return;
     }
     setLoading(false);
   };
@@ -157,8 +162,10 @@ const LoginScreen = props => {
                     title={t('Mobile_Number')}
                     placeholder={t('Mobile_Number')}
                     onChangeText={value => {
-                      setName(value);
-                      setFieldValue('username', value);
+                      // Removes all spaces from the input string
+                    const cleanValue = value.replace(/\s/g, '');
+                      setName(cleanValue);
+                      setFieldValue('username', cleanValue);
                     }}
                     value={name}
                     // inputType="numeric"
@@ -175,12 +182,14 @@ const LoginScreen = props => {
                   placeholder={t('Password_Text')}
                   value={password}
                   onPress={() => {
+                   
                     onChangeText('TextInputPassword');
                   }}
                   maxLength={7}
-                  onChangeText={text => {
-                    setPassword(text);
-                    setFieldValue('password', text);
+                  onChangeText={value => {
+                     const cleanValue = value.replace(/\s/g, '');
+                    setPassword(cleanValue);
+                    setFieldValue('password', cleanValue);
                   }}
                   secureTextEntry={passwordVisibility}
                 />

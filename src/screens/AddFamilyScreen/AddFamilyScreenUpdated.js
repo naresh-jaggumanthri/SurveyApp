@@ -44,7 +44,7 @@ import api from '../../api';
 import { getMasterData } from '../Home/Tab/HomeHelper';
 
 
-const AddFamilyScreen = props => {
+const AddFamilyScreenUpdated = props => {
   const {navigation} = props;
   const {route} = useRoute();
   //   const { Colors } = useTheme();
@@ -71,15 +71,42 @@ const AddFamilyScreen = props => {
     loadEducationData(); //3
     loadSectorsData(); //7
     // Alert.alert('Success', JSON.stringify(loginData));
+    // const token = PubSub.subscribe('count', (msg, data) => {
+    //   console.log('Received count:', data);
+    //   setCount(data?.count);
+    //   setHeadName(data?.name);
+    //    familyMembers[0]?.name=data?.name;
+    //   setType(data?.type);
+    //   // familyMembers[0]?.name = data?.name;
+    //   setCurrentIndex(data?.count - 1);
+    // });
+
     const token = PubSub.subscribe('count', (msg, data) => {
-      console.log('Received count:', data);
-      setCount(data?.count);
-      setHeadName(data?.name);
-       familyMembers[0].name=data?.name;
-      setType(data?.type);
-      // familyMembers[0]?.name = data?.name;
-      setCurrentIndex(data?.count - 1);
-    });
+  console.log('Received count:', data);
+    
+  const targetCount = data?.count || 0;
+  setCount(targetCount);
+  setHeadName(data?.name);
+  setType(data?.type);
+
+  // 1. Update your local React state array cleanly using a shallow clone
+//   setFamilyMembers(prevMembers => {
+//     // Ensure we have at least an empty object at index 0 to avoid crashes
+//     const updated = prevMembers.length > 0 ? [...prevMembers] : [{}];
+//     updated[0] = { ...updated[0], name: data?.name || headName };
+    
+
+//     return updated;
+//   });
+familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
+  // 2. IMPORTANT: Update Formik's internal values array synchronously
+  // This keeps the input fields and Formik's submission object in sync
+//   setFieldValue(`familyMembers[0].name`, data?.name || '');
+// Alert.alert('Received count:', JSON.stringify(familyMembers[0].name));
+
+  // Set the current index securely
+  setCurrentIndex(targetCount > 0 ? targetCount - 1 : 0);
+});
 
     return () => {
       PubSub.unsubscribe(token);
@@ -334,23 +361,26 @@ const AddFamilyScreen = props => {
     interestInSkillDevelopment: null,
     sectorOfEngagementDuringMigration: '',
   }));
+  // Helper component to cleanly display inline formik errors
+  const ErrorMessage = ({ name, errors, touched }) => {
+    const error = errors?.familyMembers?.[currentIndex]?.[name];
+    const isTouched = touched?.familyMembers?.[currentIndex]?.[name];
+    if (error && isTouched) {
+      return <Text style={styles.errorText}>{error}</Text>;
+    }
+    return null;
+  };
   return (
     <Formik
       initialValues={{familyMembers: initialMembers}}
       validationSchema={validationSchema}
       onSubmit={values => {
-        console.log('Final Data:', values);
-        
-      
+        console.log('Final Data:', values);  
         if(type==1){
               PubSub.publish('familyData', values?.familyMembers);
-            //    Alert.alert('Form Submitted', JSON.stringify(values?.familyMembers));
-            //   navigation.goBack();
+           
          navigation.navigate(RouteName.FAMILY_SURVEY_TAB);
-//         navigation.reset({
-//   index: 0,
-//   routes: [{ name:RouteName.FAMILY_SURVEY_TAB}],
-// });
+
         return;
         }
          if(type==2){
@@ -376,30 +406,50 @@ const AddFamilyScreen = props => {
           <View style={Style.BgColorWhiteAll}>
             <ScrollView>
               <View style={styles.card}>
-                <Text>
+                <Text style={styles.title}>
                   {t('Household Member No.')} {currentIndex + 1}
                 </Text>
+
+                {/* SQUARE BOX PAGINATION */}
+                <View style={styles.paginationContainer}>
+                  {Array.from({length: count}).map((_, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.pageBox,
+                        currentIndex === index
+                          ? styles.activePageBox
+                          : styles.inactivePageBox,
+                      ]}
+                      onPress={() => setCurrentIndex(index)}>
+                      <Text
+                        style={[
+                          styles.pageText,
+                          currentIndex === index
+                            ? styles.activePageText
+                            : styles.inactivePageText,
+                        ]}>
+                        {index + 1}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
 
                 {/* NAME */}
                 <Input
                   title={t('Name of the Family Member')}
-                  value={headName || member?.name}
+                  value={familyMembers[currentIndex]?.name}
                   onChangeText={text => {
                     const cleaned = text.replace(/[^a-zA-Z\s.]/g, '');
                     setFieldValue(
                       `familyMembers[${currentIndex}].name`,
                       cleaned,
                     );
-                    // familyMembers[currentIndex]?.name=cleaned;
+                    familyMembers[currentIndex] = { ...familyMembers[currentIndex], name:cleaned};
                   }}
                   maxLength={30}
                 />
-                {errors.familyMembers[currentIndex]?.name && (
-                  <Text style={{color: 'red'}}>
-                    {errors.familyMembers[currentIndex].name}
-                  </Text>
-                )}
-
+                <ErrorMessage name="name" errors={errors} touched={touched} />
                 {/* AGE */}
                 <Input
                   title={t('AgeN')}
@@ -412,6 +462,7 @@ const AddFamilyScreen = props => {
                     )
                   }
                 />
+                <ErrorMessage name="age" errors={errors} touched={touched} />
 
                 {/* GENDER */}
                 <Spacing space={SH(15)} />
@@ -425,6 +476,7 @@ const AddFamilyScreen = props => {
                     setFieldValue(`familyMembers[${currentIndex}].gender`, val)
                   }
                 />
+                <ErrorMessage name="gender" errors={errors} touched={touched} />
 
                 {/* Educational Qualification */}
                 <Spacing space={SH(15)} />
@@ -450,6 +502,7 @@ const AddFamilyScreen = props => {
                     );
                   }}
                 />
+                <ErrorMessage name="educationalQualification" errors={errors} touched={touched} />
 
                 {/* Relationship with Head of Household */}
                 <Spacing space={SH(15)} />
@@ -475,7 +528,7 @@ const AddFamilyScreen = props => {
                     );
                   }}
                 />
-
+                <ErrorMessage name="relationshipWithHeadOfHousehold" errors={errors} touched={touched} />
                 
 
                 {/* labour Card*/}
@@ -493,6 +546,8 @@ const AddFamilyScreen = props => {
                     )
                   }
                 />
+                <ErrorMessage name="memberHasLabourCard" errors={errors} touched={touched} />
+
                 {/*Nirman Shramik Kalyan Yojana*/}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -510,6 +565,7 @@ const AddFamilyScreen = props => {
                     )
                   }
                 />
+                <ErrorMessage name="memberCoveredUnderNSKY" errors={errors} touched={touched} />
 
                 {/* Destination State */}
                 <Spacing space={SH(15)} />
@@ -534,6 +590,7 @@ const AddFamilyScreen = props => {
                     );
                   }}
                 />
+                <ErrorMessage name="destinationState" errors={errors} touched={touched} />
                 {/* Nature/Sector of engagement */}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -562,7 +619,7 @@ const AddFamilyScreen = props => {
                     );
                   }}
                 />
-
+                <ErrorMessage name="sectorOfEngagementDuringMigration" errors={errors} touched={touched} />
                 {/* migrated */}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -590,6 +647,7 @@ const AddFamilyScreen = props => {
                 }
                   }}
                 />
+                <ErrorMessage name="migratedInLast3Years" errors={errors} touched={touched} />
 
                 {/* Period of migration */}
                 {member?.migratedInLast3Years &&<Spacing space={SH(15)} />}
@@ -614,6 +672,7 @@ const AddFamilyScreen = props => {
                     );
                   }}
                 />}
+                <ErrorMessage name="periodOfMigration" errors={errors} touched={touched} />
                 {/* Monthly Income */}
                 {member?.migratedInLast3Years && <Spacing space={SH(15)} />}
                 {member?.migratedInLast3Years && <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -642,6 +701,7 @@ const AddFamilyScreen = props => {
                     );
                   }}
                 />}
+                <ErrorMessage name="monthlyRemittanceDuringMigration" errors={errors} touched={touched}/>
 
                 {/*skill development*/}
                 <Spacing space={SH(15)} />
@@ -660,6 +720,7 @@ const AddFamilyScreen = props => {
                     )
                   }
                 />
+                <ErrorMessage name="interestInSkillDevelopment" errors={errors} touched={touched}/>
 
                 {/* CHECKBOX EXAMPLE */}
                 {/* {['DDUGKY', 'RSETI', 'Other'].map((item, i) => (
@@ -728,7 +789,25 @@ const AddFamilyScreen = props => {
                   ) : (
                     <TouchableOpacity
                       style={AnalyaticsStyles.SubmitButton}
-                      onPress={handleSubmit}>
+                      onPress={()=>{
+                        // Alert.alert("error",JSON.stringify(errors));
+                        Alert.alert(
+                          t('Confirmation'),
+                          t('Are you sure you want to submit the family members data?'),
+                          [
+                            {
+                              text: t('Cancel'),
+                              style: 'cancel',
+                            },
+                            {
+                              text: t('Submit'),
+                              onPress: () => handleSubmit(),
+                            },
+                          ],
+                          { cancelable: false }
+                        );
+                        // handleSubmit()
+                        }}>
                       <Text style={AnalyaticsStyles.PreviousTextStyle}>
                         {t('Add member')}
                       </Text>
@@ -758,16 +837,54 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   title: {
-    fontSize: 16,
+    fontSize: SH(16),
     fontWeight: '600',
     marginBottom: 12,
     color: '#333',
   },
-
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 16,
   },
+  paginationContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginVertical: 12,
+  },
+  pageBox: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 6,
+    borderWidth: 1,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  activePageBox: {
+    backgroundColor: '#007AFF', // You can swap this with Colors.themeColor if available
+    borderColor: '#007AFF',
+  },
+  inactivePageBox: {
+    backgroundColor: '#F5F5F5',
+    borderColor: '#E0E0E0',
+  },
+  pageText: {
+    fontSize: SH(14),
+    fontWeight: '600',
+  },
+  activePageText: {
+    color: '#FFFFFF',
+  },
+  inactivePageText: {
+    color: '#333333',
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 4,
+    fontSize: SH(12),
+    marginLeft: SH(10),
+  }
 });
-export default AddFamilyScreen;
+export default AddFamilyScreenUpdated;

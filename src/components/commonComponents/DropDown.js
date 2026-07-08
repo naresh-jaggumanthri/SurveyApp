@@ -31,8 +31,8 @@ function DropdownComponent({
                     lineHeight: SF(17),
                     color: Colors.black_text_color,
                     fontWeight: '400',
-                    padding: SH(15),
-                    height: SH(47),
+                    padding: SH(20),
+                    height: SH(55),
                     ...dropdownStyle
                 },
                 icon: {
@@ -47,13 +47,14 @@ function DropdownComponent({
                     ...labelStyle
                 },
                 placeholderStyle: {
-                    fontSize: SF(18),
-                    lineHeight: SF(21),
+                    fontSize: SF(15),
+                    lineHeight: SF(25),
                     color: Colors.gray_text_color,
                     ...placeholderStyle
                 },
                 selectedTextStyle: {
-                    fontSize: SF(18),
+                    fontSize: SF(16),
+                    lineHeight: SF(25),
                     color: Colors.theme_background,
                     ...selectedTextStyle
                 },

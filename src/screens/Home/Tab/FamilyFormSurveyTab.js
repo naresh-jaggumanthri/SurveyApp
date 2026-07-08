@@ -179,7 +179,7 @@ const FamilyFormSurveyTab = props => {
     // if (isFocused) {
 
     const token = PubSub.subscribe('familyData', (msg, data) => {
-      // Alert.alert('Family Data Received', JSON.stringify(data));
+      //  Alert.alert('Family Data Received', JSON.stringify(data));
       setFamilyMembers(data);
     });
 
@@ -956,7 +956,10 @@ const handleNext = () => {
   const onoknutton = () => {
     //  Alert.alert("Analytics Screen",JSON.stringify(familyMembers));
     // setAlertMessage(false);
-    navigation.navigate(RouteName.HOME_SCREEN);
+    navigation.navigate('HomeScsreenTabAll', {
+        screen: RouteName.HOME_TAB,
+      });
+   
   };
   const Onpressfunction = e => {
     navigation.toggleDrawer();
@@ -1636,12 +1639,16 @@ const handleNext = () => {
                         width={SW(345)}
                         labelField="label"
                         valueField="value"
-                        value={
-                          ifscCode ||
-                          values?.householdBasicProfile?.ifscCodeOrBranch
-                        }
-                        placeholder={
-                          values?.householdBasicProfile?.bankName ||
+                        // value={
+                        //   ifscCode ||
+                        //   values?.householdBasicProfile?.ifscCodeOrBranch
+                        // }
+                        value={ifscCode}
+                        // placeholder={
+                        //   values?.householdBasicProfile?.bankName ||
+                        //   t('Select IFSC Code')
+                        // }
+                         placeholder={
                           t('Select IFSC Code')
                         }
                         onChange={obj => {
@@ -1803,6 +1810,11 @@ const handleNext = () => {
                             numericText == '' ? '0' : numericText,
                             10,
                           );
+                          if(age==0){
+                            setFamilyMembers([]);
+                            setFamilyMemberCount(0);
+                            return;
+                          }
 
                           // Optional: Age range validation (1–120)
                           if (!numericText) {
@@ -1825,10 +1837,7 @@ const handleNext = () => {
                         //   text,
                         // );
                       }}
-                      value={
-                        values?.householdBasicProfile?.totalFamilyMembers ||
-                        familyMemberCount?.toString()
-                      }
+                      value={familyMemberCount?.toString()||values?.householdBasicProfile?.totalFamilyMembers}
                       inputType="numeric"
                       maxLength={3}
                       titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -1845,9 +1854,9 @@ const handleNext = () => {
                         </Text>
                       </TouchableOpacity>
                     )}
-                    <Text style={{fontWeight: 'bold'}}>
+                     {familyMemberCount > 0 && (<Text style={{fontWeight: 'bold'}}>
                       {t('House hold Members')}:
-                    </Text>
+                    </Text>)}
                     {familyMembers?.map((m, i) => (
                       <Text key={i}>
                         {i + 1}. {m.name} | Age: {m.age} | Gender: {m.gender}
@@ -2884,9 +2893,7 @@ const handleNext = () => {
                       </Text>
                       <View style={{flexDirection:'column'}}>
                                            <View style={AnalyaticsStyles.PaddingHori}>
-                                             <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                               36. {t('Click on the icon to capture GEO location')}
-                                             </Text>
+                                           
                                              <View style={Style.FlexEditView}>
                                                <TouchableOpacity
                                                  onPress={() =>
@@ -4076,6 +4083,7 @@ const handleNext = () => {
         setModalVisible={setAlertVisible}
         onPressCancel={() => setAlertVisible(!alertVisible)}
         onPress={() => {
+
           setAlertVisible(!alertVisible), onoknutton();
         }}
         buttonText={t('Ok')}

@@ -41,7 +41,7 @@ function Inputs({
         input_style: {
           width: '100%',
           borderColor: colorsset.light_gray_text_color,
-          fontSize: SF(16),
+          fontSize: SF(15),
           fontWeight: '600',
           borderColor: Colors.theme_background,
           marginBottom: SH(0),

@@ -338,6 +338,7 @@
 "Surveyor Name":"Surveyor Name *",
 "Survey Date and Time":"Survey Date and Time *",
 "Add Member":"Add Member *",
+"Add member":"Add Member",
 "Name of the Family Member":"Name of the Household Member (Only Major Family members above 18 yrs age) *",
 "Age":"Age *",
 "Gender":"Gender *",
@@ -418,6 +419,6 @@
 "Demographic Profile":"Demographic Profile",
 "Bank Account Details of Head of Household":"Bank Account Details of head of household",
 "Add family Member":"Individual Household Members Details",
-"AgeN":"Age (Yrs) between 18-19 Yrs *"
+"AgeN":"Age (Yrs) between 18-90 Yrs *"
   }
 }

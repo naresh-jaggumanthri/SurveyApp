@@ -14,7 +14,8 @@ import FamilyFormList from '../screens/Home/Tab/FamilyFormList';
 import VillageFormList from '../screens/Home/Tab/VillageFormList';
 import FamilyFormSurveyEdit from '../screens/Home/Tab/FamilyFormSurveyEdit';
 import VillageFormSurveyEdit from '../screens/Home/Tab/VillageFormSurveyEdit';
-import { AddFamilyScreen } from '../screens/AddFamilyScreen';
+// import { AddFamilyScreen } from '../screens/AddFamilyScreen';
+import AddFamilyScreenUpdated from '../screens/AddFamilyScreen/AddFamilyScreenUpdated';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -289,6 +290,28 @@ function VillageSurveyFormScreenStack(props) {
           ),
         }}
       />
+      <Stack.Screen
+        name={t("Side_Title_1")}
+        component={Home}
+        title="Home"
+        options={{
+          headerStyle: {
+            backgroundColor: Colors.theme_background,
+          },
+          headerTitleStyle:{
+            fontWeight:"bold",
+            fontSize:SF(20),
+            color:"white"
+          },
+          ...HeaderArray,
+          headerLeft: () => (
+            <HeaderLeftMenuIcon {...props} />
+          ),
+          headerRight: () => (
+            <ColorPicker />
+          ),
+        }}
+      />
     </Stack.Navigator>
   );
 }
@@ -298,7 +321,7 @@ function AddFamilyScreenStack(props) {
     <Stack.Navigator initialRouteName="Offers">
       <Stack.Screen
         name={t("Add family Member")}
-        component={AddFamilyScreen}
+        component={AddFamilyScreenUpdated}
         options={{
           ...HeaderArray,
           headerStyle: {

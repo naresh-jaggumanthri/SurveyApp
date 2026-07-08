@@ -6,14 +6,14 @@ export default AnalyaticsStyle = (Colors) => StyleSheet.create({
     paddingHorizontal: SH(10)
   },
   PleaseEnterDate: {
-    fontSize: SF(18),
+    fontSize: SF(16),
     color: Colors.black_text_color,
     fontFamily: Fonts.Poppins_Medium,
     paddingLeft: SH(20),
     fontWeight: '700',
   },
   PleaseEnterDateTwo: {
-    fontSize: SF(18),
+    fontSize: SF(16),
     color: Colors.black_text_color,
     fontFamily: Fonts.Poppins_Medium,
     fontWeight: '700',

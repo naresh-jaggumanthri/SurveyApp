@@ -5,6 +5,7 @@ import { store, persistor } from './src/redux/store';
 import RootNavigator from './src/routes/RootNavigator';
 import { PermissionsAndroid } from 'react-native';
 import { AppDataSource } from './src/database/database';
+import InternetStatusModal from './src/components/InternetStatusModal';
 
 const App = () => {
 useEffect(()=>{
@@ -39,6 +40,7 @@ requestLocationPermission();
   };
   return (
     <Provider store={store}>
+      <InternetStatusModal/>
       <PersistGate loading={null} persistor={persistor}>
         <RootNavigator />
       </PersistGate>
