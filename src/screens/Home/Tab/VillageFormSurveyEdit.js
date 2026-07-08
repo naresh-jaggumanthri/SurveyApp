@@ -6,7 +6,7 @@ import React, {
   useLayoutEffect,
   useCallback,
 } from 'react';
-import {useTheme} from '@react-navigation/native';
+import {useIsFocused, useTheme} from '@react-navigation/native';
 import {
   View,
   ScrollView,
@@ -243,42 +243,37 @@ const VillageFormSurveyEdit = props => {
   //   ]);
   const [checkboxes4, setCheckboxes4] = useState([]);
   const loadWaterSourceData = async () => {
-   
-    let token = loginData?.token;
-    
-    const currentLanguage = i18n.language;
+  let token = loginData?.token;
+  const currentLanguage = i18n.language;
      
-    //  const language = await getLanguage();
-    const waterSources = await getMasterData(
-      'drinkingWaterSource',
-      5, // The index you assigned in saveMasters
-      api.master.getDrinkingWaterSource,
-      token,
-    );
+  const waterSources = await getMasterData(
+    'drinkingWaterSource',
+    5, 
+    api.master.getDrinkingWaterSource,
+    token,
+  );
    
-    // Alert.alert('waterSources', JSON.stringify(waterSources));
-    const result = waterSources.map(waterSource => {
-      return {
-        id: waterSource.id,
-        label:
-          currentLanguage === 'en'
-            ? waterSource.sourceName
-            : waterSource.sourceNameLocal,
-        value:
-          currentLanguage === 'en'
-            ? waterSource.sourceName
-            : waterSource.sourceNameLocal,
-      };
-    }); // Sort alphabetically
-  const activeLabels=involvedWaterSourceEdit ;
-  // ? involvedWaterSourceEdit.split(',').map(label => label.trim()) : [];
-   const updatedCheckboxes = result.map(checkbox => ({
+  const result = waterSources.map(waterSource => {
+    return {
+      id: waterSource.id,
+      label: currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+      value: currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+    };
+  });
+
+  // FIX: Safely split the comma-separated string into a clean array, defaulting to an empty array if null
+  const activeLabels = involvedWaterSourceEdit 
+    ? involvedWaterSourceEdit.split(',').map(label => label.trim()) 
+    : [];
+
+  const updatedCheckboxes = result.map(checkbox => ({
     ...checkbox,
     label: checkbox.label,
-    checked: activeLabels.includes(checkbox.label)
+    checked: activeLabels.includes(checkbox.label) // Now securely checks against an array
   }));
-    setCheckboxes4(updatedCheckboxes);
-  };
+
+  setCheckboxes4(updatedCheckboxes);
+};
   const handleCheckboxChange = index => {
     const updatedCheckboxes = [...checkboxes];
     updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
@@ -429,10 +424,11 @@ const VillageFormSurveyEdit = props => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [location, setLocation] = useState(false);
   const formikRef = useRef(null);
-  useLayoutEffect(() => {
+  const isFocused=useIsFocused();
+  useEffect(() => {
     var token = PubSub.subscribe('VillageItem', mySubscriber);
     formikRef.current.resetForm({values: undefined});
-  }, []);
+  }, [isFocused]);
   const toggleCheckbox4 = label => {
     const labelsToToggle = label.split(',').map(l => l.trim());
     setCheckboxes4(prev => {
@@ -460,11 +456,11 @@ const VillageFormSurveyEdit = props => {
  
   var mySubscriber = function (msg, data) {
     // console.log(msg, data);
-    const drinkingWater = data?.item?.drinkingWaterSource || '';
-    // Alert.alert("Drinking Water Source",JSON.stringify(drinkingWater));
-    toggleCheckbox4(drinkingWater || '');
-    const labelsArray2 = drinkingWater.split(',').map(s => s.trim());
-    setDrinkingWaterSource(labelsArray2);
+    // const drinkingWater = data?.item?.drinkingWaterSource || '';
+    //  Alert.alert("Drinking Water Source",JSON.stringify(drinkingWater));
+    // toggleCheckbox4(drinkingWater || '');
+    // const labelsArray2 = drinkingWater.split(',').map(s => s.trim());
+    // setDrinkingWaterSource(labelsArray2);
    
     setEditData(data);
     if (data && formikRef.current) {
