@@ -971,9 +971,11 @@ const FamilyFormSurveyEdit = props => {
     logout: t('Survey_Title_33'),
   };
   const onoknutton = () => {
-    //Alert.alert("Analytics Screen",JSON.stringify(familyMembers));
-    // navigation.navigate(RouteName.ANALYTICS_SCREEN);
-    navigation.navigate(RouteName.HOME_SCREEN);
+   
+     navigation.navigate('HomeScsreenTabAll', {
+            screen: RouteName.HOME_TAB,
+          });
+       
   };
   const Onpressfunction = e => {
     navigation.toggleDrawer();

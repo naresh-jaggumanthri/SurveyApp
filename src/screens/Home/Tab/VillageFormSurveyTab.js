@@ -640,7 +640,7 @@ const VillageFormSurveyTab = props => {
       setLoading(false);
       setAlertVisible(true);
       setAlertMessage(
-        t('Survey_Submit_Successfully') + ' with Local Id :' + localId,
+        t('The offline village data has been saved successfully.') + ' with Local Id :' + localId,
       );
       return;
     }
@@ -666,7 +666,7 @@ const VillageFormSurveyTab = props => {
     if (response != null && response != undefined && response.success) {
       setLoading(false);
       setAlertVisible(true);
-      setAlertMessage(t('Survey_Submit_Successfully_village'));
+      setAlertMessage(t('The village data has been saved successfully.'));
     } else {
       setLoading(false);
       setAlertVisible(true);
@@ -1000,90 +1000,7 @@ const VillageFormSurveyTab = props => {
                       <Text style={AnalyaticsStyles.TitleStyle}>
                         {'B. ' + t('Basic Infrastructure & Amenities')}
                       </Text>
-                      {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        9. {t('Are internal village roads pucca (concrete)?')}
-                      </Text>
-                      <RadioButton
-                        arrayData={selfHelpData}
-                        onChangeText={text => {
-                          setFieldValue('InternalVillageRoads', text);
-                          setIsConcreteRoads(text);
-                        }}
-                        value={
-                          editData != undefined
-                            ? values?.InternalVillageRoads
-                            : isConcreteRoads
-                        }
-                      /> */}
-                      {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_39")}</Text>
-                {renderCheckboxes()} */}
-                      {/* <Spacing space={SH(5)} /> */}
-                      {/* <Text style={{color: 'red'}}>
-                        {errors?.InternalVillageRoads}
-                      </Text> */}
-                      {/* <Spacing space={SH(5)} />
-                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        10.{' '}
-                        {t(
-                          'If No or Partially, requirement of internal village pucca roads (in RMT)?',
-                        )}
-                      </Text>
-                      <RadioButton
-                        arrayData={waterSourceData}
-                        onChangeText={text => {
-                          setFieldValue(
-                            'InternalVillageRoadsRequirement',
-                            text,
-                          );
-                          setInternalVillageRoadsRequirement(text);
-                        }}
-                        value={
-                          editData != undefined
-                            ? values?.InternalVillageRoadsRequirement
-                            : InternalVillageRoadsRequirement
-                        }
-                      />
-                      <Text style={{color: 'red'}}>
-                        {errors?.InternalVillageRoadsRequirement}
-                      </Text>
-                      <Spacing space={SH(5)} />
-                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        11. {t('Are internal drains available?')}
-                      </Text>
-                      <RadioButton
-                        arrayData={selfHelpData}
-                        onChangeText={text => {
-                          setFieldValue('InternalDrainsAvailable', text);
-                          setInternalDrainsAvailable(text);
-                        }}
-                        value={
-                          editData != undefined
-                            ? values?.InternalDrainsAvailable
-                            : InternalDrainsAvailable
-                        }
-                      />
-                      <Text style={{color: 'red'}}>
-                        {errors?.InternalDrainsAvailable}
-                      </Text>
-                      {(values?.InternalDrainsAvailable||InternalDrainsAvailable)&&<Spacing space={SH(5)} />}
-                      {(values?.InternalDrainsAvailable||InternalDrainsAvailable)&&<Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        {t('If Yes, Are drains properly functional?')}
-                      </Text>}
-                      {(values?.InternalDrainsAvailable||InternalDrainsAvailable)&&<RadioButton
-                        arrayData={selfHelpData}
-                        onChangeText={text => {
-                          setDrainsProperlyFunctional(text);
-                          setFieldValue('DrainsProperlyFunctional', text);
-                        }}
-                        value={
-                          editData != undefined
-                            ? values?.DrainsProperlyFunctional
-                            : DrainsProperlyFunctional
-                        }
-                      />}
-                      {(values?.InternalDrainsAvailable||InternalDrainsAvailable)&&<Text style={{color: 'red'}}>
-                        {errors?.DrainsProperlyFunctional}
-                      </Text>} */}
+                     
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         9. {t('Is the village electrified?')}
@@ -1328,15 +1245,6 @@ const VillageFormSurveyTab = props => {
                         inputType={'numeric'}
                         maxLength={6}
                       />
-
-                      {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("What are the sources of Irrigation?")}</Text>
-                {renderCheckboxes2()}
-                {<Spacing space={SH(5)}/>}
-
-
-                <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Whether involved in livestock activity?")}</Text>
-                {renderCheckboxes3()}
-                {<Spacing space={SH(5)}/>} */}
                     </View>
                   )}
                   {currentQuestion === 4 && (
@@ -1349,18 +1257,6 @@ const VillageFormSurveyTab = props => {
                         17. {t('Main source of drinking water?')}
                       </Text>
                       {renderCheckboxes4()}
-                      {/* <RadioButton
-                        arrayData={waterSourceData}
-                        onChangeText={text => {
-                          setFieldValue('DrinkingWaterSource', text);
-                          setDrinkingWaterSource(text);
-                        }}
-                        value={
-                          editData != undefined
-                            ? values?.DrinkingWaterSource
-                            : DrinkingWaterSource
-                        }
-                      /> */}
                       <Text style={{color: 'red'}}>
                         {errors?.drinkingWaterSource}
                       </Text>
@@ -1567,25 +1463,6 @@ const VillageFormSurveyTab = props => {
                       <Text style={AnalyaticsStyles.TitleStyle}>
                         {'G. ' + t('Livelihood & Service Infrastructure')}
                       </Text>
-                      {/* <Spacing space={SH(5)} />
-                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        33. {t('Is mobile network coverage available?')}
-                      </Text>
-                      <RadioButton
-                        arrayData={selfHelpData}
-                        onChangeText={text => {
-                          setMobileNetworkCoverage(text);
-                          setFieldValue('MobileNetworkCoverage', text);
-                        }}
-                        value={
-                          editData != undefined
-                            ? values.MobileNetworkCoverage
-                            : MobileNetworkCoverage
-                        }
-                      />
-                      <Text style={{color: 'red'}}>
-                        {errors?.MobileNetworkCoverage}
-                      </Text> */}
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         27.{' '}
@@ -1608,21 +1485,6 @@ const VillageFormSurveyTab = props => {
                       <Text style={{color: 'red'}}>
                         {errors?.digitalConnectivity}
                       </Text>
-                      {/* <Spacing space={SH(5)} />
-                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                        35. {t('Is there a drying yard available?')}
-                      </Text>
-                      <RadioButton
-                        arrayData={selfHelpData}
-                        onChangeText={text => {
-                          setDryingYard(text);
-                          setFieldValue('DryingYard', text);
-                        }}
-                        value={
-                          editData != undefined ? values.DryingYard : DryingYard
-                        }
-                      />
-                      <Text style={{color: 'red'}}>{errors?.DryingYard}</Text> */}
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         28. {t('Is there a PDS (ration shop) in the village?')}
@@ -1640,27 +1502,6 @@ const VillageFormSurveyTab = props => {
                         }
                       />
                       <Text style={{color: 'red'}}>{errors?.pdsAvailable}</Text>
-                      {/* <Spacing space={SH(15)} /> */}
-                      {/*values?.PDSAvailable == false && (
-                        <Input
-                          title={t(
-                            'If No, distance of PDS (ration shop) from the village (in km)?',
-                          )}
-                          placeholder={t(
-                            'If No, distance of PDS (ration shop) from the village (in km)?',
-                          )}
-                          onChangeText={text => {
-                            setFieldValue('DistanceOfPDS', text);
-                          }}
-                          value={values?.DistanceOfPDS}
-                          maxLength={6}
-                          inputType={'numeric'}
-                          titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                        />
-                      )*/}
-                      {/* <Text style={{color: 'red'}}>
-                        {errors?.distanceOfPDS}
-                      </Text> */}
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         29.{' '}
@@ -1754,7 +1595,7 @@ const VillageFormSurveyTab = props => {
                         onChangeText={text => {
                           // [^a-zA-Z.] means: "Match anything that is NOT a letter or a dot"
                           // The 'g' flag replaces all occurrences
-                          const filtered = text.replace(/[^a-zA-Z.]/g, '');
+                         const filtered = text.replace(/[^a-zA-Z.\s]/g, '');
 
                           setFieldValue('respondentName', filtered);
                         }}
