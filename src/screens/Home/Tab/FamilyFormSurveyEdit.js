@@ -56,9 +56,10 @@ import {HouseholdSurvey} from '../../../database/entities/HouseholdSurvey';
 import {v4 as uuidv4} from 'uuid';
 import {AppOkAlert} from '../../../utils/AlertHelper';
 import {getMasterLocationData} from '../../Authantication/LoginScreen/LoginHelper';
+import { getMasterData } from './HomeHelper';
 
 const FamilyFormSurveyEdit = props => {
-  const {t} = useTranslation();
+  const {t,i18n} = useTranslation();
   const {navigation} = props;
 
   const stateArray = {
@@ -498,6 +499,8 @@ const FamilyFormSurveyEdit = props => {
     setSourcesOfIrrigation(labelsArray3);
     setLocalIfscCode(data?.item?.householdBasicProfile?.ifsCcodeOrBranch);
     setEditData(data);
+    
+    const apiSchemesData= data?.item?.householdEntitlement?.kishanSchemeCoverage;
     if (data && formikRef.current) {
       formikRef.current.resetForm({
         values: {
@@ -520,7 +523,7 @@ const FamilyFormSurveyEdit = props => {
 
       //   },
       // });
-      const result = data?.item;
+      loadSchemesData(apiSchemesData);
     }
   };
 
@@ -533,7 +536,7 @@ const FamilyFormSurveyEdit = props => {
     loadPrivateLandData();
     loadIrrigationData();
     loadLiveStockData();
-    loadSchemesData();
+    // loadSchemesData();
     getLocation();
     // Alert.alert("hi");
     getMasterState();
@@ -707,7 +710,7 @@ const FamilyFormSurveyEdit = props => {
   //   // Add more options as needed
   // ]);
   const [schemeData, setSchemeData] = useState([]);
-  const loadSchemesData = async () => {
+  const loadSchemesData = async (apiSchemesData) => {
     let token = loginData?.token;
     const currentLanguage = i18n.language;
     //  const language = await getLanguage();
@@ -717,6 +720,7 @@ const FamilyFormSurveyEdit = props => {
       api.master.getKishanScheme,
       token,
     );
+   
     const result = schemes.map(scheme => {
       return {
         id: scheme.id,
@@ -729,10 +733,20 @@ const FamilyFormSurveyEdit = props => {
 
     // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
     let finalResult = result.filter(scheme => scheme.id !== 3);
+
     setSchemeData(finalResult);
-    setCheckboxes5(
-      finalResult.map(scheme => ({label: scheme.label, checked: false})),
-    );
+     const activeLabels = apiSchemesData
+      ? apiSchemesData.split(',').map(label => label.trim())
+      : [];
+     Alert.alert("activeLabels",JSON.stringify(activeLabels));
+
+    const updatedCheckboxes = finalResult.map(checkbox => ({
+      ...checkbox,
+      label: checkbox.label,
+      checked: activeLabels.includes(checkbox.label), // Now securely checks against an array
+    }));
+
+    setCheckboxes5(updatedCheckboxes);
   };
 
   const toggleCheckbox5 = label => {
@@ -822,6 +836,7 @@ const FamilyFormSurveyEdit = props => {
       />
     ));
   };
+
   const renderCheckboxes5 = () => {
     return checkboxes5.map((checkbox, index) => (
       <CheckBox
@@ -835,6 +850,7 @@ const FamilyFormSurveyEdit = props => {
       />
     ));
   };
+
   const [checked, setChecked] = React.useState(true);
   const toggleCheckbox = () => setChecked(!checked);
   const [data, setData] = useState([
