@@ -53,12 +53,13 @@ import Loader from '../../../components/commonComponents/Loader';
 import DeviceHelper from '../../../utils/DeviceHelper';
 import {v4 as uuidv4} from 'uuid';
 import {getMasterLocationData} from '../../Authantication/LoginScreen/LoginHelper';
-import { getMasterData } from './HomeHelper';
+import {getMasterData} from './HomeHelper';
 // import { VillageFormSurveyTab } from '.';
 
 const VillageFormSurveyEdit = props => {
-   const {t, i18n} = useTranslation();
+  const {t, i18n} = useTranslation();
   const {navigation} = props;
+  const {villageData} = useSelector(state => state.DataReducer) || {};
 
   const stateArray = {
     name: '',
@@ -67,30 +68,46 @@ const VillageFormSurveyEdit = props => {
     QuestionOne: '',
     about: '',
   };
-   const isFocused=useIsFocused();
+  const isFocused = useIsFocused();
   const {loginData} = useSelector(state => state.DataReducer) || {};
   useEffect(() => {
+  let token;
+
+  try {
+    // Alert.alert("villageData",JSON.stringify(villageData));
+    // 1. Clear the Formik form immediately if focused
+    if (isFocused && formikRef.current) {
+      formikRef.current.resetForm({ values: undefined });
+    }
+
+    // 2. Defer subscription to the next tick so Formik reset finishes first
+    const timer = setTimeout(() => {
+      //token = PubSub.subscribe('VillageItem', mySubscriber);
+      mySubscriber('VillageItem', villageData);
+    }, 0);
+
+    // CLEANUP
+    return () => {
+      clearTimeout(timer);
+      if (token) {
+        PubSub.unsubscribe(token);
+      }
+    };
+  } catch (error) {
+    console.error('Error in subscription', error.message);
+  }
+}, [isFocused, mySubscriber]);
+
+  useEffect(() => {
+   
     getMasterState();
   }, []);
 
-  useEffect(() => {
-  // Subscribe to the channel
-  const token = PubSub.subscribe('VillageItem', mySubscriber);
-  
-  // Clear the Formik form when focus changes if needed
-  if (isFocused && formikRef.current) {
-    formikRef.current.resetForm({ values: undefined });
-  }
-
-  // CLEANUP: Unsubscribe when component unmounts or focus changes
-  return () => {
-    PubSub.unsubscribe(token);
-  };
-}, [isFocused]);
+ 
   const [state, setState] = useState(stateArray);
 
-   const [involvedWaterSource, setInvolvedWaterSource] = useState(null);
-   const [involvedWaterSourceEdit, setInvolvedWaterSourceEdit] = useState(null);
+  const [involvedWaterSource, setInvolvedWaterSource] = useState(null);
+  const [involvedWaterSourceEdit, setInvolvedWaterSourceEdit] = useState(null);
 
   const [blocks, setBlocks] = useState([]);
   const [districts, setDistrict] = useState([]);
@@ -257,50 +274,52 @@ const VillageFormSurveyEdit = props => {
   //     // Add more options as needed
   //   ]);
   const [checkboxes4, setCheckboxes4] = useState([]);
-  const loadWaterSourceData = async (apiString) => {
-  let token = loginData?.token;
-  const currentLanguage = i18n?.language;
- 
-     
-  const waterSources = await getMasterData(
-    'drinkingWaterSource',
-    5, 
-    api.master.getDrinkingWaterSource,
-    token,
-  );
-   
-  const result = waterSources.map(waterSource => {
-    return {
-      id: waterSource.id,
-      label: currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
-      value: currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
-    };
-  });
+  const loadWaterSourceData = async apiString => {
+    let token = loginData?.token;
+    const currentLanguage = i18n?.language;
 
-  // FIX: Safely split the comma-separated string into a clean array, defaulting to an empty array if null
-  
-  const activeLabels = apiString 
-    ? apiString.split(',').map(label => label.trim()) 
-    : [];
-  // Alert.alert("activeLabels",JSON.stringify(activeLabels));
-    
-   
+    const waterSources = await getMasterData(
+      'drinkingWaterSource',
+      5,
+      api.master.getDrinkingWaterSource,
+      token,
+    );
 
-  const updatedCheckboxes = result.map(checkbox => ({
-    ...checkbox,
-    label: checkbox.label,
-    checked: activeLabels.includes(checkbox.label) // Now securely checks against an array
-  }));
+    const result = waterSources.map(waterSource => {
+      return {
+        id: waterSource.id,
+        label:
+          currentLanguage === 'en'
+            ? waterSource.sourceName
+            : waterSource.sourceNameLocal,
+        value:
+          currentLanguage === 'en'
+            ? waterSource.sourceName
+            : waterSource.sourceNameLocal,
+      };
+    });
 
-  setCheckboxes4([...updatedCheckboxes]);
-   
-};
+    // FIX: Safely split the comma-separated string into a clean array, defaulting to an empty array if null
+
+    const activeLabels = apiString
+      ? apiString.split(',').map(label => label.trim())
+      : [];
+    // Alert.alert("activeLabels",JSON.stringify(activeLabels));
+
+    const updatedCheckboxes = result.map(checkbox => ({
+      ...checkbox,
+      label: checkbox.label,
+      checked: activeLabels.includes(checkbox.label), // Now securely checks against an array
+    }));
+
+    setCheckboxes4([...updatedCheckboxes]);
+  };
   const handleCheckboxChange = index => {
     const updatedCheckboxes = [...checkboxes];
     updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
     setCheckboxes(updatedCheckboxes);
   };
- 
+
   const [checked, setChecked] = React.useState(true);
   const toggleCheckbox = () => setChecked(!checked);
   const [data, setData] = useState([
@@ -445,8 +464,8 @@ const VillageFormSurveyEdit = props => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [location, setLocation] = useState(false);
   const formikRef = useRef(null);
- 
- 
+  const [uniqueId, setUniqueId] = useState(null);
+
   const toggleCheckbox4 = label => {
     const labelsToToggle = label.split(',').map(l => l.trim());
     setCheckboxes4(prev => {
@@ -471,93 +490,93 @@ const VillageFormSurveyEdit = props => {
       });
     });
   };
- 
-  const mySubscriber = (msg, data)=>{
-    try{
-  
-    setEditData(data);
-    if (data && formikRef.current) {
-      const resultData = data?.item;
-       const apiString = resultData?.drinkingWaterSource || '';
-       setInvolvedWaterSourceEdit(apiString);
-       
-      
-      const resetData = {
-        district: resultData.district,
-        block: resultData.block,
-        gramPanchayat: resultData.gramPanchayat,
-        revenueVillage: resultData.revenueVillage,
-        totalHouseholds: resultData.totalHouseholds,
-        malePopulation: resultData.malePopulation,
-        femalePopulation: resultData.femalePopulation,
-        // internalVillageRoads: resultData.internalVillageRoads,
-        // internalVillageRoadsRequirement:
-        //   resultData.internalVillageRoadsRequirement,
-        // internalDrainsAvailable: resultData.internalDrainsAvailable,
-        // drainsProperlyFunctional: resultData.drainsProperlyFunctional,
-        isElectrified: resultData.isElectrified,
-        streetLightingAvailable: resultData.streetLightingAvailable,
-        streetLightingType: resultData.streetLightingType,
-        villageConnectedToGP: resultData.villageConnectedToGP,
-        lengthAllWeatherRoadToGP: resultData.lengthAllWeatherRoadToGP,
-        gpConnectedToPWDOrHighway: resultData.gpConnectedToPWDOrHighway,
-        lengthAllWeatherRoadToHighway: resultData.lengthAllWeatherRoadToHighway,
-        menInMigration: resultData.menInMigration,
-        womenInMigration: resultData.womenInMigration,
-        TotalPersonsInMigration: resultData.totalPersonsInMigration,
-        minorChildrenInMigration: resultData.minorChildrenInMigration,
-        drinkingWaterSource: resultData.drinkingWaterSource,
-        allHouseholdsWithToilets: resultData.allHouseholdsWithToilets,
-        anganwadiCentre: resultData.anganwadiCentre,
-        primarySchoolAvailable: resultData.primarySchoolAvailable,
-        secondarySchoolWithin3km: resultData.secondarySchoolWithin3km,
-        subHealthCentre: resultData.subHealthCentre,
-        communityCentreAvailable: resultData.communityCentreAvailable,
-        commonShedForWSHG: resultData.commonShedForWSHG,
-        playgroundAvailable: resultData.playgroundAvailable,
-        communityTanks: resultData.communityTanks,
-        // MobileNetworkCoverage: resultData.mobileNetworkCoverage,
-        digitalConnectivity: resultData.digitalConnectivity,
-        // DryingYard: resultData.dryingYard,
-        pdsAvailable: resultData.pdsAvailable,
-        // DistanceOfPDS: resultData.distanceOfPDS,
-        bankingPostOfficeNearby: resultData.bankingPostOfficeNearby,
-        waterFromIrrigationProject: resultData.waterFromIrrigationProject,
-        // RepairOrNewDistributionCanalRequired:
-        //   resultData.repairOrNewDistributionCanalRequired,
-        // LengthOfDistributionCanal: resultData.lengthOfDistributionCanal,
-        functionalLiftIrrigation: resultData.functionalLiftIrrigation,
-        // ScopeOfNewLiftIrrigation: resultData.scopeOfNewLiftIrrigation,
-          functionalCheckDams: resultData.functionalCheckDams,
-        // ScopeOfNewCheckDams: resultData.scopeOfNewCheckDams,
-        // FunctionalDistributionCanal: resultData.functionalDistributionCanal,
-        // ScopeOfNewDistributionCanal: resultData.scopeOfNewDistributionCanal,
-        respondentName: resultData.respondentName,
-        identityRole: resultData.identityRole,
-        // SurveyProcess: resultData.surveyProcess,
-        respondentMobile: resultData.respondentMobile,
-        // MeetingPhotoPath: resultData.meetingPhotoPath,
-        geoLocation: resultData.geoLocation,
-        enumeratorName: resultData.enumeratorName,
-        surveyDate: resultData.surveyDate,
-        TotalPopulation: resultData.totalPopulation,
-      };
-      formikRef.current.resetForm({
-        values: {
-          ...VillageFormInitialValues(props),
-          ...resetData,
-         
-          
-        },
-      });
-      loadWaterSourceData(apiString);
-      
-    }
+
+  const mySubscriber = (msg, data) => {
+
+    try {
     
-  }catch(e){
-    console.log("Error in mySubscriber:", e); 
-    // Alert.alert("Error in mySubscriber:", e.message);
-  }
+      if (data && formikRef.current) {
+         setEditData(data);
+        const resultData = data?.item;
+        const apiString = resultData?.drinkingWaterSource || '';
+        // setInvolvedWaterSourceEdit(apiString);
+        // const uniqueId = resultData?.uniqueId;
+        // setUniqueId(uniqueId);
+        
+
+        const resetData = {
+          district: resultData.district,
+          block: resultData.block,
+          gramPanchayat: resultData.gramPanchayat,
+          revenueVillage: resultData.revenueVillage,
+          totalHouseholds: resultData.totalHouseholds,
+          malePopulation: resultData.malePopulation,
+          femalePopulation: resultData.femalePopulation,
+          // internalVillageRoads: resultData.internalVillageRoads,
+          // internalVillageRoadsRequirement:
+          //   resultData.internalVillageRoadsRequirement,
+          // internalDrainsAvailable: resultData.internalDrainsAvailable,
+          // drainsProperlyFunctional: resultData.drainsProperlyFunctional,
+          isElectrified: resultData.isElectrified,
+          streetLightingAvailable: resultData.streetLightingAvailable,
+          streetLightingType: resultData.streetLightingType,
+          villageConnectedToGP: resultData.villageConnectedToGP,
+          lengthAllWeatherRoadToGP: resultData.lengthAllWeatherRoadToGP,
+          gpConnectedToPWDOrHighway: resultData.gpConnectedToPWDOrHighway,
+          lengthAllWeatherRoadToHighway:
+            resultData.lengthAllWeatherRoadToHighway,
+          menInMigration: resultData.menInMigration,
+          womenInMigration: resultData.womenInMigration,
+          TotalPersonsInMigration: resultData.totalPersonsInMigration,
+          minorChildrenInMigration: resultData.minorChildrenInMigration,
+          drinkingWaterSource: resultData.drinkingWaterSource,
+          allHouseholdsWithToilets: resultData.allHouseholdsWithToilets,
+          anganwadiCentre: resultData.anganwadiCentre,
+          primarySchoolAvailable: resultData.primarySchoolAvailable,
+          secondarySchoolWithin3km: resultData.secondarySchoolWithin3km,
+          subHealthCentre: resultData.subHealthCentre,
+          communityCentreAvailable: resultData.communityCentreAvailable,
+          commonShedForWSHG: resultData.commonShedForWSHG,
+          playgroundAvailable: resultData.playgroundAvailable,
+          communityTanks: resultData.communityTanks,
+          // MobileNetworkCoverage: resultData.mobileNetworkCoverage,
+          digitalConnectivity: resultData.digitalConnectivity,
+          // DryingYard: resultData.dryingYard,
+          pdsAvailable: resultData.pdsAvailable,
+          // DistanceOfPDS: resultData.distanceOfPDS,
+          bankingPostOfficeNearby: resultData.bankingPostOfficeNearby,
+          waterFromIrrigationProject: resultData.waterFromIrrigationProject,
+          // RepairOrNewDistributionCanalRequired:
+          //   resultData.repairOrNewDistributionCanalRequired,
+          // LengthOfDistributionCanal: resultData.lengthOfDistributionCanal,
+          functionalLiftIrrigation: resultData.functionalLiftIrrigation,
+          // ScopeOfNewLiftIrrigation: resultData.scopeOfNewLiftIrrigation,
+          functionalCheckDams: resultData.functionalCheckDams,
+          // ScopeOfNewCheckDams: resultData.scopeOfNewCheckDams,
+          // FunctionalDistributionCanal: resultData.functionalDistributionCanal,
+          // ScopeOfNewDistributionCanal: resultData.scopeOfNewDistributionCanal,
+          respondentName: resultData.respondentName,
+          identityRole: resultData.identityRole,
+          // SurveyProcess: resultData.surveyProcess,
+          respondentMobile: resultData.respondentMobile,
+          // MeetingPhotoPath: resultData.meetingPhotoPath,
+          geoLocation: resultData.geoLocation,
+          enumeratorName: resultData.enumeratorName,
+          surveyDate: resultData.surveyDate,
+          TotalPopulation: resultData.totalPopulation,
+        };
+        formikRef.current.resetForm({
+          values: {
+            ...VillageFormInitialValues(props),
+            ...resetData,
+          },
+        });
+        loadWaterSourceData(apiString);
+      }
+    } catch (e) {
+      console.log('Error in mySubscriber:', e);
+      // Alert.alert("Error in mySubscriber:", e.message);
+    }
   };
 
   // Get Districts
@@ -639,14 +658,15 @@ const VillageFormSurveyEdit = props => {
       );
       return;
     }
-    const response = await api.user.saveMigrationSurveyData(
-      null,
+
+    // Alert.alert('values', JSON.stringify(values));
+    const response = await api.user.saveEditedVillageSurvey(
       values,
-      token,
-      false,
+      uniqueId,
+      token
     );
-    //Alert.alert("response",JSON.stringify(response));
-    //return
+    // Alert.alert("response",JSON.stringify(response));
+    // return
     if (response != null && response != undefined) {
       setAlertVisible(true);
       setAlertMessage(t('Survey_Submit_Successfully_village'));
@@ -733,19 +753,19 @@ const VillageFormSurveyEdit = props => {
     //  Alert.alert("updatedCheckboxes",JSON.stringify(result));
     setCheckboxes4(updatedCheckboxes);
   };
-   const renderCheckboxes4 = () => {
-      return checkboxes4.map((checkbox, index) => (
-        <CheckBox
-          key={index}
-          title={checkbox.label}
-          iconType="material-community"
-          checkedIcon="checkbox-marked"
-          uncheckedIcon="checkbox-blank-outline"
-          checked={checkbox.checked}
-          onPress={() => handleCheckboxChange4(index)}
-        />
-      ));
-    };
+  const renderCheckboxes4 = () => {
+    return checkboxes4.map((checkbox, index) => (
+      <CheckBox
+        key={index}
+        title={checkbox.label}
+        iconType="material-community"
+        checkedIcon="checkbox-marked"
+        uncheckedIcon="checkbox-blank-outline"
+        checked={checkbox.checked}
+        onPress={() => handleCheckboxChange4(index)}
+      />
+    ));
+  };
 
   return (
     <View style={Style.BgColorWhiteAll}>
@@ -792,860 +812,860 @@ const VillageFormSurveyEdit = props => {
               <KeyboardAvoidingView enabled>
                 <Spacing space={SH(10)} />
                 <View style={AnalyaticsStyles.MainView}>
-                 {currentQuestion === 1 && (
-                                     <View>
-                                       {/* District */}
-                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                         {'A. ' + t('Basic Details')}
-                                       </Text>
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         1. {t('District')}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <DropDown
-                                         data={districts}
-                                         dropdownStyle={{marginLeft: SH(10)}}
-                                         width={SW(345)}
-                                         labelField="label"
-                                         valueField="value"
-                                         value={values?.district}
-                                         placeholder={values?.district || t('Select District')}
-                                         onChange={obj => {
-                                           // Alert.alert("hellll",JSON.stringify(label));
-                                           getBlocks(obj.value);
-                                           setFieldValue('district', obj.label);
-                                         }}
-                                       />
-                                       <Text style={{color: 'red'}}>{errors?.district}</Text>
-                                       <Spacing space={SH(15)} />
-                                       {/* Block */}
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         2. {t('Block')}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <DropDown
-                                         data={blocks}
-                                         dropdownStyle={{marginLeft: SH(10)}}
-                                         width={SW(345)}
-                                         labelField="label"
-                                         valueField="value"
-                                         value={values?.block}
-                                         placeholder={values?.block || t('Select Block')}
-                                         onChange={obj => {
-                                           getPanchayats(obj.value);
-                                           setFieldValue('block', obj.label);
-                                         }}
-                                       />
-                                       <Text style={{color: 'red'}}>{errors?.block}</Text>
-                                       <Spacing space={SH(15)} />
-                                       {/* Gram Panchayat */}
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         3. {t('Gram Panchayat')}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <DropDown
-                                         data={panchayats}
-                                         dropdownStyle={{marginLeft: SH(10)}}
-                                         width={SW(345)}
-                                         labelField="label"
-                                         valueField="value"
-                                         value={values?.gramPanchayat}
-                                         placeholder={
-                                           values?.gramPanchayat || t('Select Gram Panchayat')
-                                         }
-                                         onChange={obj => {
-                                           getVillages(obj.value);
-                                           setFieldValue('gramPanchayat', obj.label);
-                                         }}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.gramPanchayat}
-                                       </Text>
-                                       <Spacing space={SH(15)} />
-                                       {/* Revenue Village */}
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         4. {t('Revenue Village')}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <DropDown
-                                         data={villages}
-                                         dropdownStyle={{marginLeft: SH(10)}}
-                                         width={SW(345)}
-                                         labelField="label"
-                                         valueField="value"
-                                         value={values?.revenueVillage}
-                                         placeholder={
-                                           values?.revenueVillage || t('Select Revenue Village')
-                                         }
-                                         onChange={obj => {
-                                           setFieldValue('revenueVillage', obj.label);
-                                         }}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.revenueVillage}
-                                       </Text>
-                                       <Spacing space={SH(15)} />
-                                       <Input
-                                         title={'5. ' + t('Total number of households')}
-                                         placeholder={t('Total number of households')}
-                                         onChangeText={text => {
-                                           // Allow only digits
-                                           let filtered = text.replace(/[^0-9]/g, '');
-                                           // If the first character is '0', remove it
-                                           if (filtered.startsWith('0')) {
-                                             filtered = filtered.substring(1);
-                                           }
-                                           const number = Number(filtered);
-                 
-                                           // Block 0 and values > 1500
-                                           if (number > 1500) return;
-                 
-                                           // Allow empty (while typing)
-                                           if (filtered === '') {
-                                             setFieldValue('totalHouseholds', '');
-                                             return;
-                                           }
-                 
-                                           setFieldValue('totalHouseholds', filtered);
-                                           // setFieldValue('totalHouseholds', text)
-                                         }}
-                                         value={values?.totalHouseholds}
-                                         inputType={'numeric'}
-                                         keyboardType={'number-pad'}
-                                         maxLength={4}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.totalHouseholds}
-                                       </Text>
-                                       <Spacing space={SH(15)} />
-                                       <Input
-                                         title={'6. ' + t('Male')}
-                                         placeholder={t('Male')}
-                                         onChangeText={text => {
-                                           let filtered = text.replace(/[^0-9]/g, '');
-                                           if (filtered.startsWith('0')) {
-                                             filtered = filtered.substring(1);
-                                           }
-                                           // Allow empty (while typing)
-                                           if (filtered === '') {
-                                             setFieldValue('malePopulation', '');
-                                             return;
-                                           }
-                                           const number = Number(filtered);
-                                           // Block 0 and values > 1500
-                                           if (number < 1 || number > 4000) return;
-                                           const male = number || 0;
-                                           setFieldValue('malePopulation', number || 0);
-                                           const female = Number(values?.femalePopulation) || 0;
-                                           setFieldValue('TotalPopulation', male + female);
-                                         }}
-                                         value={String(values?.malePopulation ?? '')}
-                                         inputType={'numeric'}
-                                         maxLength={8}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.malePopulation}
-                                       </Text>
-                                       <Spacing space={SH(15)} />
-                                       <Input
-                                         title={'7. ' + t('Female')}
-                                         placeholder={t('Female')}
-                                         onChangeText={text => {
-                                           // Allow only digits
-                                           let filtered = text.replace(/[^0-9]/g, '');
-                                           if (filtered.startsWith('0')) {
-                                             filtered = filtered.substring(1);
-                                           }
-                                           if (filtered === '') {
-                                             setFieldValue('femalePopulation', '');
-                                             return;
-                                           }
-                                           const number = Number(filtered);
-                                           if (number < 1 || number > 4000) return;
-                 
-                                           setFieldValue('femalePopulation', number || 0);
-                                           const male = Number(values?.malePopulation) || 0;
-                                           const female = number || 0;
-                 
-                                           setFieldValue('TotalPopulation', male + female);
-                                         }}
-                                         value={String(values?.femalePopulation ?? '')}
-                                         inputType={'numeric'}
-                                         maxLength={8}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.femalePopulation}
-                                       </Text>
-                                       <Spacing space={SH(15)} />
-                                       <Input
-                                         title={'8. ' + t('Total Population')}
-                                         placeholder={String(values?.TotalPopulation ?? 0)}
-                                         value={String(values?.TotalPopulation ?? 0)}
-                                         inputType={'numeric'}
-                                         disabled={true}
-                                         maxLength={8}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                       />
-                                     </View>
-                                   )}
-                                   {/* Two question start */}
-                                   {currentQuestion === 2 && (
-                                     <View>
-                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                         {'B. ' + t('Basic Infrastructure & Amenities')}
-                                       </Text>
-                                      
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         9. {t('Is the village electrified?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setIsElectrified(text);
-                                           setFieldValue('isElectrified', text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.isElectrified
-                                             : IsElectrified
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.isElectrified}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         10. {t('Is street lighting available?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setStreetLightingAvailable(text);
-                                           setFieldValue('streetLightingAvailable', text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.streetLightingAvailable
-                                             : StreetLightingAvailable
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.streetLightingAvailable}
-                                       </Text>
-                                       {(values?.streetLightingAvailable ||
-                                         StreetLightingAvailable) && <Spacing space={SH(5)} />}
-                                       {(values?.streetLightingAvailable ||
-                                         StreetLightingAvailable) && (
-                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                           10.1 {t('What type of street lighting is provided?')}
-                                         </Text>
-                                       )}
-                                       {(values?.streetLightingAvailable ||
-                                         StreetLightingAvailable) && (
-                                         <RadioButton
-                                           arrayData={electricityData}
-                                           onChangeText={text => {
-                                             setStreetLightingType(text);
-                                             setFieldValue('streetLightingType', text);
-                                           }}
-                                           value={
-                                             editData != undefined
-                                               ? values?.streetLightingType
-                                               : StreetLightingType
-                                           }
-                                         />
-                                       )}
-                                       {(values?.streetLightingAvailable ||
-                                         StreetLightingAvailable) && (
-                                         <Text style={{color: 'red'}}>
-                                           {errors?.streetLightingType}
-                                         </Text>
-                                       )}
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         11.{' '}
-                                         {t(
-                                           'Is the village connected to the GP headquarters by an all weather road?',
-                                         )}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData2}
-                                         onChangeText={text => {
-                                           //  Alert.alert("text",text);
-                                           setVillageConnectedToGP(text);
-                 
-                                           setFieldValue('villageConnectedToGP', text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.villageConnectedToGP
-                                             : VillageConnectedToGP
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.villageConnectedToGP}
-                                       </Text>
-                                       {(VillageConnectedToGP == 'No' ||
-                                         values?.villageConnectedToGP == 'Partially') && (
-                                         <Spacing space={SH(2)} />
-                                       )}
-                 
-                                       <Spacing space={SH(15)} />
-                                       {(VillageConnectedToGP == 'No' ||
-                                         values?.villageConnectedToGP == 'Partially' ||
-                                         values?.villageConnectedToGP == 'No' ||
-                                         VillageConnectedToGP == 'Partially') && (
-                                         <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                           12.
-                                           {t(
-                                             ' What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
-                                           )}
-                                         </Text>
-                                       )}
-                                       {(VillageConnectedToGP == 'No' ||
-                                         values?.villageConnectedToGP == 'Partially' ||
-                                         values?.villageConnectedToGP == 'No' ||
-                                         VillageConnectedToGP == 'Partially') && (
-                                         <SafeAreaView
-                                           style={{flex: 1, justifyContent: 'center'}}>
-                                           <StepSlider
-                                             minValue={100}
-                                             maxValue={4000}
-                                             step={100}
-                                             initialValue={100}
-                                             onValueChange={val => console.log('Selected:', val)}
-                                           />
-                                         </SafeAreaView>
-                                       )}
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.lengthAllWeatherRoadToHighway}
-                                       </Text>
-                                     </View>
-                                   )}
-                                   {/* Three question start */}
-                                   {currentQuestion === 3 && (
-                                     <View>
-                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                         {'C. ' + t('Information Related to Migration')}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Input
-                                         title={'13. ' + t('No of men currently in migration?')}
-                                         placeholder={t('No of men currently in migration?')}
-                                         onChangeText={text => {
-                                           setFieldValue('menInMigration', Number(text) || 0);
-                                           const men = Number(text) || 0;
-                                           const women = Number(values?.womenInMigration) || 0;
-                                           const children =
-                                             Number(values?.minorChildrenInMigration) || 0;
-                 
-                                           const total = men + women + children;
-                 
-                                           setFieldValue(
-                                             'TotalPersonsInMigration',
-                                             JSON.stringify(total),
-                                           );
-                                         }}
-                                         value={values?.menInMigration}
-                                         inputType={'numeric'}
-                                         maxLength={6}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.menInMigration}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Input
-                                         title={
-                                           '14. ' + t('No of women currently in migration?')
-                                         }
-                                         inputType={'numeric'}
-                                         maxLength={6}
-                                         placeholder={t('No of women currently in migration?')}
-                                         onChangeText={text => {
-                                           setFieldValue('womenInMigration', Number(text) || 0);
-                                           const men = Number(values?.menInMigration) || 0;
-                                           const women = Number(text) || 0;
-                                           const children =
-                                             Number(values?.minorChildrenInMigration) || 0;
-                 
-                                           const total = men + women + children;
-                 
-                                           setFieldValue(
-                                             'TotalPersonsInMigration',
-                                             JSON.stringify(total),
-                                           );
-                                         }}
-                                         value={values?.womenInMigration}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.womenInMigration}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Input
-                                         title={
-                                           '15. ' +
-                                           t(
-                                             'No of minor children below 18 yrs age currently in migration?',
-                                           )
-                                         }
-                                         placeholder={t(
-                                           'No of minor children below 18 yrs age currently in migration?',
-                                         )}
-                                         onChangeText={text => {
-                                           setFieldValue(
-                                             'minorChildrenInMigration',
-                                             Number(text) || 0,
-                                           );
-                                           const men = Number(values?.menInMigration) || 0;
-                                           const women = Number(values?.womenInMigration) || 0;
-                                           const children = Number(text) || 0;
-                 
-                                           const total = men + women + children;
-                 
-                                           setFieldValue(
-                                             'TotalPersonsInMigration',
-                                             JSON.stringify(total),
-                                           );
-                                         }}
-                                         value={values?.minorChildrenInMigration}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                         inputType={'numeric'}
-                                         maxLength={6}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.minorChildrenInMigration}
-                                       </Text>
-                                       <Spacing space={SH(15)} />
-                                       <Input
-                                         title={
-                                           '16. ' +
-                                           t('Total No. of person currently in migration?')
-                                         }
-                                         placeholder={String(
-                                           values?.TotalPersonsInMigration ?? 0,
-                                         )}
-                                         onChangeText={text => {
-                                           setFieldValue(
-                                             'TotalPersonsInMigration',
-                                             Number(text) || 0,
-                                           );
-                                         }}
-                                         value={String(values?.TotalPersonsInMigration ?? 0)}
-                                         disabled={true}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                         inputType={'numeric'}
-                                         maxLength={6}
-                                       />
-                                     </View>
-                                   )}
-                                   {currentQuestion === 4 && (
-                                     <View>
-                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                         {'D.' + t('Water Supply & Sanitation')}
-                                       </Text>
-                                       <Spacing space={SH(10)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         17. {t('Main source of drinking water?')}
-                                       </Text>
-                                       {renderCheckboxes4()}
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.drinkingWaterSource}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         18. {t('Are all households having toilets?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setAllHouseholdsWithToilets(text);
-                                           setFieldValue('allHouseholdsWithToilets', text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.allHouseholdsWithToilets
-                                             : AllHouseholdsWithToilets
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.allHouseholdsWithToilets}
-                                       </Text>
-                                     </View>
-                                   )}
-                                   {currentQuestion === 5 && (
-                                     <View>
-                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                         {'E. ' + t('Education & Health Facilities')}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         19. {t('Is there a functioning Anganwadi Centre?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setFieldValue('anganwadiCentre', text);
-                                           setAnganwadiCentre(text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.anganwadiCentre
-                                             : AnganwadiCentre
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.anganwadiCentre}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         20.{' '}
-                                         {t('Is Primary school available within the village?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setFieldValue('primarySchoolAvailable', text);
-                                           setPrimarySchoolAvailable(text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.primarySchoolAvailable
-                                             : PrimarySchoolAvailable
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.primarySchoolAvailable}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         21. {t('Is Secondary school within 3 km distance?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setFieldValue('secondarySchoolWithin3km', text);
-                                           setSecondarySchoolWithin3km(text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.secondarySchoolWithin3km
-                                             : SecondarySchoolWithin3km
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.secondarySchoolWithin3km}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         22. {t('Is there a Sub Health Centre in the village?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setFieldValue('subHealthCentre', text);
-                                           setSubHealthCentre(text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.subHealthCentre
-                                             : SubHealthCentre
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.subHealthCentre}
-                                       </Text>
-                                     </View>
-                                   )}
-                                   {currentQuestion === 6 && (
-                                     <View>
-                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                         {'F. ' + t('Community & Social Infrastructure')}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         23. {t('Community Centre available?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setFieldValue('communityCentreAvailable', text);
-                                           setCommunityCentreAvailable(text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.communityCentreAvailable
-                                             : CommunityCentreAvailable
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.communityCentreAvailable}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         24. {t('Common shed for WSHG available?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setFieldValue('commonShedForWSHG', text);
-                                           setCommonShedForWSHG(text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.commonShedForWSHG
-                                             : CommonShedForWSHG
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.commonShedForWSHG}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         25. {t('Availability of playground in the village?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setFieldValue('playgroundAvailable', text);
-                                           setPlaygroundAvailable(text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.playgroundAvailable
-                                             : PlaygroundAvailable
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.playgroundAvailable}
-                                       </Text>
-                                       <Spacing space={SH(15)} />
-                                       <Input
-                                         title={
-                                           '26. ' +
-                                           t('No. of community tanks available in the village?')
-                                         }
-                                         placeholder={t(
-                                           'No. of community tanks available in the village?',
-                                         )}
-                                         onChangeText={text => {
-                                           let filtered = text.replace(/[^0-9]/g, '');
-                 
-                                           if (filtered === '') {
-                                             setFieldValue('communityTanks', '');
-                                             return;
-                                           }
-                                           const number = Number(filtered);
-                                           if (number > 30) return;
-                                           setFieldValue('communityTanks', number);
-                                         }}
-                                         value={values?.communityTanks}
-                                         inputType={'numeric'}
-                                         maxLength={2}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.communityTanks}
-                                       </Text>
-                                     </View>
-                                   )}
-                                   {currentQuestion === 7 && (
-                                     <View>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                         {'G. ' + t('Livelihood & Service Infrastructure')}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         27.{' '}
-                                         {t(
-                                           'Is Digital last mile connectivity (internet facility) available?',
-                                         )}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setDigitalConnectivity(text);
-                                           setFieldValue('digitalConnectivity', text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values.digitalConnectivity
-                                             : DigitalConnectivity
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.digitalConnectivity}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         28. {t('Is there a PDS (ration shop) in the village?')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setPDSAvailable(text);
-                                           setFieldValue('pdsAvailable', text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.pdsAvailable
-                                             : PDSAvailable
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>{errors?.pdsAvailable}</Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         29.{' '}
-                                         {t(
-                                           'Whether banking or post office or KIOSK or mini bank services are available within 3 km distance from the village?',
-                                         )}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setBankingPostOfficeNearby(text);
-                                           setFieldValue('bankingPostOfficeNearby', text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.bankingPostOfficeNearby
-                                             : BankingPostOfficeNearby
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.bankingPostOfficeNearby}
-                                       </Text>
-                                     </View>
-                                   )}
-                 
-                                   {/* Four question start */}
-                                   {currentQuestion === 8 && (
-                                     <View>
-                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                         {'H. ' + t('Water Resource & Irrigation Structures')}
-                                       </Text>
-                                       <Spacing space={SH(10)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         30.{' '}
-                                         {t(
-                                           'Is water from any mega, medium or minor irrigation project available to the village?',
-                                         )}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setFieldValue('waterFromIrrigationProject', text);
-                                           setWaterFromIrrigationProject(text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.waterFromIrrigationProject
-                                             : WaterFromIrrigationProject
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.waterFromIrrigationProject}
-                                       </Text>
-                 
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         31.{' '}
-                                         {t(
-                                           'Availability of functional Check Dams in the village?',
-                                         )}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={selfHelpData}
-                                         onChangeText={text => {
-                                           setFieldValue('functionalCheckDams', text);
-                                           setFunctionalCheckDams(text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.functionalCheckDams
-                                             : FunctionalCheckDams
-                                         }
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.functionalCheckDams}
-                                       </Text>
-                 
-                                       <Spacing space={SH(5)} />
-                                     </View>
-                                   )}
-                                   {/*five question start */}
-                                   {currentQuestion === 9 && (
-                                     <View>
-                                       <Text style={AnalyaticsStyles.TitleStyle}>
-                                         {'I. ' + t('Respondent Details')}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Input
-                                         title={'32. ' + t('Respondent Name')}
-                                         placeholder={t('Respondent Name')}
-                                         onChangeText={text => {
-                                           // [^a-zA-Z.] means: "Match anything that is NOT a letter or a dot"
-                                           // The 'g' flag replaces all occurrences
-                                          const filtered = text.replace(/[^a-zA-Z.\s]/g, '');
-                 
-                                           setFieldValue('respondentName', filtered);
-                                         }}
-                                         onFocus={() => {
-                                           scrollRef.current?.scrollTo({y: 0, animated: true});
-                                         }}
-                                         value={values?.respondentName}
-                                         maxLength={200}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.respondentName}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         33. {t('Identity')}
-                                       </Text>
-                                       <RadioButton
-                                         arrayData={identityData}
-                                         onChangeText={text => {
-                                           setFieldValue('identityRole', text);
-                                           setIdentityRole(text);
-                                         }}
-                                         value={
-                                           editData != undefined
-                                             ? values?.identityRole
-                                             : IdentityRole
-                                         }
-                                         type={1}
-                                       />
-                                       <Text style={{color: 'red'}}>{errors?.identityRole}</Text>
-                 
-                                       <Spacing space={SH(1)} />
-                                       <Input
-                                         title={'34. ' + t('Respondent contact mobile no.?')}
-                                         placeholder={t('Respondent contact mobile no.?')}
-                                         onChangeText={text => {
-                                           setFieldValue('respondentMobile', text);
-                                         }}
-                                         value={values?.respondentMobile}
-                                         inputType="numeric"
-                                         maxLength={10}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.respondentMobile}
-                                       </Text>
-                                       {/* <Spacing space={SH(10)} /> */}
-                                       {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                  {currentQuestion === 1 && (
+                    <View>
+                      {/* District */}
+                      <Text style={AnalyaticsStyles.TitleStyle}>
+                        {'A. ' + t('Basic Details')}
+                      </Text>
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        1. {t('District')}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <DropDown
+                        data={districts}
+                        dropdownStyle={{marginLeft: SH(10)}}
+                        width={SW(345)}
+                        labelField="label"
+                        valueField="value"
+                        value={values?.district}
+                        placeholder={values?.district || t('Select District')}
+                        onChange={obj => {
+                          // Alert.alert("hellll",JSON.stringify(label));
+                          getBlocks(obj.value);
+                          setFieldValue('district', obj.label);
+                        }}
+                      />
+                      <Text style={{color: 'red'}}>{errors?.district}</Text>
+                      <Spacing space={SH(15)} />
+                      {/* Block */}
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        2. {t('Block')}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <DropDown
+                        data={blocks}
+                        dropdownStyle={{marginLeft: SH(10)}}
+                        width={SW(345)}
+                        labelField="label"
+                        valueField="value"
+                        value={values?.block}
+                        placeholder={values?.block || t('Select Block')}
+                        onChange={obj => {
+                          getPanchayats(obj.value);
+                          setFieldValue('block', obj.label);
+                        }}
+                      />
+                      <Text style={{color: 'red'}}>{errors?.block}</Text>
+                      <Spacing space={SH(15)} />
+                      {/* Gram Panchayat */}
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        3. {t('Gram Panchayat')}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <DropDown
+                        data={panchayats}
+                        dropdownStyle={{marginLeft: SH(10)}}
+                        width={SW(345)}
+                        labelField="label"
+                        valueField="value"
+                        value={values?.gramPanchayat}
+                        placeholder={
+                          values?.gramPanchayat || t('Select Gram Panchayat')
+                        }
+                        onChange={obj => {
+                          getVillages(obj.value);
+                          setFieldValue('gramPanchayat', obj.label);
+                        }}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.gramPanchayat}
+                      </Text>
+                      <Spacing space={SH(15)} />
+                      {/* Revenue Village */}
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        4. {t('Revenue Village')}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <DropDown
+                        data={villages}
+                        dropdownStyle={{marginLeft: SH(10)}}
+                        width={SW(345)}
+                        labelField="label"
+                        valueField="value"
+                        value={values?.revenueVillage}
+                        placeholder={
+                          values?.revenueVillage || t('Select Revenue Village')
+                        }
+                        onChange={obj => {
+                          setFieldValue('revenueVillage', obj.label);
+                        }}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.revenueVillage}
+                      </Text>
+                      <Spacing space={SH(15)} />
+                      <Input
+                        title={'5. ' + t('Total number of households')}
+                        placeholder={t('Total number of households')}
+                        onChangeText={text => {
+                          // Allow only digits
+                          let filtered = text.replace(/[^0-9]/g, '');
+                          // If the first character is '0', remove it
+                          if (filtered.startsWith('0')) {
+                            filtered = filtered.substring(1);
+                          }
+                          const number = Number(filtered);
+
+                          // Block 0 and values > 1500
+                          if (number > 1500) return;
+
+                          // Allow empty (while typing)
+                          if (filtered === '') {
+                            setFieldValue('totalHouseholds', '');
+                            return;
+                          }
+
+                          setFieldValue('totalHouseholds', filtered);
+                          // setFieldValue('totalHouseholds', text)
+                        }}
+                        value={values?.totalHouseholds}
+                        inputType={'numeric'}
+                        keyboardType={'number-pad'}
+                        maxLength={4}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.totalHouseholds}
+                      </Text>
+                      <Spacing space={SH(15)} />
+                      <Input
+                        title={'6. ' + t('Male')}
+                        placeholder={t('Male')}
+                        onChangeText={text => {
+                          let filtered = text.replace(/[^0-9]/g, '');
+                          if (filtered.startsWith('0')) {
+                            filtered = filtered.substring(1);
+                          }
+                          // Allow empty (while typing)
+                          if (filtered === '') {
+                            setFieldValue('malePopulation', '');
+                            return;
+                          }
+                          const number = Number(filtered);
+                          // Block 0 and values > 1500
+                          if (number < 1 || number > 4000) return;
+                          const male = number || 0;
+                          setFieldValue('malePopulation', number || 0);
+                          const female = Number(values?.femalePopulation) || 0;
+                          setFieldValue('TotalPopulation', male + female);
+                        }}
+                        value={String(values?.malePopulation ?? '')}
+                        inputType={'numeric'}
+                        maxLength={8}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.malePopulation}
+                      </Text>
+                      <Spacing space={SH(15)} />
+                      <Input
+                        title={'7. ' + t('Female')}
+                        placeholder={t('Female')}
+                        onChangeText={text => {
+                          // Allow only digits
+                          let filtered = text.replace(/[^0-9]/g, '');
+                          if (filtered.startsWith('0')) {
+                            filtered = filtered.substring(1);
+                          }
+                          if (filtered === '') {
+                            setFieldValue('femalePopulation', '');
+                            return;
+                          }
+                          const number = Number(filtered);
+                          if (number < 1 || number > 4000) return;
+
+                          setFieldValue('femalePopulation', number || 0);
+                          const male = Number(values?.malePopulation) || 0;
+                          const female = number || 0;
+
+                          setFieldValue('TotalPopulation', male + female);
+                        }}
+                        value={String(values?.femalePopulation ?? '')}
+                        inputType={'numeric'}
+                        maxLength={8}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.femalePopulation}
+                      </Text>
+                      <Spacing space={SH(15)} />
+                      <Input
+                        title={'8. ' + t('Total Population')}
+                        placeholder={String(values?.TotalPopulation ?? 0)}
+                        value={String(values?.TotalPopulation ?? 0)}
+                        inputType={'numeric'}
+                        disabled={true}
+                        maxLength={8}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                    </View>
+                  )}
+                  {/* Two question start */}
+                  {currentQuestion === 2 && (
+                    <View>
+                      <Text style={AnalyaticsStyles.TitleStyle}>
+                        {'B. ' + t('Basic Infrastructure & Amenities')}
+                      </Text>
+
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        9. {t('Is the village electrified?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setIsElectrified(text);
+                          setFieldValue('isElectrified', text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.isElectrified
+                            : IsElectrified
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.isElectrified}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        10. {t('Is street lighting available?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setStreetLightingAvailable(text);
+                          setFieldValue('streetLightingAvailable', text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.streetLightingAvailable
+                            : StreetLightingAvailable
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.streetLightingAvailable}
+                      </Text>
+                      {(values?.streetLightingAvailable ||
+                        StreetLightingAvailable) && <Spacing space={SH(5)} />}
+                      {(values?.streetLightingAvailable ||
+                        StreetLightingAvailable) && (
+                        <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                          10.1 {t('What type of street lighting is provided?')}
+                        </Text>
+                      )}
+                      {(values?.streetLightingAvailable ||
+                        StreetLightingAvailable) && (
+                        <RadioButton
+                          arrayData={electricityData}
+                          onChangeText={text => {
+                            setStreetLightingType(text);
+                            setFieldValue('streetLightingType', text);
+                          }}
+                          value={
+                            editData != undefined
+                              ? values?.streetLightingType
+                              : StreetLightingType
+                          }
+                        />
+                      )}
+                      {(values?.streetLightingAvailable ||
+                        StreetLightingAvailable) && (
+                        <Text style={{color: 'red'}}>
+                          {errors?.streetLightingType}
+                        </Text>
+                      )}
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        11.{' '}
+                        {t(
+                          'Is the village connected to the GP headquarters by an all weather road?',
+                        )}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData2}
+                        onChangeText={text => {
+                          //  Alert.alert("text",text);
+                          setVillageConnectedToGP(text);
+
+                          setFieldValue('villageConnectedToGP', text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.villageConnectedToGP
+                            : VillageConnectedToGP
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.villageConnectedToGP}
+                      </Text>
+                      {(VillageConnectedToGP == 'No' ||
+                        values?.villageConnectedToGP == 'Partially') && (
+                        <Spacing space={SH(2)} />
+                      )}
+
+                      <Spacing space={SH(15)} />
+                      {(VillageConnectedToGP == 'No' ||
+                        values?.villageConnectedToGP == 'Partially' ||
+                        values?.villageConnectedToGP == 'No' ||
+                        VillageConnectedToGP == 'Partially') && (
+                        <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                          12.
+                          {t(
+                            ' What is the length of all weather road required to connect the GP headquarter with the existing PWD road or State Highway or National Highway in RMT?',
+                          )}
+                        </Text>
+                      )}
+                      {(VillageConnectedToGP == 'No' ||
+                        values?.villageConnectedToGP == 'Partially' ||
+                        values?.villageConnectedToGP == 'No' ||
+                        VillageConnectedToGP == 'Partially') && (
+                        <SafeAreaView
+                          style={{flex: 1, justifyContent: 'center'}}>
+                          <StepSlider
+                            minValue={100}
+                            maxValue={4000}
+                            step={100}
+                            initialValue={100}
+                            onValueChange={val => console.log('Selected:', val)}
+                          />
+                        </SafeAreaView>
+                      )}
+                      <Text style={{color: 'red'}}>
+                        {errors?.lengthAllWeatherRoadToHighway}
+                      </Text>
+                    </View>
+                  )}
+                  {/* Three question start */}
+                  {currentQuestion === 3 && (
+                    <View>
+                      <Text style={AnalyaticsStyles.TitleStyle}>
+                        {'C. ' + t('Information Related to Migration')}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Input
+                        title={'13. ' + t('No of men currently in migration?')}
+                        placeholder={t('No of men currently in migration?')}
+                        onChangeText={text => {
+                          setFieldValue('menInMigration', Number(text) || 0);
+                          const men = Number(text) || 0;
+                          const women = Number(values?.womenInMigration) || 0;
+                          const children =
+                            Number(values?.minorChildrenInMigration) || 0;
+
+                          const total = men + women + children;
+
+                          setFieldValue(
+                            'TotalPersonsInMigration',
+                            JSON.stringify(total),
+                          );
+                        }}
+                        value={values?.menInMigration}
+                        inputType={'numeric'}
+                        maxLength={6}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.menInMigration}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Input
+                        title={
+                          '14. ' + t('No of women currently in migration?')
+                        }
+                        inputType={'numeric'}
+                        maxLength={6}
+                        placeholder={t('No of women currently in migration?')}
+                        onChangeText={text => {
+                          setFieldValue('womenInMigration', Number(text) || 0);
+                          const men = Number(values?.menInMigration) || 0;
+                          const women = Number(text) || 0;
+                          const children =
+                            Number(values?.minorChildrenInMigration) || 0;
+
+                          const total = men + women + children;
+
+                          setFieldValue(
+                            'TotalPersonsInMigration',
+                            JSON.stringify(total),
+                          );
+                        }}
+                        value={values?.womenInMigration}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.womenInMigration}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Input
+                        title={
+                          '15. ' +
+                          t(
+                            'No of minor children below 18 yrs age currently in migration?',
+                          )
+                        }
+                        placeholder={t(
+                          'No of minor children below 18 yrs age currently in migration?',
+                        )}
+                        onChangeText={text => {
+                          setFieldValue(
+                            'minorChildrenInMigration',
+                            Number(text) || 0,
+                          );
+                          const men = Number(values?.menInMigration) || 0;
+                          const women = Number(values?.womenInMigration) || 0;
+                          const children = Number(text) || 0;
+
+                          const total = men + women + children;
+
+                          setFieldValue(
+                            'TotalPersonsInMigration',
+                            JSON.stringify(total),
+                          );
+                        }}
+                        value={values?.minorChildrenInMigration}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                        inputType={'numeric'}
+                        maxLength={6}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.minorChildrenInMigration}
+                      </Text>
+                      <Spacing space={SH(15)} />
+                      <Input
+                        title={
+                          '16. ' +
+                          t('Total No. of person currently in migration?')
+                        }
+                        placeholder={String(
+                          values?.TotalPersonsInMigration ?? 0,
+                        )}
+                        onChangeText={text => {
+                          setFieldValue(
+                            'TotalPersonsInMigration',
+                            Number(text) || 0,
+                          );
+                        }}
+                        value={String(values?.TotalPersonsInMigration ?? 0)}
+                        disabled={true}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                        inputType={'numeric'}
+                        maxLength={6}
+                      />
+                    </View>
+                  )}
+                  {currentQuestion === 4 && (
+                    <View>
+                      <Text style={AnalyaticsStyles.TitleStyle}>
+                        {'D.' + t('Water Supply & Sanitation')}
+                      </Text>
+                      <Spacing space={SH(10)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        17. {t('Main source of drinking water?')}
+                      </Text>
+                      {renderCheckboxes4()}
+                      <Text style={{color: 'red'}}>
+                        {errors?.drinkingWaterSource}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        18. {t('Are all households having toilets?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setAllHouseholdsWithToilets(text);
+                          setFieldValue('allHouseholdsWithToilets', text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.allHouseholdsWithToilets
+                            : AllHouseholdsWithToilets
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.allHouseholdsWithToilets}
+                      </Text>
+                    </View>
+                  )}
+                  {currentQuestion === 5 && (
+                    <View>
+                      <Text style={AnalyaticsStyles.TitleStyle}>
+                        {'E. ' + t('Education & Health Facilities')}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        19. {t('Is there a functioning Anganwadi Centre?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setFieldValue('anganwadiCentre', text);
+                          setAnganwadiCentre(text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.anganwadiCentre
+                            : AnganwadiCentre
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.anganwadiCentre}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        20.{' '}
+                        {t('Is Primary school available within the village?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setFieldValue('primarySchoolAvailable', text);
+                          setPrimarySchoolAvailable(text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.primarySchoolAvailable
+                            : PrimarySchoolAvailable
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.primarySchoolAvailable}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        21. {t('Is Secondary school within 3 km distance?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setFieldValue('secondarySchoolWithin3km', text);
+                          setSecondarySchoolWithin3km(text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.secondarySchoolWithin3km
+                            : SecondarySchoolWithin3km
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.secondarySchoolWithin3km}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        22. {t('Is there a Sub Health Centre in the village?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setFieldValue('subHealthCentre', text);
+                          setSubHealthCentre(text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.subHealthCentre
+                            : SubHealthCentre
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.subHealthCentre}
+                      </Text>
+                    </View>
+                  )}
+                  {currentQuestion === 6 && (
+                    <View>
+                      <Text style={AnalyaticsStyles.TitleStyle}>
+                        {'F. ' + t('Community & Social Infrastructure')}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        23. {t('Community Centre available?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setFieldValue('communityCentreAvailable', text);
+                          setCommunityCentreAvailable(text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.communityCentreAvailable
+                            : CommunityCentreAvailable
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.communityCentreAvailable}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        24. {t('Common shed for WSHG available?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setFieldValue('commonShedForWSHG', text);
+                          setCommonShedForWSHG(text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.commonShedForWSHG
+                            : CommonShedForWSHG
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.commonShedForWSHG}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        25. {t('Availability of playground in the village?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setFieldValue('playgroundAvailable', text);
+                          setPlaygroundAvailable(text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.playgroundAvailable
+                            : PlaygroundAvailable
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.playgroundAvailable}
+                      </Text>
+                      <Spacing space={SH(15)} />
+                      <Input
+                        title={
+                          '26. ' +
+                          t('No. of community tanks available in the village?')
+                        }
+                        placeholder={t(
+                          'No. of community tanks available in the village?',
+                        )}
+                        onChangeText={text => {
+                          let filtered = text.replace(/[^0-9]/g, '');
+
+                          if (filtered === '') {
+                            setFieldValue('communityTanks', '');
+                            return;
+                          }
+                          const number = Number(filtered);
+                          if (number > 30) return;
+                          setFieldValue('communityTanks', number);
+                        }}
+                        value={values?.communityTanks}
+                        inputType={'numeric'}
+                        maxLength={2}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.communityTanks}
+                      </Text>
+                    </View>
+                  )}
+                  {currentQuestion === 7 && (
+                    <View>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.TitleStyle}>
+                        {'G. ' + t('Livelihood & Service Infrastructure')}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        27.{' '}
+                        {t(
+                          'Is Digital last mile connectivity (internet facility) available?',
+                        )}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setDigitalConnectivity(text);
+                          setFieldValue('digitalConnectivity', text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values.digitalConnectivity
+                            : DigitalConnectivity
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.digitalConnectivity}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        28. {t('Is there a PDS (ration shop) in the village?')}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setPDSAvailable(text);
+                          setFieldValue('pdsAvailable', text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.pdsAvailable
+                            : PDSAvailable
+                        }
+                      />
+                      <Text style={{color: 'red'}}>{errors?.pdsAvailable}</Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        29.{' '}
+                        {t(
+                          'Whether banking or post office or KIOSK or mini bank services are available within 3 km distance from the village?',
+                        )}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setBankingPostOfficeNearby(text);
+                          setFieldValue('bankingPostOfficeNearby', text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.bankingPostOfficeNearby
+                            : BankingPostOfficeNearby
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.bankingPostOfficeNearby}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Four question start */}
+                  {currentQuestion === 8 && (
+                    <View>
+                      <Text style={AnalyaticsStyles.TitleStyle}>
+                        {'H. ' + t('Water Resource & Irrigation Structures')}
+                      </Text>
+                      <Spacing space={SH(10)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        30.{' '}
+                        {t(
+                          'Is water from any mega, medium or minor irrigation project available to the village?',
+                        )}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setFieldValue('waterFromIrrigationProject', text);
+                          setWaterFromIrrigationProject(text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.waterFromIrrigationProject
+                            : WaterFromIrrigationProject
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.waterFromIrrigationProject}
+                      </Text>
+
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        31.{' '}
+                        {t(
+                          'Availability of functional Check Dams in the village?',
+                        )}
+                      </Text>
+                      <RadioButton
+                        arrayData={selfHelpData}
+                        onChangeText={text => {
+                          setFieldValue('functionalCheckDams', text);
+                          setFunctionalCheckDams(text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.functionalCheckDams
+                            : FunctionalCheckDams
+                        }
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.functionalCheckDams}
+                      </Text>
+
+                      <Spacing space={SH(5)} />
+                    </View>
+                  )}
+                  {/*five question start */}
+                  {currentQuestion === 9 && (
+                    <View>
+                      <Text style={AnalyaticsStyles.TitleStyle}>
+                        {'I. ' + t('Respondent Details')}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Input
+                        title={'32. ' + t('Respondent Name')}
+                        placeholder={t('Respondent Name')}
+                        onChangeText={text => {
+                          // [^a-zA-Z.] means: "Match anything that is NOT a letter or a dot"
+                          // The 'g' flag replaces all occurrences
+                          const filtered = text.replace(/[^a-zA-Z.\s]/g, '');
+
+                          setFieldValue('respondentName', filtered);
+                        }}
+                        onFocus={() => {
+                          scrollRef.current?.scrollTo({y: 0, animated: true});
+                        }}
+                        value={values?.respondentName}
+                        maxLength={200}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.respondentName}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        33. {t('Identity')}
+                      </Text>
+                      <RadioButton
+                        arrayData={identityData}
+                        onChangeText={text => {
+                          setFieldValue('identityRole', text);
+                          setIdentityRole(text);
+                        }}
+                        value={
+                          editData != undefined
+                            ? values?.identityRole
+                            : IdentityRole
+                        }
+                        type={1}
+                      />
+                      <Text style={{color: 'red'}}>{errors?.identityRole}</Text>
+
+                      <Spacing space={SH(1)} />
+                      <Input
+                        title={'34. ' + t('Respondent contact mobile no.?')}
+                        placeholder={t('Respondent contact mobile no.?')}
+                        onChangeText={text => {
+                          setFieldValue('respondentMobile', text);
+                        }}
+                        value={values?.respondentMobile}
+                        inputType="numeric"
+                        maxLength={10}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.respondentMobile}
+                      </Text>
+                      {/* <Spacing space={SH(10)} /> */}
+                      {/* <Text style={AnalyaticsStyles.PleaseEnterDate}>
                                          49. {t('Capture a photo of the meeting/FGD')}
                                        </Text> */}
-                                       {/* <Spacing space={SH(10)} /> */}
-                                       {/*<View style={AnalyaticsStyles.FlexRow}>
+                      {/* <Spacing space={SH(10)} /> */}
+                      {/*<View style={AnalyaticsStyles.FlexRow}>
                                        
                                          <ImagePicker
                                            value={values.MeetingPhotoPath}
@@ -1668,7 +1688,7 @@ const VillageFormSurveyEdit = props => {
                                            />
                                          </TouchableOpacity>
                                        </View>*/}
-                                       {/* <Spacing space={SH(10)} />
+                      {/* <Spacing space={SH(10)} />
                                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_43")}</Text>
                                  <Spacing space={SH(10)} />
                                  <View style={AnalyaticsStyles.FlexRow}>
@@ -1682,7 +1702,7 @@ const VillageFormSurveyEdit = props => {
                                      <VectorIcon icon="AntDesign" name="delete" size={SF(22)} color={Colors.theme_background} />
                                    </TouchableOpacity>
                                  </View> */}
-                                       {/* <Spacing space={SH(10)} />
+                      {/* <Spacing space={SH(10)} />
                                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_44")}</Text>
                                  <Spacing space={SH(10)} />
                                  <View style={AnalyaticsStyles.FlexRow}>
@@ -1694,70 +1714,70 @@ const VillageFormSurveyEdit = props => {
                                      <VectorIcon icon="AntDesign" name="delete" size={SF(22)} color={Colors.theme_background} />
                                    </TouchableOpacity>
                                  </View> */}
-                                       {/* <Spacing space={SH(10)} />
+                      {/* <Spacing space={SH(10)} />
                                  <Text style={AnalyaticsStyles.PleaseEnterDate}>{t("Survey_Title_45")}</Text>
                                  <View style={AnalyaticsStyles.FlexRow}>
                                    <Image source={images.Survey_Image_Four} style={AnalyaticsStyles.CaptureImageSet} />
                                  </View> */}
-                                       <Spacing space={SH(5)} />
-                                       <View style={{flexDirection: 'column'}}>
-                                         <View style={AnalyaticsStyles.PaddingHori}>
-                                           <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                             35. {t('Click on the icon to capture GEO location')}
-                                           </Text>
-                                           <View style={Style.FlexEditView}>
-                                             <TouchableOpacity
-                                               onPress={() =>
-                                                 // navigation.navigate(RouteName.MAP_SCREEN)
-                                                 getLocation()
-                                               }>
-                                               <Text style={Style.datetextstyles}>
-                                                 {' '}
-                                                 <VectorIcon
-                                                   icon="FontAwesome"
-                                                   name="map-marker"
-                                                   size={SF(20)}
-                                                   color={Colors.theme_background}
-                                                 />{' '}
-                                                 {location ? location.coords.latitude : null},
-                                                 {location ? location.coords.longitude : null}
-                                               </Text>
-                                             </TouchableOpacity>
-                                           </View>
-                                           <View>
-                                             <Text style={{color: 'black', fontSize: SF(12)}}>
-                                               Accuracy: {location?.coords?.accuracy.toFixed(1)}{' '}
-                                               meters (The actual location is within this radius)
-                                             </Text>
-                                           </View>
-                                         </View>
-                                       </View>
-                                       <Spacing space={SH(10)} />
-                                       <Input
-                                         title={'36. ' + t('Enumerator Name')}
-                                         placeholder={t('Enumerator Name')}
-                                         onChangeText={text =>
-                                           setFieldValue('enumeratorName', text)
-                                         }
-                                         value={values?.enumeratorName}
-                                         maxLength={200}
-                                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                                       />
-                                       <Text style={{color: 'red'}}>
-                                         {errors?.enumeratorName}
-                                       </Text>
-                 
-                                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                                         37. {t('Survey Date and Time')}
-                                       </Text>
-                                       <Spacing space={SH(5)} />
-                                       <DatePicker
-                                         dateselcetLocal={dateSelectLocal}
-                                         setdateselectLocal={setDateSelectLocal}
-                                       />
-                                       <Spacing space={SH(15)} />
-                                     </View>
-                                   )}
+                      <Spacing space={SH(5)} />
+                      <View style={{flexDirection: 'column'}}>
+                        <View style={AnalyaticsStyles.PaddingHori}>
+                          <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                            35. {t('Click on the icon to capture GEO location')}
+                          </Text>
+                          <View style={Style.FlexEditView}>
+                            <TouchableOpacity
+                              onPress={() =>
+                                // navigation.navigate(RouteName.MAP_SCREEN)
+                                getLocation()
+                              }>
+                              <Text style={Style.datetextstyles}>
+                                {' '}
+                                <VectorIcon
+                                  icon="FontAwesome"
+                                  name="map-marker"
+                                  size={SF(20)}
+                                  color={Colors.theme_background}
+                                />{' '}
+                                {location ? location.coords.latitude : null},
+                                {location ? location.coords.longitude : null}
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                          <View>
+                            <Text style={{color: 'black', fontSize: SF(12)}}>
+                              Accuracy: {location?.coords?.accuracy.toFixed(1)}{' '}
+                              meters (The actual location is within this radius)
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      <Spacing space={SH(10)} />
+                      <Input
+                        title={'36. ' + t('Enumerator Name')}
+                        placeholder={t('Enumerator Name')}
+                        onChangeText={text =>
+                          setFieldValue('enumeratorName', text)
+                        }
+                        value={values?.enumeratorName}
+                        maxLength={200}
+                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
+                      />
+                      <Text style={{color: 'red'}}>
+                        {errors?.enumeratorName}
+                      </Text>
+
+                      <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                        37. {t('Survey Date and Time')}
+                      </Text>
+                      <Spacing space={SH(5)} />
+                      <DatePicker
+                        dateselcetLocal={dateSelectLocal}
+                        setdateselectLocal={setDateSelectLocal}
+                      />
+                      <Spacing space={SH(15)} />
+                    </View>
+                  )}
                   <Spacing space={SH(170)} />
                 </View>
               </KeyboardAvoidingView>
@@ -2266,18 +2286,18 @@ const VillageFormSurveyEdit = props => {
                       (location ? location?.coords?.accuracy.toFixed(1) : null);
                     setFieldValue('GeoLocation', res);
 
-                      if (involvedWaterSource?.length > 0) {
-                        let waterArray = '';
-                        involvedWaterSource?.forEach(item => {
-                          waterArray =
-                            involvedWaterSource.length > 1
-                              ? waterArray.concat(item + ', ')
-                              : waterArray.concat(item);
-                        });
-                        //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
-                        setFieldValue('drinkingWaterSource', waterArray);
-                        setDrinkingWaterSource(waterArray);
-                      }
+                    if (involvedWaterSource?.length > 0) {
+                      let waterArray = '';
+                      involvedWaterSource?.forEach(item => {
+                        waterArray =
+                          involvedWaterSource.length > 1
+                            ? waterArray.concat(item + ', ')
+                            : waterArray.concat(item);
+                      });
+                      //Alert.alert("involvedInLivestockActivity",JSON.stringify(livestockArray));
+                      setFieldValue('drinkingWaterSource', waterArray);
+                      setDrinkingWaterSource(waterArray);
+                    }
 
                     let finalValuesPreview = {
                       ...values,

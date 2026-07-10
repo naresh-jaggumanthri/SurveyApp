@@ -826,6 +826,7 @@ const [livestockData, setLivestockData] = useState([]);
         name: headName,
         count: familyMemberCount,
         type: 1,
+        gender:headOfTheHouseholdGender
       };
       if (!headName) {
         setNameError(t('Please enter the name of the head of the household'));
@@ -1092,7 +1093,7 @@ const handleNext = () => {
     }
   };
 
-  const getBankIfscCodeByBankName = async (bankName, setFieldValue) => {
+  const getBankIfscCodeByBankName = async (bankName, setFieldValue,setFieldTouched) => {
     let token = loginData?.token;
     const res = await api.user.getBankIfscCodeByBankName(bankName, token);
 
@@ -1106,8 +1107,27 @@ const handleNext = () => {
     setIfscCodeList(result);
     // Alert.alert("IFSC Codes",JSON.stringify(result));
 
-    setIfscCode(result[0]?.ifscCode || null);
-    setFieldValue('householdBasicProfile.ifscCodeOrBranch', ifscCode);
+    // 1. Get the fresh value right now
+const freshIfscCode = result[0]?.ifscCode || null;
+
+// 2. Update your local React state
+setIfscCode(freshIfscCode);
+
+// 3. Update Formik using the fresh value directly
+setFieldValue('householdBasicProfile.ifscCodeOrBranch', freshIfscCode);
+
+// 4. Check the FRESH value instead of the stale state variable
+if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '') { 
+  // Passing true, true forces Formik to mark it touched and re-validate immediately
+  setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
+}
+
+    // setIfscCode(result[0]?.ifscCode || null);
+    // setFieldValue('householdBasicProfile.ifscCodeOrBranch', ifscCode);
+    // if(ifscCode!=null && ifscCode!=undefined){ 
+    //   setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
+    // }
+   
   };
 
   const handleAddPress = () => {
@@ -1280,6 +1300,7 @@ const handleNext = () => {
           handleBlur,
           handleSubmit,
           setFieldValue,
+          setFieldTouched,
           values,
           errors,
           touched,
@@ -1585,7 +1606,7 @@ const handleNext = () => {
                         t('Select Bank Name')
                       }
                       onChange={obj => {
-                        getBankIfscCodeByBankName(obj.label, setFieldValue);
+                        getBankIfscCodeByBankName(obj.label, setFieldValue,setFieldTouched);
 
                         //  setIfscCode(result[0]?.ifscCode || null);
 
@@ -1794,7 +1815,7 @@ const handleNext = () => {
                       />
                     )}
                     <Text style={{color: 'red'}}>
-                      {errors?.householdBasicProfile?.ifscCodeOrBranch}
+                      {errors?.householdBasicProfile?.ifscCodeOrBranch || null}
                     </Text>
                     <Spacing space={SH(5)} />
                     <Input

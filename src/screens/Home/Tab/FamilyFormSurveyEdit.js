@@ -1116,23 +1116,42 @@ const FamilyFormSurveyEdit = props => {
       // }
     }, 3000);
   };
-  const getBankIfscCodeByBankName = async (bankName, setFieldValue) => {
-    let token = loginData?.token;
-    const res = await api.user.getBankIfscCodeByBankName(bankName, token);
-
-    const result = res?.map(m => {
-      return {
-        label: m.ifsCode,
-        value: m.ifsCode,
-        ifscCode: m.ifsCode,
-      };
-    });
-    setIfscCodeList(result);
-    // Alert.alert("IFSC Codes",JSON.stringify(result));
-
-    setIfscCode(result[0]?.ifscCode || null);
-    setFieldValue('householdBasicProfile.ifscCodeOrBranch', ifscCode);
-  };
+  const getBankIfscCodeByBankName = async (bankName, setFieldValue,setFieldTouched) => {
+      let token = loginData?.token;
+      const res = await api.user.getBankIfscCodeByBankName(bankName, token);
+  
+      const result = res?.map(m => {
+        return {
+          label: m.ifsCode,
+          value: m.ifsCode,
+          ifscCode: m.ifsCode,
+        };
+      });
+      setIfscCodeList(result);
+      // Alert.alert("IFSC Codes",JSON.stringify(result));
+  
+      // 1. Get the fresh value right now
+  const freshIfscCode = result[0]?.ifscCode || null;
+  
+  // 2. Update your local React state
+  setIfscCode(freshIfscCode);
+  
+  // 3. Update Formik using the fresh value directly
+  setFieldValue('householdBasicProfile.ifscCodeOrBranch', freshIfscCode);
+  
+  // 4. Check the FRESH value instead of the stale state variable
+  if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '') { 
+    // Passing true, true forces Formik to mark it touched and re-validate immediately
+    setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
+  }
+  
+      // setIfscCode(result[0]?.ifscCode || null);
+      // setFieldValue('householdBasicProfile.ifscCodeOrBranch', ifscCode);
+      // if(ifscCode!=null && ifscCode!=undefined){ 
+      //   setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
+      // }
+     
+    };
 
   const handleAddFamilyMember = () => {
     // Alert.alert('headName',JSON.stringify(headName));
@@ -1326,6 +1345,7 @@ const FamilyFormSurveyEdit = props => {
           handleBlur,
           handleSubmit,
           setFieldValue,
+          setFieldTouched,
           values,
           errors,
           touched,
@@ -1639,7 +1659,7 @@ const FamilyFormSurveyEdit = props => {
                           t('Select Bank Name')
                         }
                         onChange={obj => {
-                          getBankIfscCodeByBankName(obj.label, setFieldValue);
+                          getBankIfscCodeByBankName(obj.label, setFieldValue,setFieldTouched);
 
                           //  setIfscCode(result[0]?.ifscCode || null);
 

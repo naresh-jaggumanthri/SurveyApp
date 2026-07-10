@@ -3,6 +3,7 @@ import React, {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -39,10 +40,9 @@ import {Formik} from 'formik';
 import {validationSchema} from './AddFamilyHelper';
 import {RouteName} from '../../routes';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 import api from '../../api';
-import { getMasterData } from '../Home/Tab/HomeHelper';
-
+import {getMasterData} from '../Home/Tab/HomeHelper';
 
 const AddFamilyScreenUpdated = props => {
   const {navigation} = props;
@@ -57,134 +57,123 @@ const AddFamilyScreenUpdated = props => {
   const [familyMembers, setFamilyMembers] = useState([]);
   const [headName, setHeadName] = useState('');
 
+  const [genderName, setGenderName] = useState('');
+
   const [count, setCount] = useState(0);
-  const [type,setType]=useState(0);
+  const [type, setType] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const isFocused = useIsFocused();
-   const { familyData,loginData } = useSelector(state => state.DataReducer) || {};
-  
-   
+  const {familyData, loginData} = useSelector(state => state.DataReducer) || {};
+
+  const formikRef = useRef(null);
 
   useEffect(() => {
     loadRelationshipData(); //1
     loadGenders(); //2
     loadEducationData(); //3
     loadSectorsData(); //7
-    // Alert.alert('Success', JSON.stringify(loginData));
-    // const token = PubSub.subscribe('count', (msg, data) => {
-    //   console.log('Received count:', data);
-    //   setCount(data?.count);
-    //   setHeadName(data?.name);
-    //    familyMembers[0]?.name=data?.name;
-    //   setType(data?.type);
-    //   // familyMembers[0]?.name = data?.name;
-    //   setCurrentIndex(data?.count - 1);
-    // });
 
     const token = PubSub.subscribe('count', (msg, data) => {
-  console.log('Received count:', data);
-    
-  const targetCount = data?.count || 0;
-  setCount(targetCount);
-  setHeadName(data?.name);
-  setType(data?.type);
+      console.log('Received count:', data);
 
-  // 1. Update your local React state array cleanly using a shallow clone
-//   setFamilyMembers(prevMembers => {
-//     // Ensure we have at least an empty object at index 0 to avoid crashes
-//     const updated = prevMembers.length > 0 ? [...prevMembers] : [{}];
-//     updated[0] = { ...updated[0], name: data?.name || headName };
-    
+      const targetCount = data?.count || 0;
+      setCount(targetCount);
+      setHeadName(data?.name);
+      setType(data?.type);
+      setGenderName(data?.gender);
 
-//     return updated;
-//   });
-familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
-  // 2. IMPORTANT: Update Formik's internal values array synchronously
-  // This keeps the input fields and Formik's submission object in sync
-//   setFieldValue(`familyMembers[0].name`, data?.name || '');
-// Alert.alert('Received count:', JSON.stringify(familyMembers[0].name));
+      familyMembers[0] = {
+        ...familyMembers[0],
+        name: data?.name || headName,
+        gender: data?.gender || genderName,
+      };
 
-  // Set the current index securely
-  setCurrentIndex(targetCount > 0 ? targetCount - 1 : 0);
-});
+      setCurrentIndex(targetCount > 0 ? targetCount - 1 : 0);
+    });
 
     return () => {
       PubSub.unsubscribe(token);
     };
-   
   }, [isFocused]);
-  // const genderData = [
-  //   {label: t('mMale'), value: t('mMale')},
-  //   {label: t('fFemale'), value: t('fFemale')},
-  //   {label: t('Others'), value: t('Others')},
-  // ];
+  useEffect(() => {
+    // 3. Access setFieldTouched safely through the current ref
+    if (familyMembers[0]?.name) {
+      formikRef.current?.setFieldTouched('familyMembers.0.name', true);
+      formikRef.current?.setFieldValue('familyMembers.0.name', familyMembers[0]?.name);
+    }
+    if (familyMembers[0]?.gender) {
+      formikRef.current?.setFieldTouched('familyMembers.0.gender', true);
+      formikRef.current?.setFieldValue('familyMembers.0.gender', familyMembers[0]?.gender);
+    }
+  }, [familyMembers[0]?.name, familyMembers[0]?.gender]);
   const [genderData, setGenderData] = useState([]);
-   const loadGenders = async () => {
-      let token = loginData?.token;
-  
-      const currentLanguage = i18n.language;
-  
-      //  const language = await getLanguage();
-      const genders = await getMasterData(
-        'gender',
-        2, // The index you assigned in saveMasters
-        api.master.getGender,
-        token,
-      );
-  
-      const result = genders.map(gender => {
-        return {
-          id: gender.id,
-          label:
-            currentLanguage === 'en' ? gender.genderName : gender.genderNameLocal,
-          value:
-            currentLanguage === 'en' ? gender.genderName : gender.genderNameLocal,
-        };
-      }); // Sort alphabetically
-  
-      // Alert.alert('Success', 'Gender data fetched successfully!'+JSON.stringify(result));
-      setGenderData(result);
-    };
+  const loadGenders = async () => {
+    let token = loginData?.token;
+
+    const currentLanguage = i18n.language;
+
+    //  const language = await getLanguage();
+    const genders = await getMasterData(
+      'gender',
+      2, // The index you assigned in saveMasters
+      api.master.getGender,
+      token,
+    );
+
+    const result = genders.map(gender => {
+      return {
+        id: gender.id,
+        label:
+          currentLanguage === 'en' ? gender.genderName : gender.genderNameLocal,
+        value:
+          currentLanguage === 'en' ? gender.genderName : gender.genderNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Gender data fetched successfully!'+JSON.stringify(result));
+    setGenderData(result);
+  };
   const selfHelpData = [
     {label: t('Yes'), value: true},
     {label: t('No'), value: false},
   ];
- 
+
   const migrationData = [
     {label: t('1-3months'), value: '1-3 months'},
     {label: t('4-6months'), value: '4-6 months'},
     {label: t('7-12months'), value: '7-12 months'},
   ];
- 
+
   const [educationData, setEducationData] = useState([]);
-   const loadEducationData = async () => {
-   
-      let token = loginData?.token;
-  
-      const currentLanguage = i18n.language;
-  
-      //  const language = await getLanguage();
-      const educations = await getMasterData(
-        'education',
-        3, // The index you assigned in saveMasters
-        api.master.getEducation,
-        token,
-      );
-    
-  
-      const result = educations.map(education => {
-        return {
-          id: education.id,
-          label:
-            currentLanguage === 'en' ? education.qualificationName : education.qualificationNameLocal,
-          value:
-            currentLanguage === 'en' ? education.qualificationName : education.qualificationNameLocal,
-        };
-      }); // Sort alphabetically
-  
-       
-      setEducationData(result);
-    };
+  const loadEducationData = async () => {
+    let token = loginData?.token;
+
+    const currentLanguage = i18n.language;
+
+    //  const language = await getLanguage();
+    const educations = await getMasterData(
+      'education',
+      3, // The index you assigned in saveMasters
+      api.master.getEducation,
+      token,
+    );
+
+    const result = educations.map(education => {
+      return {
+        id: education.id,
+        label:
+          currentLanguage === 'en'
+            ? education.qualificationName
+            : education.qualificationNameLocal,
+        value:
+          currentLanguage === 'en'
+            ? education.qualificationName
+            : education.qualificationNameLocal,
+      };
+    }); // Sort alphabetically
+
+    setEducationData(result);
+  };
   // const educationData = [
   //   {label: 'Illiterate', value: 'Illiterate'},
   //   {label: 'Never attended school', value: 'Never attended school'},
@@ -204,33 +193,37 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
   //   {label: 'Vocational Training', value: 'Vocational Training'},
   // ];
   const [relationshipData, setRelationshipData] = useState([]);
-   const loadRelationshipData = async () => {
-      let token = loginData?.token;
-  
-      const currentLanguage = i18n.language;
-  
-      //  const language = await getLanguage();
-      const relations = await getMasterData(
-        'relationship',
-        1, // The index you assigned in saveMasters
-        api.master.getRelationship,
-        token,
-      );
-  
-      const result = relations.map(relation => {
-        return {
-          id: relation.id,
-          label:
-            currentLanguage === 'en' ? relation.relationshipName : relation.relationshipNameLocal,
-          value:
-            currentLanguage === 'en' ? relation.relationshipName : relation.relationshipNameLocal,
-        };
-      }); // Sort alphabetically
-  
-      // Alert.alert('Success', 'Education data fetched successfully!'+JSON.stringify(result));
-      setRelationshipData(result);
-    };
- 
+  const loadRelationshipData = async () => {
+    let token = loginData?.token;
+
+    const currentLanguage = i18n.language;
+
+    //  const language = await getLanguage();
+    const relations = await getMasterData(
+      'relationship',
+      1, // The index you assigned in saveMasters
+      api.master.getRelationship,
+      token,
+    );
+
+    const result = relations.map(relation => {
+      return {
+        id: relation.id,
+        label:
+          currentLanguage === 'en'
+            ? relation.relationshipName
+            : relation.relationshipNameLocal,
+        value:
+          currentLanguage === 'en'
+            ? relation.relationshipName
+            : relation.relationshipNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Education data fetched successfully!'+JSON.stringify(result));
+    setRelationshipData(result);
+  };
+
   // const relationshipData = [
   //   {label: 'Self', value: 'Self'},
   //   {label: 'Parents', value: 'Parents'},
@@ -285,32 +278,32 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
     {label: 'Other', value: 'Other'},
   ];
   const [sectorsData, setSectorsData] = useState([]);
-   const loadSectorsData = async () => {
-      let token = loginData?.token;
-  
-      const currentLanguage = i18n.language;
-  
-      //  const language = await getLanguage();
-      const sectors = await getMasterData(
-        'migrationSector',
-        7, // The index you assigned in saveMasters
-        api.master.getMigrationSector,
-        token,
-      );
-  
-      const result = sectors.map(sector => {
-        return {
-          id: sector.id,
-          label:
-            currentLanguage === 'en' ? sector.sectorName : sector.sectorNameLocal,
-          value:
-            currentLanguage === 'en' ? sector.sectorName : sector.sectorNameLocal,
-        };
-      }); // Sort alphabetically
-  
-      // Alert.alert('Success', 'Education data fetched successfully!'+JSON.stringify(result));
-      setSectorsData(result);
-    };
+  const loadSectorsData = async () => {
+    let token = loginData?.token;
+
+    const currentLanguage = i18n.language;
+
+    //  const language = await getLanguage();
+    const sectors = await getMasterData(
+      'migrationSector',
+      7, // The index you assigned in saveMasters
+      api.master.getMigrationSector,
+      token,
+    );
+
+    const result = sectors.map(sector => {
+      return {
+        id: sector.id,
+        label:
+          currentLanguage === 'en' ? sector.sectorName : sector.sectorNameLocal,
+        value:
+          currentLanguage === 'en' ? sector.sectorName : sector.sectorNameLocal,
+      };
+    }); // Sort alphabetically
+
+    // Alert.alert('Success', 'Education data fetched successfully!'+JSON.stringify(result));
+    setSectorsData(result);
+  };
 
   // const sectorsData = [
   //   {label: 'Brick Kiln', value: 'Brick Kiln'},
@@ -362,45 +355,53 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
     sectorOfEngagementDuringMigration: '',
   }));
   // Helper component to cleanly display inline formik errors
-  const ErrorMessage = ({ name, errors, touched }) => {
-    const error = errors?.familyMembers?.[currentIndex]?.[name];
-    const isTouched = touched?.familyMembers?.[currentIndex]?.[name];
-    if (error && isTouched) {
+  const ErrorMessage = ({label, errors, touched, setFieldTouched}) => {
+    const error = errors?.familyMembers?.[currentIndex]?.[label];
+    const isTouched = touched?.familyMembers?.[currentIndex]?.[label];
+    if (error) {
       return <Text style={styles.errorText}>{error}</Text>;
     }
     return null;
   };
   return (
     <Formik
+      innerRef={formikRef} // 2. Pass the ref here
       initialValues={{familyMembers: initialMembers}}
       validationSchema={validationSchema}
       onSubmit={values => {
-        console.log('Final Data:', values);  
-        if(type==1){
-              PubSub.publish('familyData', values?.familyMembers);
-           
-         navigation.navigate(RouteName.FAMILY_SURVEY_TAB);
+        console.log('Final Data:', values);
+        if (type == 1) {
+          PubSub.publish('familyData', values?.familyMembers);
 
-        return;
+          navigation.navigate(RouteName.FAMILY_SURVEY_TAB);
+
+          return;
         }
-         if(type==2){
-            const result={
-                ...familyData,
-                householdFamilyMember:values.familyMembers
-            }
-         //Alert.alert("familyData",JSON.stringify(result.householdFamilyMember));
-        PubSub.publish('HouseItem',result);
-        //  PubSub.publish('familyData', values.familyMembers); 
-        // navigation.replace(RouteName.FAMILY_SURVEY_EDIT_TAB);
-        navigation.reset({
-  index: 0,
-  routes: [{ name:RouteName.FAMILY_SURVEY_EDIT_TAB}],
-});
-        return;
+        if (type == 2) {
+          const result = {
+            ...familyData,
+            householdFamilyMember: values.familyMembers,
+          };
+          //Alert.alert("familyData",JSON.stringify(result.householdFamilyMember));
+          PubSub.publish('HouseItem', result);
+          //  PubSub.publish('familyData', values.familyMembers);
+          // navigation.replace(RouteName.FAMILY_SURVEY_EDIT_TAB);
+          navigation.reset({
+            index: 0,
+            routes: [{name: RouteName.FAMILY_SURVEY_EDIT_TAB}],
+          });
+          return;
         }
         // setModalVisible(false);
       }}>
-      {({values, setFieldValue, errors, touched, handleSubmit}) => {
+      {({
+        values,
+        setFieldValue,
+        setFieldTouched,
+        errors,
+        touched,
+        handleSubmit,
+      }) => {
         const member = values.familyMembers[currentIndex];
         return (
           <View style={Style.BgColorWhiteAll}>
@@ -445,11 +446,25 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                       `familyMembers[${currentIndex}].name`,
                       cleaned,
                     );
-                    familyMembers[currentIndex] = { ...familyMembers[currentIndex], name:cleaned};
+                    familyMembers[currentIndex] = {
+                      ...familyMembers[currentIndex],
+                      name: cleaned,
+                    };
+                    if (familyMembers[0]?.name) {
+                      setFieldTouched(`familyMembers?.[0]?.[name]`, true);
+                    }
+                    if (familyMembers[0]?.gender) {
+                      setFieldTouched(`familyMembers?.[0]?.[gender]`, true);
+                    }
                   }}
                   maxLength={30}
                 />
-                <ErrorMessage name="name" errors={errors} touched={touched} />
+                <ErrorMessage
+                  name="name"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
                 {/* AGE */}
                 <Input
                   title={t('AgeN')}
@@ -462,7 +477,12 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                     )
                   }
                 />
-                <ErrorMessage name="age" errors={errors} touched={touched} />
+                <ErrorMessage
+                  name="age"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
 
                 {/* GENDER */}
                 <Spacing space={SH(15)} />
@@ -471,12 +491,21 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                 </Text>
                 <RadioButton
                   arrayData={genderData}
-                  value={member?.gender}
-                  onChangeText={val =>
-                    setFieldValue(`familyMembers[${currentIndex}].gender`, val)
+                  value={currentIndex==0?genderName:member?.gender}
+                  onChangeText={(val)=>{
+                    setFieldValue(`familyMembers[${currentIndex}].gender`, val);
+                    if(currentIndex==0){
+                    setGenderName(val);
+                    }
+                  }
                   }
                 />
-                <ErrorMessage name="gender" errors={errors} touched={touched} />
+                <ErrorMessage
+                  name="gender"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
 
                 {/* Educational Qualification */}
                 <Spacing space={SH(15)} />
@@ -502,7 +531,12 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                     );
                   }}
                 />
-                <ErrorMessage name="educationalQualification" errors={errors} touched={touched} />
+                <ErrorMessage
+                  name="educationalQualification"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
 
                 {/* Relationship with Head of Household */}
                 <Spacing space={SH(15)} />
@@ -528,8 +562,12 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                     );
                   }}
                 />
-                <ErrorMessage name="relationshipWithHeadOfHousehold" errors={errors} touched={touched} />
-                
+                <ErrorMessage
+                  name="relationshipWithHeadOfHousehold"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
 
                 {/* labour Card*/}
                 <Spacing space={SH(15)} />
@@ -546,7 +584,12 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                     )
                   }
                 />
-                <ErrorMessage name="memberHasLabourCard" errors={errors} touched={touched} />
+                <ErrorMessage
+                  name="memberHasLabourCard"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
 
                 {/*Nirman Shramik Kalyan Yojana*/}
                 <Spacing space={SH(15)} />
@@ -565,7 +608,12 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                     )
                   }
                 />
-                <ErrorMessage name="memberCoveredUnderNSKY" errors={errors} touched={touched} />
+                <ErrorMessage
+                  name="memberCoveredUnderNSKY"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
 
                 {/* Destination State */}
                 <Spacing space={SH(15)} />
@@ -590,7 +638,12 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                     );
                   }}
                 />
-                <ErrorMessage name="destinationState" errors={errors} touched={touched} />
+                <ErrorMessage
+                  name="destinationState"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
                 {/* Nature/Sector of engagement */}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -619,7 +672,12 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                     );
                   }}
                 />
-                <ErrorMessage name="sectorOfEngagementDuringMigration" errors={errors} touched={touched} />
+                <ErrorMessage
+                  name="sectorOfEngagementDuringMigration"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
                 {/* migrated */}
                 <Spacing space={SH(15)} />
                 <Text style={AnalyaticsStyles.PleaseEnterDate}>
@@ -628,80 +686,103 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                 <RadioButton
                   arrayData={selfHelpData}
                   value={member?.migratedInLast3Years}
-                  onChangeText={(val) => {
+                  onChangeText={val => {
                     // Alert.alert("val",JSON.stringify(val));
                     setFieldValue(
                       `familyMembers[${currentIndex}].migratedInLast3Years`,
                       val,
                     );
-                    if(!val){setFieldValue(
-                      `familyMembers[${currentIndex}].periodOfMigration`,
-                      "",
-                    );
+                    if (!val) {
+                      setFieldValue(
+                        `familyMembers[${currentIndex}].periodOfMigration`,
+                        '',
+                      );
 
-                    setFieldValue(
-                      `familyMembers[${currentIndex}].monthlyRemittanceDuringMigration`,
-                      0,
-                    );
-
-                }
+                      setFieldValue(
+                        `familyMembers[${currentIndex}].monthlyRemittanceDuringMigration`,
+                        0,
+                      );
+                    }
                   }}
                 />
-                <ErrorMessage name="migratedInLast3Years" errors={errors} touched={touched} />
+                <ErrorMessage
+                  name="migratedInLast3Years"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
 
                 {/* Period of migration */}
-                {member?.migratedInLast3Years &&<Spacing space={SH(15)} />}
-                {member?.migratedInLast3Years && <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                  {t('Period of migration')}
-                </Text>}
+                {member?.migratedInLast3Years && <Spacing space={SH(15)} />}
+                {member?.migratedInLast3Years && (
+                  <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                    {t('Period of migration')}
+                  </Text>
+                )}
                 {member?.migratedInLast3Years && <Spacing space={SH(5)} />}
-                 {member?.migratedInLast3Years &&<DropDown
-                  data={migrationData}
-                  dropdownStyle={{marginLeft: SH(10)}}
-                  width={SW(345)}
-                  labelField="label"
-                  valueField="value"
-                  value={member?.periodOfMigration}
-                  placeholder={
-                    member?.periodOfMigration || t('Period of migration')
-                  }
-                  onChange={obj => {
-                    setFieldValue(
-                      `familyMembers[${currentIndex}].periodOfMigration`,
-                      obj?.label,
-                    );
-                  }}
-                />}
-                <ErrorMessage name="periodOfMigration" errors={errors} touched={touched} />
+                {member?.migratedInLast3Years && (
+                  <DropDown
+                    data={migrationData}
+                    dropdownStyle={{marginLeft: SH(10)}}
+                    width={SW(345)}
+                    labelField="label"
+                    valueField="value"
+                    value={member?.periodOfMigration}
+                    placeholder={
+                      member?.periodOfMigration || t('Period of migration')
+                    }
+                    onChange={obj => {
+                      setFieldValue(
+                        `familyMembers[${currentIndex}].periodOfMigration`,
+                        obj?.label,
+                      );
+                    }}
+                  />
+                )}
+                <ErrorMessage
+                  name="periodOfMigration"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
                 {/* Monthly Income */}
                 {member?.migratedInLast3Years && <Spacing space={SH(15)} />}
-                {member?.migratedInLast3Years && <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                  {t(
-                    'What was the monthly income during migration(In Rupees)?',
-                  )}
-                </Text>}
-                {member?.migratedInLast3Years && <Spacing space={SH(5)} />}
-                {member?.migratedInLast3Years && <DropDown
-                  data={monthlyIncomeData}
-                  dropdownStyle={{marginLeft: SH(10)}}
-                  width={SW(345)}
-                  labelField="label"
-                  valueField="value"
-                  value={member?.monthlyRemittanceDuringMigration}
-                  placeholder={
-                    member?.monthlyRemittanceDuringMigration ||
-                    t(
+                {member?.migratedInLast3Years && (
+                  <Text style={AnalyaticsStyles.PleaseEnterDate}>
+                    {t(
                       'What was the monthly income during migration(In Rupees)?',
-                    )
-                  }
-                  onChange={obj => {
-                    setFieldValue(
-                      `familyMembers[${currentIndex}].monthlyRemittanceDuringMigration`,
-                      obj?.label,
-                    );
-                  }}
-                />}
-                <ErrorMessage name="monthlyRemittanceDuringMigration" errors={errors} touched={touched}/>
+                    )}
+                  </Text>
+                )}
+                {member?.migratedInLast3Years && <Spacing space={SH(5)} />}
+                {member?.migratedInLast3Years && (
+                  <DropDown
+                    data={monthlyIncomeData}
+                    dropdownStyle={{marginLeft: SH(10)}}
+                    width={SW(345)}
+                    labelField="label"
+                    valueField="value"
+                    value={member?.monthlyRemittanceDuringMigration}
+                    placeholder={
+                      member?.monthlyRemittanceDuringMigration ||
+                      t(
+                        'What was the monthly income during migration(In Rupees)?',
+                      )
+                    }
+                    onChange={obj => {
+                      setFieldValue(
+                        `familyMembers[${currentIndex}].monthlyRemittanceDuringMigration`,
+                        obj?.label,
+                      );
+                    }}
+                  />
+                )}
+                <ErrorMessage
+                  name="monthlyRemittanceDuringMigration"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
 
                 {/*skill development*/}
                 <Spacing space={SH(15)} />
@@ -720,7 +801,12 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                     )
                   }
                 />
-                <ErrorMessage name="interestInSkillDevelopment" errors={errors} touched={touched}/>
+                <ErrorMessage
+                  name="interestInSkillDevelopment"
+                  errors={errors}
+                  touched={touched}
+                  setFieldTouched={setFieldTouched}
+                />
 
                 {/* CHECKBOX EXAMPLE */}
                 {/* {['DDUGKY', 'RSETI', 'Other'].map((item, i) => (
@@ -747,7 +833,12 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                 ))} */}
 
                 {/* NAVIGATION */}
-                <View style={{flexDirection: 'row', marginTop:20,justifyContent:'space-between'}}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    marginTop: 20,
+                    justifyContent: 'space-between',
+                  }}>
                   {currentIndex > 0 && (
                     // <Button
                     //   title="Previous"
@@ -789,11 +880,41 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                   ) : (
                     <TouchableOpacity
                       style={AnalyaticsStyles.SubmitButton}
-                      onPress={()=>{
-                        // Alert.alert("error",JSON.stringify(errors));
+                      onPress={() => {
+
+                        if (familyMembers.length !== count) {
+                          Alert.alert(
+                            t('Error'),
+                            t(
+                              'Please fill all family members data before submitting.',
+                            ),
+                            [{text: t('OK'), style: 'default'}],
+                          );
+                          return;
+                        }
+
+                        Alert.alert("errors",JSON.stringify(errors));
+
+                        if (
+                          errors.familyMembers &&
+                          errors.familyMembers.length > 0
+                        ) {
+                          Alert.alert(
+                            t('Error'),
+                            t(
+                              'Please correct the errors in the form before submitting.',
+                            ),
+                            [{text: t('OK'), style: 'default'}],
+                          );
+                          return;
+                        }
+                        //  return;
+
                         Alert.alert(
                           t('Confirmation'),
-                          t('Are you sure you want to submit the family members data?'),
+                          t(
+                            'Are you sure you want to submit the family members data?',
+                          ),
                           [
                             {
                               text: t('Cancel'),
@@ -804,10 +925,10 @@ familyMembers[0] = { ...familyMembers[0], name: data?.name || headName };
                               onPress: () => handleSubmit(),
                             },
                           ],
-                          { cancelable: false }
+                          {cancelable: false},
                         );
                         // handleSubmit()
-                        }}>
+                      }}>
                       <Text style={AnalyaticsStyles.PreviousTextStyle}>
                         {t('Add member')}
                       </Text>
@@ -885,6 +1006,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: SH(12),
     marginLeft: SH(10),
-  }
+  },
 });
 export default AddFamilyScreenUpdated;

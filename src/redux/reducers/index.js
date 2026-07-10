@@ -13,7 +13,7 @@ const persistConfig = {
 const persistConfigdata = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['detailsStore'],
+  whitelist: ['detailsStore','villageData'],
 };
 
 const rootReducers = combineReducers({

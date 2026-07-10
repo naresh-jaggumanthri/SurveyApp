@@ -19,10 +19,13 @@ import { VillageSurvey } from '../../../database/entities/VillageSurvey';
 import { v4 as uuidv4 } from 'uuid';
 import UserProfileCard from '../../../components/commonComponents/UserProfileCard';
 import SyncModal from '../../../components/commonComponents/SyncModal';
+import { save_village_data } from '../../../redux/action/DataAction';
+import {useDispatch} from 'react-redux';
 
 const VillageFormList = (props) => {
   const { navigation } = props;
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const { loginData } = useSelector(state => state.DataReducer) || {};
    useEffect(()=>{
   getVillageList();
@@ -349,12 +352,19 @@ const [syncModalVisible, setSyncModalVisible] = useState(false);
                   index={index}
                   type={2}
                   onPress={() =>{ 
-                    // Alert.alert("index",JSON.stringify(item));
+                    //  Alert.alert("index",JSON.stringify(item));
                     // if(index==0){
                     //   navigation.navigate(RouteName.FAMILY_SURVEY_TAB)
                     // }else if(index==1){
-                     PubSub.publish('VillageItem',item) 
-                      navigation.navigate(RouteName.VILLAGE_SURVEY_EDIT_TAB)
+                    //  setTimeout(() => {
+                    //  PubSub.publish('VillageItem',item) 
+                    //  },0);
+                    dispatch(save_village_data(item));
+                     
+                     setTimeout(()=>{
+                      navigation.navigate(RouteName.VILLAGE_SURVEY_EDIT_TAB);
+                      },1);
+
                     // }
                     // navigation.navigate(RouteName.VIEW_REPORT_SCREEN)
                   }}

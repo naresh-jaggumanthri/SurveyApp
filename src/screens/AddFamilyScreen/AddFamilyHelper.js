@@ -22,8 +22,8 @@ export const validationSchema = Yup.object().shape({
       age: Yup.number()
         .typeError('Age must be a number')
         .required('Age is required')
-        .min(0, 'Age cannot be negative')
-        .max(125, 'Please enter a valid age'),
+        .min(18, 'Age must be at least 18')
+        .max(90, 'Please enter a valid age'),
       gender: Yup.string()
         .required('Gender is required'),
       educationalQualification: Yup.string()

@@ -2151,6 +2151,17 @@ saveEditedHouseHold(body,uniqueId,token) {
     );
   };
 
+  saveEditedVillageSurvey(body,uniqueId,token) {
+    return this.apiClient.postImageUpdate(
+      null,
+      `api/MigrationSurvey/${uniqueId}`,
+      body,
+      null,
+      true,
+      token
+    );
+  };
+
 }
 
 
