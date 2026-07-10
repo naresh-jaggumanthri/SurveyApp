@@ -893,7 +893,7 @@ const AddFamilyScreenUpdated = props => {
                           return;
                         }
 
-                        Alert.alert("errors",JSON.stringify(errors));
+                        // Alert.alert("errors",JSON.stringify(errors));
 
                         if (
                           errors.familyMembers &&
