@@ -2162,6 +2162,15 @@ saveEditedHouseHold(body,uniqueId,token) {
     );
   };
 
+  getVillageMembersCount(params, token) {
+    return this.apiClient.get(
+      null,
+      `api/Member/filter`,
+      params,
+      token
+    );
+  }
+
 }
 
 

@@ -5,7 +5,7 @@ import React, {
   useRef,
   useLayoutEffect,
 } from 'react';
- import {useNavigation, useTheme} from '@react-navigation/native';
+import {useNavigation, useTheme} from '@react-navigation/native';
 import {
   View,
   ScrollView,
@@ -56,7 +56,10 @@ import {VillageSurvey} from '../../../database/entities/VillageSurvey';
 import {AppOkAlert} from '../../../utils/AlertHelper';
 import {isEligibleForNext} from './FamilyFormHelper';
 import {getMasterData} from './HomeHelper';
-import {getMasterLocationData} from '../../Authantication/LoginScreen/LoginHelper';
+import {
+  getMasterLocationData,
+  getVillageMembersCount,
+} from '../../Authantication/LoginScreen/LoginHelper';
 import StepSlider from '../../../components/commonComponents/StepSlider';
 import {SafeAreaView} from 'react-native';
 // import { VillageFormSurveyTab } from '.';
@@ -479,6 +482,7 @@ const VillageFormSurveyTab = props => {
   const [SurveyProcess, setSurveyProcess] = useState(null);
   const [editData, setEditData] = useState(undefined);
   const [previewData, setPreviewData] = useState(null);
+  const [villageData, setVillageData] = useState([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [location, setLocation] = useState(false);
   const formikRef = useRef(null);
@@ -487,8 +491,18 @@ const VillageFormSurveyTab = props => {
     formikRef.current.resetForm({values: undefined});
   }, []);
   useEffect(() => {
+    PubSub.subscribe('VILLAGE_MEMBERS_COUNT', myVillageData);
     getLocation();
   }, []);
+  const myVillageData = (msg, data) => {
+    loadVillageMembersCount(data);
+    // Alert.alert('Village Members Count again', JSON.stringify(data), [{text: 'OK'}]);
+  };
+  const loadVillageMembersCount = data => {
+    if (data) {
+      setVillageData(data);
+    }
+  };
   var mySubscriber = function (msg, data) {
     // console.log(msg, data);
     //  Alert.alert("Data",JSON.stringify(data?.item));
@@ -640,7 +654,9 @@ const VillageFormSurveyTab = props => {
       setLoading(false);
       setAlertVisible(true);
       setAlertMessage(
-        t('The offline village data has been saved successfully.') + ' with Local Id :' + localId,
+        t('The offline village data has been saved successfully.') +
+          ' with Local Id :' +
+          localId,
       );
       return;
     }
@@ -882,6 +898,28 @@ const VillageFormSurveyTab = props => {
                         }
                         onChange={obj => {
                           setFieldValue('revenueVillage', obj.label);
+                          fetchVillageMembersCount();
+                          async function fetchVillageMembersCount() {
+                            const params = {
+                              district: values?.district,
+                              block: values?.block,
+                              gp: values?.gramPanchayat,
+                              village: [obj.label],
+                              token: loginData?.token,
+                            };
+
+                            await getVillageMembersCount(params);
+                          }
+                          villageData.map(item => {
+                            // Alert.alert('Village Members Count', JSON.stringify(item));
+                            setFieldValue('totalHouseholds', item?.total);
+                            setFieldValue('malePopulation', item?.male);
+                            setFieldValue('femalePopulation', item?.female);
+                            setFieldValue(
+                              'TotalPopulation',
+                              Number(item?.male) + Number(item?.female),
+                            );
+                          });
                         }}
                       />
                       <Text style={{color: 'red'}}>
@@ -912,7 +950,7 @@ const VillageFormSurveyTab = props => {
                           setFieldValue('totalHouseholds', filtered);
                           // setFieldValue('totalHouseholds', text)
                         }}
-                        value={values?.totalHouseholds}
+                        value={String(values?.totalHouseholds ?? '')}
                         inputType={'numeric'}
                         keyboardType={'number-pad'}
                         maxLength={4}
@@ -1000,7 +1038,7 @@ const VillageFormSurveyTab = props => {
                       <Text style={AnalyaticsStyles.TitleStyle}>
                         {'B. ' + t('Basic Infrastructure & Amenities')}
                       </Text>
-                     
+
                       <Spacing space={SH(5)} />
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         9. {t('Is the village electrified?')}
@@ -1120,7 +1158,10 @@ const VillageFormSurveyTab = props => {
                             maxValue={4000}
                             step={100}
                             initialValue={100}
-                            onValueChange={val => console.log('Selected:', val)}
+                            onValueChange={(val) => {
+                              console.log('Selected:', val)
+                              setFieldValue('lengthAllWeatherRoadToHighway', val);
+                            }}
                           />
                         </SafeAreaView>
                       )}
@@ -1595,7 +1636,7 @@ const VillageFormSurveyTab = props => {
                         onChangeText={text => {
                           // [^a-zA-Z.] means: "Match anything that is NOT a letter or a dot"
                           // The 'g' flag replaces all occurrences
-                         const filtered = text.replace(/[^a-zA-Z.\s]/g, '');
+                          const filtered = text.replace(/[^a-zA-Z.\s]/g, '');
 
                           setFieldValue('respondentName', filtered);
                         }}
@@ -2282,12 +2323,11 @@ const VillageFormSurveyTab = props => {
         onPress={() => {
           //  Alert.alert('ok button pressed',JSON.stringify(navigation));
           // Deep-navigate: Target the parent Navigator container, then specify the internal Screen
-  navigation.navigate('HomeScsreenTabAll', {
-    screen: RouteName.HOME_TAB,
-  });
+          navigation.navigate('HomeScsreenTabAll', {
+            screen: RouteName.HOME_TAB,
+          });
           //  Onpressfunction(RouteName.HOME_SCREEN);
           setAlertVisible(!alertVisible);
-         
         }}
         buttonText={t('Ok')}
         buttonminview={Style.ButtonCenter}

@@ -4,6 +4,7 @@ import {decode as atob} from 'base-64';
 import api from '../../../api';
 import {AppDataSource} from '../../../database/database';
 import {MasterSurvey} from '../../../database/entities/MasterSurvey';
+import PubSub from 'pubsub-js';
 export const LoginFormInitialValues = (username, password) => {
   return {
     username: username || '',
@@ -178,3 +179,29 @@ export const getMasterLocationData = async (type, parentId, apiCall) => {
   console.warn(`No local data found for ${storageKey}`);
   return [];
 };
+
+
+export const getVillageMembersCount = async (finalValues) => {
+    
+    // Implementation for getting village members count
+    // api//Member/filter?districtName=BOLANGIR&blockName=KHAPRAKHOL&panchayatName=BHANPUR&villageName=BRAMHANI
+    const params = {
+      districtName: finalValues?.district,
+      blockName: finalValues?.block,
+      panchayatName: finalValues?.gp,
+      villageName: finalValues?.village[0],
+    };
+   
+    const token = finalValues?.token; // Assuming you have the token available
+
+    
+    try {
+     
+      const response = await api.user.getVillageMembersCount(params,token);
+      // Alert.alert('Village Members Count', JSON.stringify(response), [{text: 'OK'}]);
+      PubSub.publish('VILLAGE_MEMBERS_COUNT', response || []);
+    } catch (error) {
+      console.error('Error fetching village members count:', error);
+    } 
+
+  };

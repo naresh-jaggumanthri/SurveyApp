@@ -64,7 +64,7 @@ import {err} from 'react-native-svg';
 import propTypes from 'prop-types';
 import {counterEvent} from 'react-native/Libraries/Performance/Systrace';
 import {getMasterData} from './HomeHelper';
-import { getMasterLocationData } from '../../Authantication/LoginScreen/LoginHelper';
+import {getMasterLocationData} from '../../Authantication/LoginScreen/LoginHelper';
 
 const FamilyFormSurveyTab = props => {
   const {t, i18n} = useTranslation();
@@ -209,7 +209,7 @@ const FamilyFormSurveyTab = props => {
   //   {label: 'PVTGS', value: 'PVTGS'},
   // ];
   const [socialCatData, setSocialCatData] = useState([]);
-   const loadSocialCategories = async () => {
+  const loadSocialCategories = async () => {
     let token = loginData?.token;
     const currentLanguage = i18n.language;
     //  const language = await getLanguage();
@@ -223,9 +223,13 @@ const FamilyFormSurveyTab = props => {
       return {
         id: category.id,
         label:
-          currentLanguage === 'en' ? category.categoryName : category.categoryNameLocal,
+          currentLanguage === 'en'
+            ? category.categoryName
+            : category.categoryNameLocal,
         value:
-          currentLanguage === 'en' ? category.categoryName : category.categoryNameLocal,
+          currentLanguage === 'en'
+            ? category.categoryName
+            : category.categoryNameLocal,
       };
     }); // Sort alphabetically
 
@@ -249,7 +253,7 @@ const FamilyFormSurveyTab = props => {
     {label: 'Mother', value: 'Mother'},
     {label: 'Self', value: 'Self'},
   ];
-const [occupationDropDownData, setOccupationData] = useState([]);
+  const [occupationDropDownData, setOccupationData] = useState([]);
   const loadOccupations = async () => {
     let token = loginData?.token;
     const currentLanguage = i18n.language;
@@ -264,17 +268,19 @@ const [occupationDropDownData, setOccupationData] = useState([]);
       return {
         id: occupation.id,
         label:
-          currentLanguage === 'en' ? occupation.occupationName : occupation.occupationNameLocal,
+          currentLanguage === 'en'
+            ? occupation.occupationName
+            : occupation.occupationNameLocal,
         value:
-          currentLanguage === 'en' ? occupation.occupationName : occupation.occupationNameLocal,
+          currentLanguage === 'en'
+            ? occupation.occupationName
+            : occupation.occupationNameLocal,
       };
     }); // Sort alphabetically
 
     // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
     setOccupationData(result);
   };
-
-  
 
   // const occupationDropDownData = [
   //   {label: 'Agriculture', value: 'Agriculture'},
@@ -303,7 +309,7 @@ const [occupationDropDownData, setOccupationData] = useState([]);
     {label: t('FRA Claimant'), value: t('FRA Claimant')},
     {label: t('Not a FRA Claimant'), value: t('Not a FRA Claimant')},
   ];
-  
+
   // const privateLandData = [
   //   {label: t('Landless'), value: 'Landless'},
   //   {label: t('0-0.5Acr'), value: '0- 0.5 Acr'},
@@ -312,7 +318,7 @@ const [occupationDropDownData, setOccupationData] = useState([]);
   //   {label: t('more than 2.5Acr'), value: 'more than 2.5 Acr'},
   // ];
   const [privateLandData, setPrivateLandData] = useState([]);
-    const loadPrivateLandData = async () => {
+  const loadPrivateLandData = async () => {
     let token = loginData?.token;
     const currentLanguage = i18n.language;
     //  const language = await getLanguage();
@@ -326,27 +332,31 @@ const [occupationDropDownData, setOccupationData] = useState([]);
       return {
         id: holding.id,
         label:
-          currentLanguage === 'en' ? holding.holdingSize : holding.holdingSizeLocal,
+          currentLanguage === 'en'
+            ? holding.holdingSize
+            : holding.holdingSizeLocal,
         value:
-          currentLanguage === 'en' ? holding.holdingSize : holding.holdingSizeLocal,
+          currentLanguage === 'en'
+            ? holding.holdingSize
+            : holding.holdingSizeLocal,
       };
     }); // Sort alphabetically
 
     // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
     setPrivateLandData(result);
-    };
- 
+  };
+
   // const waterSourceData = [
   //   {label: t('Well'), value: t('Well')},
   //   {label: t('Tube Well'), value: t('Tube Well')},
   //   {label: t('Piped Water Supply'), value: t('Piped Water Supply')},
   //   {label: t('Others'), value: t('Others')},
   // ];
-   const [waterSourceData, setWaterSourceData] = useState([]);
-   const [checkboxes4, setCheckboxes4] = useState([]);
-   const loadWaterSourceData = async () => {
+  const [waterSourceData, setWaterSourceData] = useState([]);
+  const [checkboxes4, setCheckboxes4] = useState([]);
+  const loadWaterSourceData = async () => {
     let token = loginData?.token;
-      const currentLanguage = i18n.language;
+    const currentLanguage = i18n.language;
     //  const language = await getLanguage();
     const waterSources = await getMasterData(
       'drinkingWaterSource',
@@ -358,15 +368,21 @@ const [occupationDropDownData, setOccupationData] = useState([]);
       return {
         id: waterSource.id,
         label:
-          currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+          currentLanguage === 'en'
+            ? waterSource.sourceName
+            : waterSource.sourceNameLocal,
         value:
-          currentLanguage === 'en' ? waterSource.sourceName : waterSource.sourceNameLocal,
+          currentLanguage === 'en'
+            ? waterSource.sourceName
+            : waterSource.sourceNameLocal,
       };
     }); // Sort alphabetically
 
     // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
     setWaterSourceData(result);
-    setCheckboxes4(result.map(source => ({label: source.label, checked: false})));
+    setCheckboxes4(
+      result.map(source => ({label: source.label, checked: false})),
+    );
   };
 
   // const schemeData = [
@@ -410,7 +426,6 @@ const [occupationDropDownData, setOccupationData] = useState([]);
     setGenderData(result);
   };
 
-  
   // const respondantData = [
   //   {label: t('Migrant Person himself'), value: t('Migrant Person himself')},
   //   {
@@ -442,16 +457,19 @@ const [occupationDropDownData, setOccupationData] = useState([]);
       return {
         id: respondentIdentity.id,
         label:
-          currentLanguage === 'en' ? respondentIdentity.identityName : respondentIdentity.identityNameLocal,
+          currentLanguage === 'en'
+            ? respondentIdentity.identityName
+            : respondentIdentity.identityNameLocal,
         value:
-          currentLanguage === 'en' ? respondentIdentity.identityName : respondentIdentity.identityNameLocal,
+          currentLanguage === 'en'
+            ? respondentIdentity.identityName
+            : respondentIdentity.identityNameLocal,
       };
     }); // Sort alphabetically
 
     // Alert.alert('Success', 'Gender data fetched successfully!'+JSON.stringify(result));
     setRespondentData(result);
   };
-
 
   const [checkboxes, setCheckboxes] = useState([
     {label: t('Survey_Title_24'), checked: false},
@@ -462,7 +480,7 @@ const [occupationDropDownData, setOccupationData] = useState([]);
 
     // Add more options as needed
   ]);
-  
+
   const [checkboxes2, setCheckboxes2] = useState([]);
 
   //   {label: t('Major'), checked: false},
@@ -478,7 +496,6 @@ const [occupationDropDownData, setOccupationData] = useState([]);
 
   //   // Add more options as needed
   // ]);
-  
 
   const [irrigationData, setIrrigationData] = useState([]);
   const loadIrrigationData = async () => {
@@ -503,11 +520,11 @@ const [occupationDropDownData, setOccupationData] = useState([]);
 
     // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
     setIrrigationData(result);
-    setCheckboxes2(result.map(source => ({label: source.label, checked: false})));
+    setCheckboxes2(
+      result.map(source => ({label: source.label, checked: false})),
+    );
   };
 
-
-  
   //   {label: t('Poultry'), checked: false},
   //   {label: t('Goatery'), checked: false},
   //   {label: t('Dairy'), checked: false},
@@ -516,9 +533,9 @@ const [occupationDropDownData, setOccupationData] = useState([]);
 
   //   // Add more options as needed
   // ]);
-const [checkboxes3, setCheckboxes3] = useState([]);
-const [livestockData, setLivestockData] = useState([]);
-   const loadLiveStockData = async () => {
+  const [checkboxes3, setCheckboxes3] = useState([]);
+  const [livestockData, setLivestockData] = useState([]);
+  const loadLiveStockData = async () => {
     let token = loginData?.token;
     const currentLanguage = i18n.language;
     //  const language = await getLanguage();
@@ -532,19 +549,22 @@ const [livestockData, setLivestockData] = useState([]);
       return {
         id: activity.id,
         label:
-          currentLanguage === 'en' ? activity.activityType : activity.activityTypeLocal,
+          currentLanguage === 'en'
+            ? activity.activityType
+            : activity.activityTypeLocal,
         value:
-          currentLanguage === 'en' ? activity.activityType : activity.activityTypeLocal,
+          currentLanguage === 'en'
+            ? activity.activityType
+            : activity.activityTypeLocal,
       };
     }); // Sort alphabetically
 
     // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
     setLivestockData(result);
-    setCheckboxes3(result.map(activity => ({label: activity.label, checked: false})));
+    setCheckboxes3(
+      result.map(activity => ({label: activity.label, checked: false})),
+    );
   };
-
- 
-  
 
   // const [checkboxes4, setCheckboxes4] = useState([
   //   {label: t('Well'), checked: false},
@@ -563,7 +583,7 @@ const [livestockData, setLivestockData] = useState([]);
   //   // Add more options as needed
   // ]);
   const [schemeData, setSchemeData] = useState([]);
-   const loadSchemesData = async () => {
+  const loadSchemesData = async () => {
     let token = loginData?.token;
     const currentLanguage = i18n.language;
     //  const language = await getLanguage();
@@ -586,7 +606,9 @@ const [livestockData, setLivestockData] = useState([]);
     // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
     let finalResult = result.filter(scheme => scheme.id !== 3);
     setSchemeData(finalResult);
-    setCheckboxes5(finalResult.map(scheme => ({label: scheme.label, checked: false})));
+    setCheckboxes5(
+      finalResult.map(scheme => ({label: scheme.label, checked: false})),
+    );
   };
 
   const migrationData = [
@@ -826,7 +848,7 @@ const [livestockData, setLivestockData] = useState([]);
         name: headName,
         count: familyMemberCount,
         type: 1,
-        gender:headOfTheHouseholdGender
+        gender: headOfTheHouseholdGender,
       };
       if (!headName) {
         setNameError(t('Please enter the name of the head of the household'));
@@ -845,46 +867,57 @@ const [livestockData, setLivestockData] = useState([]);
     }
   };
 
- 
   // Get Districts
-const getMasterState = async () => {
-  const token = loginData?.token;
-  const districts = await getMasterLocationData('district',null,() => api.master.getDistricts(token));
-  setDistrict(districts.map(m => ({ label: m.districtName, value: m.districtCode })));
-};
+  const getMasterState = async () => {
+    const token = loginData?.token;
+    const districts = await getMasterLocationData('district', null, () =>
+      api.master.getDistricts(token),
+    );
+    setDistrict(
+      districts.map(m => ({label: m.districtName, value: m.districtCode})),
+    );
+  };
 
   // Get Blocks
-const getBlocks = async (districtId) => {
-  const token = loginData?.token;
-  const data = await getMasterLocationData('block', districtId, () => api.master.getBlocksByDistrictId(districtId, token));
-  setBlocks(data.map(m => ({ label: m.blockName, value: m.blockCode })));
-};
- 
+  const getBlocks = async districtId => {
+    const token = loginData?.token;
+    const data = await getMasterLocationData('block', districtId, () =>
+      api.master.getBlocksByDistrictId(districtId, token),
+    );
+    setBlocks(data.map(m => ({label: m.blockName, value: m.blockCode})));
+  };
 
   // Get Panchayats
-const getPanchayats = async (blockId) => {
-  const token = loginData?.token;
-  const data = await getMasterLocationData('panchayat', blockId, () => api.master.getGramPanchayats(blockId, token));
-  setPanchayats(data.map(m => ({
-    label: m.panchayatName,
-    value: m.panchayatCode,
-    blockId: m.blockCode,
-  })));
-};
+  const getPanchayats = async blockId => {
+    const token = loginData?.token;
+    const data = await getMasterLocationData('panchayat', blockId, () =>
+      api.master.getGramPanchayats(blockId, token),
+    );
+    setPanchayats(
+      data.map(m => ({
+        label: m.panchayatName,
+        value: m.panchayatCode,
+        blockId: m.blockCode,
+      })),
+    );
+  };
 
- // Get Villages
-const getVillages = async (panchayatId) => {
-  const token = loginData?.token;
-  const data = await getMasterLocationData('village', panchayatId, () => api.master.getVillagesByPanchayatId(panchayatId, token));
-  setVillages(data.map(m => ({
-    label: m.villageName,
-    value: m.villageCode,
-    panchayatId: m.panchayatCode,
-  })));
-};
+  // Get Villages
+  const getVillages = async panchayatId => {
+    const token = loginData?.token;
+    const data = await getMasterLocationData('village', panchayatId, () =>
+      api.master.getVillagesByPanchayatId(panchayatId, token),
+    );
+    setVillages(
+      data.map(m => ({
+        label: m.villageName,
+        value: m.villageCode,
+        panchayatId: m.panchayatCode,
+      })),
+    );
+  };
 
-
- const getBankList = async () => {
+  const getBankList = async () => {
     let token = loginData?.token;
     // const res = await api.master.getBanks(token);
     // const result = res.map(m => {
@@ -893,15 +926,19 @@ const getVillages = async (panchayatId) => {
     //     value: m.id,
     //   };
     // });
-      const data = await getMasterLocationData('banks',null, () => api.master.getBanks(token));
-  setBankList(data.map(m => ({
-    label: m.bankName,
-    value: m.id,
-  })));
+    const data = await getMasterLocationData('banks', null, () =>
+      api.master.getBanks(token),
+    );
+    setBankList(
+      data.map(m => ({
+        label: m.bankName,
+        value: m.id,
+      })),
+    );
     // setBankList(result);
   };
 
-const handleNext = () => {
+  const handleNext = () => {
     // goToTop();
 
     if (currentQuestion == 1) {
@@ -950,7 +987,6 @@ const handleNext = () => {
     }
   };
 
- 
   var alertdata = {
     logout: t('Survey_Title_33'),
   };
@@ -958,9 +994,8 @@ const handleNext = () => {
     //  Alert.alert("Analytics Screen",JSON.stringify(familyMembers));
     // setAlertMessage(false);
     navigation.navigate('HomeScsreenTabAll', {
-        screen: RouteName.HOME_TAB,
-      });
-   
+      screen: RouteName.HOME_TAB,
+    });
   };
   const Onpressfunction = e => {
     navigation.toggleDrawer();
@@ -988,6 +1023,7 @@ const handleNext = () => {
   };
   const onSavePress = async values => {
     setLoading(true);
+
     const token = loginData?.token;
     let isConnected = await DeviceHelper.isConnectedToInternet();
     if (!isConnected) {
@@ -1037,8 +1073,8 @@ const handleNext = () => {
         try {
           Geolocation.getCurrentPosition(
             position => {
-              const {latitude, longitude,accuracy} = position.coords;
-              console.log(latitude, longitude,accuracy);
+              const {latitude, longitude, accuracy} = position.coords;
+              console.log(latitude, longitude, accuracy);
               setLocation(position);
             },
             error => {
@@ -1093,7 +1129,11 @@ const handleNext = () => {
     }
   };
 
-  const getBankIfscCodeByBankName = async (bankName, setFieldValue,setFieldTouched) => {
+  const getBankIfscCodeByBankName = async (
+    bankName,
+    setFieldValue,
+    setFieldTouched,
+  ) => {
     let token = loginData?.token;
     const res = await api.user.getBankIfscCodeByBankName(bankName, token);
 
@@ -1108,26 +1148,29 @@ const handleNext = () => {
     // Alert.alert("IFSC Codes",JSON.stringify(result));
 
     // 1. Get the fresh value right now
-const freshIfscCode = result[0]?.ifscCode || null;
+    const freshIfscCode = result[0]?.ifscCode || null;
 
-// 2. Update your local React state
-setIfscCode(freshIfscCode);
+    // 2. Update your local React state
+    setIfscCode(freshIfscCode);
 
-// 3. Update Formik using the fresh value directly
-setFieldValue('householdBasicProfile.ifscCodeOrBranch', freshIfscCode);
+    // 3. Update Formik using the fresh value directly
+    setFieldValue('householdBasicProfile.ifscCodeOrBranch', freshIfscCode);
 
-// 4. Check the FRESH value instead of the stale state variable
-if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '') { 
-  // Passing true, true forces Formik to mark it touched and re-validate immediately
-  setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
-}
+    // 4. Check the FRESH value instead of the stale state variable
+    if (
+      freshIfscCode !== null &&
+      freshIfscCode !== undefined &&
+      freshIfscCode !== ''
+    ) {
+      // Passing true, true forces Formik to mark it touched and re-validate immediately
+      setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
+    }
 
     // setIfscCode(result[0]?.ifscCode || null);
     // setFieldValue('householdBasicProfile.ifscCodeOrBranch', ifscCode);
-    // if(ifscCode!=null && ifscCode!=undefined){ 
+    // if(ifscCode!=null && ifscCode!=undefined){
     //   setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
     // }
-   
   };
 
   const handleAddPress = () => {
@@ -1541,6 +1584,10 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                           'householdBasicProfile.headOfTheHouseholdGender',
                           text,
                         );
+                        setFieldValue(
+                          'householdBasicProfile.HeadOfTheHouseholdGender',
+                          text,
+                        );
                         setHeadOfTheHouseholdGender(text);
                       }}
                       value={
@@ -1606,7 +1653,11 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                         t('Select Bank Name')
                       }
                       onChange={obj => {
-                        getBankIfscCodeByBankName(obj.label, setFieldValue,setFieldTouched);
+                        getBankIfscCodeByBankName(
+                          obj.label,
+                          setFieldValue,
+                          setFieldTouched,
+                        );
 
                         //  setIfscCode(result[0]?.ifscCode || null);
 
@@ -1669,9 +1720,7 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                         //   values?.householdBasicProfile?.bankName ||
                         //   t('Select IFSC Code')
                         // }
-                         placeholder={
-                          t('Select IFSC Code')
-                        }
+                        placeholder={t('Select IFSC Code')}
                         onChange={obj => {
                           //  Alert.alert("Selected Bank",JSON.stringify(obj));
                           // getBankIfscCodeByBankName(obj.label);
@@ -1831,7 +1880,7 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                             numericText == '' ? '0' : numericText,
                             10,
                           );
-                          if(age==0){
+                          if (age == 0) {
                             setFamilyMembers([]);
                             setFamilyMemberCount(0);
                             return;
@@ -1858,7 +1907,10 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                         //   text,
                         // );
                       }}
-                      value={familyMemberCount?.toString()||values?.householdBasicProfile?.totalFamilyMembers}
+                      value={
+                        familyMemberCount?.toString() ||
+                        values?.householdBasicProfile?.totalFamilyMembers
+                      }
                       inputType="numeric"
                       maxLength={3}
                       titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -1875,9 +1927,11 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                         </Text>
                       </TouchableOpacity>
                     )}
-                     {familyMemberCount > 0 && (<Text style={{fontWeight: 'bold'}}>
-                      {t('House hold Members')}:
-                    </Text>)}
+                    {familyMemberCount > 0 && (
+                      <Text style={{fontWeight: 'bold'}}>
+                        {t('House hold Members')}:
+                      </Text>
+                    )}
                     {familyMembers?.map((m, i) => (
                       <Text key={i}>
                         {i + 1}. {m.name} | Age: {m.age} | Gender: {m.gender}
@@ -2024,6 +2078,11 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                           'householdBasicProfile.drinkingWaterSource',
                           text,
                         );
+                        setFieldValue(
+                          'householdBasicProfile.DrinkingWaterSource',
+                          text,
+                        );
+
                         setDrinkingWaterSource(text);
                       }}
                       value={
@@ -2794,36 +2853,26 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                       }
                       keyboardType="number-pad"
                       onChangeText={text => {
-                        // allow only digits
-                        const digitsOnly = text
-                          .replace(/[^0-4]/g, '')
-                          .slice(0, 1);
+                        // 1. Remove anything that isn't a digit between 0 and 4
+                        const digitsOnly = text.replace(/[^0-4]/g, '');
 
-                        // allow first digit only if 6-9
-                        if (digitsOnly.length === 0) {
+                        // 2. Take only the first digit (max length 1)
+                        const singleDigit = digitsOnly.slice(0, 1);
+
+                        // 3. Handle empty input (if user clears the field, keep it empty or null)
+                        if (singleDigit === '') {
                           setFieldValue(
                             'householdMigrationStatus.minorChildrenAccompaniedMigration',
-                            Number(digitsOnly),
+                            '', // or null, depending on your validation schema
                           );
                           return;
                         }
-                        // if (
-                        //   digitsOnly.length === 1 &&
-                        //   !/^[6-9]/.test(digitsOnly)
-                        // ) {
-                        //   Alert.alert(
-                        //     'Invalid Mobile Number',
-                        //     'Mobile number must start with 6, 7, 8 or 9',
-                        //   );
-                        // }
 
-                        // if (/^[6-9]/.test(digitsOnly)) {
+                        // 4. Otherwise, safely convert the valid 0-4 digit to a Number
                         setFieldValue(
                           'householdMigrationStatus.minorChildrenAccompaniedMigration',
-                          Number(digitsOnly),
+                          Number(singleDigit),
                         );
-                        // }
-                        // else: ignore invalid starting digit (1–5,0)
                       }}
                       inputType="numeric"
                       maxLength={1}
@@ -2912,30 +2961,28 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                       <Text style={AnalyaticsStyles.PleaseEnterDate}>
                         45. {t('Click on the icon to capture GEO location')}
                       </Text>
-                      <View style={{flexDirection:'column'}}>
-                                           <View style={AnalyaticsStyles.PaddingHori}>
-                                           
-                                             <View style={Style.FlexEditView}>
-                                               <TouchableOpacity
-                                                 onPress={() =>
-                                                   // navigation.navigate(RouteName.MAP_SCREEN)
-                                                   getLocation()
-                                                 }>
-                                                 <Text style={Style.datetextstyles}>
-                                                   {' '}
-                                                   <VectorIcon
-                                                     icon="FontAwesome"
-                                                     name="map-marker"
-                                                     size={SF(20)}
-                                                     color={Colors.theme_background}
-                                                   />{' '}
-                                                   {location ? location.coords.latitude : null},
-                                                   {location ? location.coords.longitude : null}
-                                                  
-                                                 </Text>
-                                               </TouchableOpacity>
-                                               
-                                               {/* <TouchableOpacity
+                      <View style={{flexDirection: 'column'}}>
+                        <View style={AnalyaticsStyles.PaddingHori}>
+                          <View style={Style.FlexEditView}>
+                            <TouchableOpacity
+                              onPress={() =>
+                                // navigation.navigate(RouteName.MAP_SCREEN)
+                                getLocation()
+                              }>
+                              <Text style={Style.datetextstyles}>
+                                {' '}
+                                <VectorIcon
+                                  icon="FontAwesome"
+                                  name="map-marker"
+                                  size={SF(20)}
+                                  color={Colors.theme_background}
+                                />{' '}
+                                {location ? location.coords.latitude : null},
+                                {location ? location.coords.longitude : null}
+                              </Text>
+                            </TouchableOpacity>
+
+                            {/* <TouchableOpacity
                                                                          onPress={() =>
                                                                            navigation.navigate(
                                                                              RouteName.EDIT_LOCATION_SCREEN,
@@ -2949,15 +2996,15 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                                                                            color={Colors.theme_background}
                                                                          />
                                                                        </TouchableOpacity> */}
-                                             </View>
-                                             <View>
-                                                <Text style={{color: 'black',fontSize: SF(12)}}>
-                         Accuracy: {location.coords.accuracy.toFixed(1)} meters 
-                         (The actual location is within this radius)
-                       </Text>
-                                             </View>
-                                             </View>
-                                           </View>
+                          </View>
+                          <View>
+                            <Text style={{color: 'black', fontSize: SF(12)}}>
+                              Accuracy: {location.coords.accuracy.toFixed(1)}{' '}
+                              meters (The actual location is within this radius)
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
                     </View>
                     <Text style={{color: 'red'}}>
                       {errors?.householdBasicProfile?.geoLocation}
@@ -3665,10 +3712,12 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
                         dateSelectLocal,
                       );
                       let res =
-                      (location ? location.coords.latitude : null) +
-                      ',' +
-                      (location ? location.coords.longitude : null) + ',' + (location ? location.coords.accuracy.toFixed(1) : null);
-                   
+                        (location ? location.coords.latitude : null) +
+                        ',' +
+                        (location ? location.coords.longitude : null) +
+                        ',' +
+                        (location ? location.coords.accuracy.toFixed(1) : null);
+
                       setFieldValue('householdBasicProfile.geoLocation', res);
 
                       setFieldValue(
@@ -4104,7 +4153,6 @@ if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '
         setModalVisible={setAlertVisible}
         onPressCancel={() => setAlertVisible(!alertVisible)}
         onPress={() => {
-
           setAlertVisible(!alertVisible), onoknutton();
         }}
         buttonText={t('Ok')}

@@ -54,6 +54,8 @@ import DeviceHelper from '../../../utils/DeviceHelper';
 import {v4 as uuidv4} from 'uuid';
 import {getMasterLocationData} from '../../Authantication/LoginScreen/LoginHelper';
 import {getMasterData} from './HomeHelper';
+import {SafeAreaView} from 'react-native';
+import StepSlider from '../../../components/commonComponents/StepSlider';
 // import { VillageFormSurveyTab } from '.';
 
 const VillageFormSurveyEdit = props => {
@@ -69,41 +71,49 @@ const VillageFormSurveyEdit = props => {
     about: '',
   };
   const isFocused = useIsFocused();
+   const [villageDataSelect, setVillageDataSelect] = useState([]);
   const {loginData} = useSelector(state => state.DataReducer) || {};
   useEffect(() => {
-  let token;
+    let token;
 
-  try {
-    // Alert.alert("villageData",JSON.stringify(villageData));
-    // 1. Clear the Formik form immediately if focused
-    if (isFocused && formikRef.current) {
-      formikRef.current.resetForm({ values: undefined });
-    }
-
-    // 2. Defer subscription to the next tick so Formik reset finishes first
-    const timer = setTimeout(() => {
-      //token = PubSub.subscribe('VillageItem', mySubscriber);
-      mySubscriber('VillageItem', villageData);
-    }, 0);
-
-    // CLEANUP
-    return () => {
-      clearTimeout(timer);
-      if (token) {
-        PubSub.unsubscribe(token);
+    try {
+      // Alert.alert("villageData",JSON.stringify(villageData));
+      // 1. Clear the Formik form immediately if focused
+      if (isFocused && formikRef.current) {
+        formikRef.current.resetForm({values: undefined});
       }
-    };
-  } catch (error) {
-    console.error('Error in subscription', error.message);
-  }
-}, [isFocused, mySubscriber]);
+
+      // 2. Defer subscription to the next tick so Formik reset finishes first
+      const timer = setTimeout(() => {
+        //token = PubSub.subscribe('VillageItem', mySubscriber);
+        mySubscriber('VillageItem', villageData);
+      }, 0);
+
+      // CLEANUP
+      return () => {
+        clearTimeout(timer);
+        if (token) {
+          PubSub.unsubscribe(token);
+        }
+      };
+    } catch (error) {
+      console.error('Error in subscription', error.message);
+    }
+  }, [isFocused, mySubscriber]);
 
   useEffect(() => {
-   
+    PubSub.subscribe('VILLAGE_MEMBERS_COUNT', myVillageData);
     getMasterState();
   }, []);
 
- 
+  const myVillageData = (msg, data) => {
+     loadVillageMembersCount(data);
+  };
+   const loadVillageMembersCount = data => {
+    if (data) {
+      setVillageDataSelect(data);
+    }
+  };
   const [state, setState] = useState(stateArray);
 
   const [involvedWaterSource, setInvolvedWaterSource] = useState(null);
@@ -492,17 +502,14 @@ const VillageFormSurveyEdit = props => {
   };
 
   const mySubscriber = (msg, data) => {
-
     try {
-    
       if (data && formikRef.current) {
-         setEditData(data);
+        setEditData(data);
         const resultData = data?.item;
         const apiString = resultData?.drinkingWaterSource || '';
         // setInvolvedWaterSourceEdit(apiString);
         // const uniqueId = resultData?.uniqueId;
-        // setUniqueId(uniqueId);
-        
+        setUniqueId(resultData?.id || uuidv4());
 
         const resetData = {
           district: resultData.district,
@@ -658,18 +665,30 @@ const VillageFormSurveyEdit = props => {
       );
       return;
     }
+    const finalvalues = {
+      ...values,
+      id: uniqueId,
+    };
 
-    // Alert.alert('values', JSON.stringify(values));
+    console.log('finalvalues $$', JSON.stringify(finalvalues));
+    // return;
     const response = await api.user.saveEditedVillageSurvey(
-      values,
+      finalvalues,
       uniqueId,
-      token
+      token,
     );
     // Alert.alert("response",JSON.stringify(response));
     // return
     if (response != null && response != undefined) {
-      setAlertVisible(true);
-      setAlertMessage(t('Survey_Submit_Successfully_village'));
+      if (response.status == 415) {
+        setAlertVisible(true);
+        setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
+      }
+      if (response.status === 200) {
+        setLoading(false);
+        setAlertVisible(true);
+        setAlertMessage(t('Survey_Submit_Successfully_village'));
+      }
     } else {
       setAlertVisible(true);
       setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
@@ -791,9 +810,6 @@ const VillageFormSurveyEdit = props => {
         initialValues={VillageFormInitialValues(props)}
         validationSchema={VillageFormValidationSchema(props)}
         onSubmit={values => {
-          // Alert.alert("VALUES",JSON.stringify(values));
-          //return;
-
           onSavePress(values);
         }}>
         {({
@@ -899,6 +915,28 @@ const VillageFormSurveyEdit = props => {
                         }
                         onChange={obj => {
                           setFieldValue('revenueVillage', obj.label);
+                          fetchVillageMembersCount();
+                          async function fetchVillageMembersCount() {
+                            const params = {
+                              district: values?.district,
+                              block: values?.block,
+                              gp: values?.gramPanchayat,
+                              village: [obj.label],
+                              token: loginData?.token,
+                            };
+
+                            await getVillageMembersCount(params);
+                          }
+                          villageDataSelect.map(item => {
+                            // Alert.alert('Village Members Count', JSON.stringify(item));
+                            setFieldValue('totalHouseholds', item?.total);
+                            setFieldValue('malePopulation', item?.male);
+                            setFieldValue('femalePopulation', item?.female);
+                            setFieldValue(
+                              'TotalPopulation',
+                              Number(item?.male) + Number(item?.female),
+                            );
+                          });
                         }}
                       />
                       <Text style={{color: 'red'}}>
@@ -929,7 +967,7 @@ const VillageFormSurveyEdit = props => {
                           setFieldValue('totalHouseholds', filtered);
                           // setFieldValue('totalHouseholds', text)
                         }}
-                        value={values?.totalHouseholds}
+                        value={String(values?.totalHouseholds ?? '')}
                         inputType={'numeric'}
                         keyboardType={'number-pad'}
                         maxLength={4}
@@ -1136,8 +1174,11 @@ const VillageFormSurveyEdit = props => {
                             minValue={100}
                             maxValue={4000}
                             step={100}
-                            initialValue={100}
-                            onValueChange={val => console.log('Selected:', val)}
+                            initialValue={Number(values?.lengthAllWeatherRoadToHighway)||100}
+                            onValueChange={(val) => {
+                              console.log('Selected:', val)
+                              setFieldValue('lengthAllWeatherRoadToHighway', val);
+                            }}
                           />
                         </SafeAreaView>
                       )}
@@ -1170,7 +1211,7 @@ const VillageFormSurveyEdit = props => {
                             JSON.stringify(total),
                           );
                         }}
-                        value={values?.menInMigration}
+                        value={String(values?.menInMigration ?? '')}
                         inputType={'numeric'}
                         maxLength={6}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -1200,7 +1241,7 @@ const VillageFormSurveyEdit = props => {
                             JSON.stringify(total),
                           );
                         }}
-                        value={values?.womenInMigration}
+                        value={String(values?.womenInMigration ?? '')}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
@@ -1233,7 +1274,7 @@ const VillageFormSurveyEdit = props => {
                             JSON.stringify(total),
                           );
                         }}
-                        value={values?.minorChildrenInMigration}
+                        value={String(values?.minorChildrenInMigration ?? '')}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                         inputType={'numeric'}
                         maxLength={6}
@@ -1464,7 +1505,7 @@ const VillageFormSurveyEdit = props => {
                           if (number > 30) return;
                           setFieldValue('communityTanks', number);
                         }}
-                        value={values?.communityTanks}
+                        value={String(values?.communityTanks ?? '')}
                         inputType={'numeric'}
                         maxLength={2}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}

@@ -23,6 +23,7 @@ import images from '../../../index';
 import {Formik} from 'formik';
 import {
   decodeJWT,
+  getVillageMembersCount,
   LoginFormInitialValues,
   LoginValidationSchema,
   saveMasters,
@@ -53,6 +54,7 @@ const LoginScreen = props => {
   const OnRegisterPress = () => {
     navigation.navigate(RouteName.REGISTER_SCREEN);
   };
+  
   const onLoginPress = async values => {
     setLoading(true);
     const res = await api.user.signIn(
@@ -116,6 +118,7 @@ const LoginScreen = props => {
       };
       dispatch(login_data_action(finalValues));
       // navigation.navigate(RouteName.OTP_VERYFY_SCREEN)
+      await getVillageMembersCount(finalValues);
       navigation.navigate(RouteName.HOME_SCREEN);
       return;
         } catch (e) {}

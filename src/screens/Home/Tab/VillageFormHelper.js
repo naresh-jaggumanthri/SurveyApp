@@ -1,6 +1,5 @@
 import * as Yup from 'yup';
 export const VillageFormInitialValues = (props,loginData) => ({
-
  district: null,
  block:null,
  gramPanchayat:null,

@@ -89,6 +89,20 @@ const AddFamilyScreenUpdated = props => {
       };
 
       setCurrentIndex(targetCount > 0 ? targetCount - 1 : 0);
+        if (familyMembers[0]?.name) {
+      formikRef.current?.setFieldValue(
+        'familyMembers.0.name',
+        familyMembers[0]?.name,
+      );
+       formikRef.current?.setFieldTouched('familyMembers.0.name', true);
+    }
+    if (familyMembers[0]?.gender) {
+      formikRef.current?.setFieldValue(
+        'familyMembers.0.gender',
+        familyMembers[0]?.gender,
+      );
+      formikRef.current?.setFieldTouched('familyMembers.0.gender', true);
+    }
     });
 
     return () => {
@@ -98,12 +112,18 @@ const AddFamilyScreenUpdated = props => {
   useEffect(() => {
     // 3. Access setFieldTouched safely through the current ref
     if (familyMembers[0]?.name) {
-      formikRef.current?.setFieldTouched('familyMembers.0.name', true);
-      formikRef.current?.setFieldValue('familyMembers.0.name', familyMembers[0]?.name);
+      formikRef.current?.setFieldValue(
+        'familyMembers.0.name',
+        familyMembers[0]?.name,
+      );
+       formikRef.current?.setFieldTouched('familyMembers.0.name', true);
     }
     if (familyMembers[0]?.gender) {
+      formikRef.current?.setFieldValue(
+        'familyMembers.0.gender',
+        familyMembers[0]?.gender,
+      );
       formikRef.current?.setFieldTouched('familyMembers.0.gender', true);
-      formikRef.current?.setFieldValue('familyMembers.0.gender', familyMembers[0]?.gender);
     }
   }, [familyMembers[0]?.name, familyMembers[0]?.gender]);
   const [genderData, setGenderData] = useState([]);
@@ -355,10 +375,11 @@ const AddFamilyScreenUpdated = props => {
     sectorOfEngagementDuringMigration: '',
   }));
   // Helper component to cleanly display inline formik errors
-  const ErrorMessage = ({label, errors, touched, setFieldTouched}) => {
-    const error = errors?.familyMembers?.[currentIndex]?.[label];
-    const isTouched = touched?.familyMembers?.[currentIndex]?.[label];
-    if (error) {
+  const ErrorMessage = ({name, errors, touched, currentIndex,setFieldTouched}) => {
+    // Alert.alert('errors', JSON.stringify(label));
+    const error = errors?.familyMembers?.[currentIndex]?.[name];
+    const isTouched = touched?.familyMembers?.[currentIndex]?.[name];
+    if (true) {
       return <Text style={styles.errorText}>{error}</Text>;
     }
     return null;
@@ -367,6 +388,7 @@ const AddFamilyScreenUpdated = props => {
     <Formik
       innerRef={formikRef} // 2. Pass the ref here
       initialValues={{familyMembers: initialMembers}}
+      enableReinitialize={true}
       validationSchema={validationSchema}
       onSubmit={values => {
         console.log('Final Data:', values);
@@ -463,6 +485,7 @@ const AddFamilyScreenUpdated = props => {
                   name="name"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
                 {/* AGE */}
@@ -470,17 +493,36 @@ const AddFamilyScreenUpdated = props => {
                   title={t('AgeN')}
                   keyboardType="numeric"
                   value={member?.age}
-                  onChangeText={text =>
-                    setFieldValue(
-                      `familyMembers[${currentIndex}].age`,
-                      text.replace(/[^0-9]/g, ''),
-                    )
-                  }
+                  onChangeText={text => {
+                    // 1. Remove any non-numeric characters
+                    const cleanedText = text.replace(/[^0-9]/g, '');
+
+                    // 2. Convert to a number to check the value (handle empty string case)
+                    const ageValue = cleanedText
+                      ? parseInt(cleanedText, 10)
+                      : 0;
+
+                    if (ageValue > 90) {
+                      Alert.alert(
+                        'Invalid Age',
+                        'Please enter a valid age (18-90).',
+                      );
+                    }
+
+                    // 3. Only update if it's less than or equal to 90
+                    if (ageValue <= 90) {
+                      setFieldValue(
+                        `familyMembers[${currentIndex}].age`,
+                        cleanedText,
+                      );
+                    }
+                  }}
                 />
                 <ErrorMessage
                   name="age"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
 
@@ -491,19 +533,19 @@ const AddFamilyScreenUpdated = props => {
                 </Text>
                 <RadioButton
                   arrayData={genderData}
-                  value={currentIndex==0?genderName:member?.gender}
-                  onChangeText={(val)=>{
+                  value={currentIndex == 0 ? genderName : member?.gender}
+                  onChangeText={val => {
                     setFieldValue(`familyMembers[${currentIndex}].gender`, val);
-                    if(currentIndex==0){
-                    setGenderName(val);
+                    if (currentIndex == 0) {
+                      setGenderName(val);
                     }
-                  }
-                  }
+                  }}
                 />
                 <ErrorMessage
                   name="gender"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
 
@@ -535,6 +577,7 @@ const AddFamilyScreenUpdated = props => {
                   name="educationalQualification"
                   errors={errors}
                   touched={touched}
+                   currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
 
@@ -566,6 +609,7 @@ const AddFamilyScreenUpdated = props => {
                   name="relationshipWithHeadOfHousehold"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
 
@@ -588,6 +632,7 @@ const AddFamilyScreenUpdated = props => {
                   name="memberHasLabourCard"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
 
@@ -612,6 +657,7 @@ const AddFamilyScreenUpdated = props => {
                   name="memberCoveredUnderNSKY"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
 
@@ -642,6 +688,7 @@ const AddFamilyScreenUpdated = props => {
                   name="destinationState"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
                 {/* Nature/Sector of engagement */}
@@ -676,6 +723,7 @@ const AddFamilyScreenUpdated = props => {
                   name="sectorOfEngagementDuringMigration"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
                 {/* migrated */}
@@ -709,6 +757,7 @@ const AddFamilyScreenUpdated = props => {
                   name="migratedInLast3Years"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
 
@@ -743,6 +792,7 @@ const AddFamilyScreenUpdated = props => {
                   name="periodOfMigration"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
                 {/* Monthly Income */}
@@ -781,6 +831,7 @@ const AddFamilyScreenUpdated = props => {
                   name="monthlyRemittanceDuringMigration"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
 
@@ -805,6 +856,7 @@ const AddFamilyScreenUpdated = props => {
                   name="interestInSkillDevelopment"
                   errors={errors}
                   touched={touched}
+                  currentIndex={currentIndex}
                   setFieldTouched={setFieldTouched}
                 />
 
@@ -881,7 +933,6 @@ const AddFamilyScreenUpdated = props => {
                     <TouchableOpacity
                       style={AnalyaticsStyles.SubmitButton}
                       onPress={() => {
-
                         if (familyMembers.length !== count) {
                           Alert.alert(
                             t('Error'),
@@ -893,7 +944,8 @@ const AddFamilyScreenUpdated = props => {
                           return;
                         }
 
-                        // Alert.alert("errors",JSON.stringify(errors));
+                        //  Alert.alert("errors",JSON.stringify(errors));
+                        //  return;
 
                         if (
                           errors.familyMembers &&

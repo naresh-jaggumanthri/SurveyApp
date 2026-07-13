@@ -352,7 +352,7 @@ const [syncModalVisible, setSyncModalVisible] = useState(false);
                   index={index}
                   type={2}
                   onPress={() =>{ 
-                    //  Alert.alert("index",JSON.stringify(item));
+                      // Alert.alert("index",JSON.stringify(item));
                     // if(index==0){
                     //   navigation.navigate(RouteName.FAMILY_SURVEY_TAB)
                     // }else if(index==1){

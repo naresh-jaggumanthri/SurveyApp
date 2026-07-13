@@ -303,33 +303,65 @@ const FamilyFormSurveyEdit = props => {
   //   {label: t('more than 2.5Acr'), value: 'more than 2.5 Acr'},
   // ];
   const [privateLandData, setPrivateLandData] = useState([]);
-  const loadPrivateLandData = async () => {
-    let token = loginData?.token;
-    const currentLanguage = i18n.language;
-    //  const language = await getLanguage();
-    const holdings = await getMasterData(
-      'landHolding',
-      11, // The index you assigned in saveMasters
-      api.master.getLandHolding,
-      token,
-    );
-    const result = holdings.map(holding => {
-      return {
-        id: holding.id,
-        label:
-          currentLanguage === 'en'
-            ? holding.holdingSize
-            : holding.holdingSizeLocal,
-        value:
-          currentLanguage === 'en'
-            ? holding.holdingSize
-            : holding.holdingSizeLocal,
-      };
-    }); // Sort alphabetically
+  const loadPrivateLandData = async (apiString) => {
+  let token = loginData?.token;
+  const currentLanguage = i18n.language;
+  
+  const holdings = await getMasterData(
+    'landHolding',
+    11,
+    api.master.getLandHolding,
+    token,
+  );
 
-    // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
-    setPrivateLandData(result);
-  };
+  const result = holdings.map(holding => {
+    const labelText = currentLanguage === 'en' ? holding.holdingSize : holding.holdingSizeLocal;
+    return {
+      id: holding.id,
+      label: labelText,
+      value: labelText, // The primitive string value of the option
+    };
+  });
+
+  // Helper numerical extraction functions
+  function extractNumbers(str) {
+    if (!str) return [];
+    const numberRegex = /\d+(?:\.\d+)?/g; 
+    const matches = str.match(numberRegex);
+    return matches ? matches.map(Number) : [];
+  }
+
+  function compareNumericRanges(str1, str2) {
+    const nums1 = extractNumbers(str1);
+    const nums2 = extractNumbers(str2);
+    if (nums1.length !== nums2.length || nums1.length === 0) return false;
+    return nums1.every((num, index) => num === nums2[index]);
+  }
+
+  // 1. Pre-process apiString cleanly
+  let string1 = apiString ? apiString.trim() : '';
+
+  // 2. Find the actual matching item from master data that aligns with apiString numbers
+  const matchedHolding = result.find(holding => compareNumericRanges(holding.label, string1));
+
+  if (matchedHolding) {
+    // Set the master data version of the string as our active state
+    setApproximatePrivateLandHolding(matchedHolding.value);
+    
+    // If you are using Formik, you should also update Formik's state here so it stays in sync on initial load:
+    // setFieldValue('householdOccupationAndLand.approximatePrivateLandHolding', matchedHolding.value);
+  }
+
+  // 3. Map your data structure for the RadioButton array 
+  const updatedResult = result.map(checkbox => ({
+    ...checkbox,
+    // If your RadioButton component uses a boolean flag to highlight selection, 
+    // change 'checked' below to whatever your component expects (e.g. selected: ...)
+    checked: matchedHolding ? checkbox.id === matchedHolding.id : false, 
+  }));
+
+  setPrivateLandData(updatedResult);
+};
 
   const waterSourceData = [
     {label: t('Well'), value: t('Well')},
@@ -431,7 +463,7 @@ const FamilyFormSurveyEdit = props => {
   // ]);
   const [checkboxes3, setCheckboxes3] = useState([]);
   const [livestockData, setLivestockData] = useState([]);
-  const loadLiveStockData = async () => {
+  const loadLiveStockData = async (apiString) => {
     let token = loginData?.token;
     const currentLanguage = i18n.language;
     //  const language = await getLanguage();
@@ -457,9 +489,18 @@ const FamilyFormSurveyEdit = props => {
 
     // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
     setLivestockData(result);
-    setCheckboxes3(
-      result.map(activity => ({label: activity.label, checked: false})),
-    );
+      const activeLabels = apiString
+      ? apiString.split(',').map(label => label.trim())
+      : [];
+    //  Alert.alert("activeLabels",JSON.stringify(activeLabels));
+
+    const updatedCheckboxes = result.map(checkbox => ({
+      ...checkbox,
+      label: checkbox.label,
+      checked: activeLabels.includes(checkbox.label), // Now securely checks against an array
+    }));
+
+    setCheckboxes3(updatedCheckboxes);
   };
 
   const {loginData} = useSelector(state => state.DataReducer) || {};
@@ -473,7 +514,7 @@ const FamilyFormSurveyEdit = props => {
 
   var mySubscriber = function (msg, data) {
     let familyMemberData = data?.item.householdFamilyMember;
-    //  console.log(msg, JSON.stringify(data?.item.householdMigrationStatus.minorChildrenAccompaniedMigration));
+      // Alert.alert(msg, JSON.stringify(data?.item.householdOccupationAndLand.approximatePrivateLandHolding));
     const schemes = data?.item?.householdEntitlement?.kishanSchemeCoverage;
     const livestock =
       data?.item?.householdOccupationAndLand?.involvedInLivestockActivity;
@@ -501,6 +542,8 @@ const FamilyFormSurveyEdit = props => {
     setEditData(data);
     
     const apiSchemesData= data?.item?.householdEntitlement?.kishanSchemeCoverage;
+    const apiStockData= data?.item?.householdOccupationAndLand?.involvedInLivestockActivity;
+    const apiPrivateLandData= data?.item?.householdOccupationAndLand?.approximatePrivateLandHolding;
     if (data && formikRef.current) {
       formikRef.current.resetForm({
         values: {
@@ -524,6 +567,8 @@ const FamilyFormSurveyEdit = props => {
       //   },
       // });
       loadSchemesData(apiSchemesData);
+      loadLiveStockData(apiStockData);
+      loadPrivateLandData(apiPrivateLandData);
     }
   };
 
@@ -533,9 +578,9 @@ const FamilyFormSurveyEdit = props => {
     loadSocialCategories();
     loadWaterSourceData();
     loadRespondentData();
-    loadPrivateLandData();
+    // loadPrivateLandData();
     loadIrrigationData();
-    loadLiveStockData();
+    // loadLiveStockData();
     // loadSchemesData();
     getLocation();
     // Alert.alert("hi");
@@ -738,7 +783,7 @@ const FamilyFormSurveyEdit = props => {
      const activeLabels = apiSchemesData
       ? apiSchemesData.split(',').map(label => label.trim())
       : [];
-     Alert.alert("activeLabels",JSON.stringify(activeLabels));
+    //  Alert.alert("activeLabels",JSON.stringify(activeLabels));
 
     const updatedCheckboxes = finalResult.map(checkbox => ({
       ...checkbox,
@@ -2820,14 +2865,16 @@ const FamilyFormSurveyEdit = props => {
                             'householdOccupationAndLand.approximatePrivateLandHolding',
                             text,
                           );
-                          setApproximatePrivateLandHolding(text);
+                           setApproximatePrivateLandHolding(text);
                         }}
-                        value={
-                          editData != undefined
-                            ? values.householdOccupationAndLand
-                                .approximatePrivateLandHolding
-                            : approximatePrivateLandHolding
-                        }
+                        // value={
+                        //   editData != undefined
+                        //     ? values.householdOccupationAndLand
+                        //         .approximatePrivateLandHolding
+                        //     : approximatePrivateLandHolding
+                        // }
+                        value={approximatePrivateLandHolding}
+                      
                         type={1}
                       />
                       <Text style={{color: 'red'}}>
@@ -2956,38 +3003,28 @@ const FamilyFormSurveyEdit = props => {
                         placeholder={t('Enter value (0-4 only)')}
                         value={values?.householdMigrationStatus?.minorChildrenAccompaniedMigration.toString()}
                         keyboardType="number-pad"
-                        onChangeText={text => {
-                          // allow only digits
-                          const digitsOnly = text
-                            .replace(/[^0-4]/g, '')
-                            .slice(0, 1);
+                         onChangeText={text => {
+                        // 1. Remove anything that isn't a digit between 0 and 4
+                        const digitsOnly = text.replace(/[^0-4]/g, '');
 
-                          // allow first digit only if 6-9
-                          if (digitsOnly.length === 0) {
-                            setFieldValue(
-                              'householdMigrationStatus.minorChildrenAccompaniedMigration',
-                              Number(digitsOnly),
-                            );
-                            return;
-                          }
-                          // if (
-                          //   digitsOnly.length === 1 &&
-                          //   !/^[6-9]/.test(digitsOnly)
-                          // ) {
-                          //   Alert.alert(
-                          //     'Invalid Mobile Number',
-                          //     'Mobile number must start with 6, 7, 8 or 9',
-                          //   );
-                          // }
+                        // 2. Take only the first digit (max length 1)
+                        const singleDigit = digitsOnly.slice(0, 1);
 
-                          // if (/^[6-9]/.test(digitsOnly)) {
+                        // 3. Handle empty input (if user clears the field, keep it empty or null)
+                        if (singleDigit === '') {
                           setFieldValue(
                             'householdMigrationStatus.minorChildrenAccompaniedMigration',
-                            Number(digitsOnly),
+                            '', // or null, depending on your validation schema
                           );
-                          // }
-                          // else: ignore invalid starting digit (1–5,0)
-                        }}
+                          return;
+                        }
+
+                        // 4. Otherwise, safely convert the valid 0-4 digit to a Number
+                        setFieldValue(
+                          'householdMigrationStatus.minorChildrenAccompaniedMigration',
+                          Number(singleDigit),
+                        );
+                      }}
                         inputType="numeric"
                         maxLength={1}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -3081,10 +3118,7 @@ const FamilyFormSurveyEdit = props => {
                         </Text>
                         <View style={{flexDirection: 'column'}}>
                           <View style={AnalyaticsStyles.PaddingHori}>
-                            <Text style={AnalyaticsStyles.PleaseEnterDate}>
-                              36.{' '}
-                              {t('Click on the icon to capture GEO location')}
-                            </Text>
+                           
                             <View style={Style.FlexEditView}>
                               <TouchableOpacity
                                 onPress={() =>
