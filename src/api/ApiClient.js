@@ -86,7 +86,8 @@ export default class ApiClient {
     });
   }
 
-  postImageUpdate(intl, requestUrl, payload = {}, params = {}, isFormData,token) {
+  postImageUpdate(intl, requestUrl, payload = {}, params = {},isFormData,token) {
+  
     return this.requestImageUpdate({
       intl: intl,
       url: requestUrl,
@@ -328,7 +329,7 @@ export default class ApiClient {
     const urlWithQuery = `${this.prefix}/${url}?${queryString.stringify(
       params,
     )}`;
-   
+    // Alert.alert("request url",JSON.stringify(urlWithQuery));
   
 
     // const jwtToken = await getJwtToken();
@@ -401,7 +402,7 @@ export default class ApiClient {
       // });
       let res = await fetch(urlWithQuery, init);
 
-  // Alert.alert("request url",JSON.stringify(res));
+  
 
       //Alert.alert(JSON.stringify(res));
 
@@ -867,24 +868,11 @@ export default class ApiClient {
     )}`;
     console.log('urlWithQuery=======> ', urlWithQuery);
 
-    // const jwtToken = await getJwtToken();
-    //const jwtToken=undefined;
-
-    //console.log('jwt token===========>', JSON.parse(jwtToken));
-
-    // const apiKey = await getApiKey();
-    //const apiKey=undefined;
+    
     let headers = {
        'Authorization': token ? `Bearer ${token}` : undefined,
     };
-    // if (jwtToken) {
-    //   headers = {
-    //     ...headers,
-    //     Authorization: JSON.parse(jwtToken),
-    //     //'x-api-key': apiKey,
-
-    //   };
-    // }
+   
     let init = {
       method,
       headers: headers,
@@ -900,10 +888,6 @@ export default class ApiClient {
       } else {
         if (typeof body == 'string') {
           init.body = body;
-          // headers = {
-          //   ...headers,
-          //   'content-type': 'text/plain',
-          // };
           init = {
             ...init,
             headers,
@@ -912,21 +896,17 @@ export default class ApiClient {
           //init.body = JSON.stringify(body);
         }
       }
-      //init.body = JSON.stringify(body);
-      //init.data = body;
+     
     }
-    // console.log('headers : ', headers);
-
-    // console.log('headers : ', init);
+   
     try {
   
-      // let res = await fetch(urlWithQuery, init);
-        //  try {
+     
   const responses = await fetch(urlWithQuery, init);
+   
+  console.log('API DATA $$:', init);
  console.log('API DATA:', responses);
-  // if (!response.ok) {
-  //   throw new Error(`HTTP error! Status: ${response.status}`);
-  // }
+ 
 
   const res = await responses.json(); // 👈 Parses body
   // console.log('Headers:', res.headers.get('content-type'));

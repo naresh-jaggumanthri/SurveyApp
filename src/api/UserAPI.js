@@ -1,3 +1,4 @@
+import { TabRouter } from "@react-navigation/native";
 import Base from "./BaseApi";
 
 export default class UserAPI extends Base {
@@ -2082,6 +2083,7 @@ export default class UserAPI extends Base {
     );
   };
 
+    
   /* BANK IFSC code 
 
   GET BANK IFSC CODE BY BANK NAME : 
@@ -2141,24 +2143,17 @@ Response :
 // https://demo2.itmaniacs.co.in/api/household/{uniqueId}
 
 saveEditedHouseHold(body,uniqueId,token) {
-    return this.apiClient.postImageUpdate(
-      null,
-      `api/Household/${uniqueId}`,
-      body,
-      null,
-      true,
-      token
-    );
+    return this.apiClient.postImageUpdate({},`api/Household/${uniqueId}`,body,null,true,token);
   };
 
   saveEditedVillageSurvey(body,uniqueId,token) {
-    return this.apiClient.postImageUpdate(
-      null,
+    return this.apiClient.postParamsPayload(
+      {},
       `api/MigrationSurvey/${uniqueId}`,
-      body,
       null,
-      true,
-      token
+      body,
+      token,
+      false
     );
   };
 

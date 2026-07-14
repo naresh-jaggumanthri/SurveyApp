@@ -56,10 +56,10 @@ import {HouseholdSurvey} from '../../../database/entities/HouseholdSurvey';
 import {v4 as uuidv4} from 'uuid';
 import {AppOkAlert} from '../../../utils/AlertHelper';
 import {getMasterLocationData} from '../../Authantication/LoginScreen/LoginHelper';
-import { getMasterData } from './HomeHelper';
+import {getMasterData} from './HomeHelper';
 
 const FamilyFormSurveyEdit = props => {
-  const {t,i18n} = useTranslation();
+  const {t, i18n} = useTranslation();
   const {navigation} = props;
 
   const stateArray = {
@@ -303,65 +303,70 @@ const FamilyFormSurveyEdit = props => {
   //   {label: t('more than 2.5Acr'), value: 'more than 2.5 Acr'},
   // ];
   const [privateLandData, setPrivateLandData] = useState([]);
-  const loadPrivateLandData = async (apiString) => {
-  let token = loginData?.token;
-  const currentLanguage = i18n.language;
-  
-  const holdings = await getMasterData(
-    'landHolding',
-    11,
-    api.master.getLandHolding,
-    token,
-  );
+  const loadPrivateLandData = async apiString => {
+    let token = loginData?.token;
+    const currentLanguage = i18n.language;
 
-  const result = holdings.map(holding => {
-    const labelText = currentLanguage === 'en' ? holding.holdingSize : holding.holdingSizeLocal;
-    return {
-      id: holding.id,
-      label: labelText,
-      value: labelText, // The primitive string value of the option
-    };
-  });
+    const holdings = await getMasterData(
+      'landHolding',
+      11,
+      api.master.getLandHolding,
+      token,
+    );
 
-  // Helper numerical extraction functions
-  function extractNumbers(str) {
-    if (!str) return [];
-    const numberRegex = /\d+(?:\.\d+)?/g; 
-    const matches = str.match(numberRegex);
-    return matches ? matches.map(Number) : [];
-  }
+    const result = holdings.map(holding => {
+      const labelText =
+        currentLanguage === 'en'
+          ? holding.holdingSize
+          : holding.holdingSizeLocal;
+      return {
+        id: holding.id,
+        label: labelText,
+        value: labelText, // The primitive string value of the option
+      };
+    });
 
-  function compareNumericRanges(str1, str2) {
-    const nums1 = extractNumbers(str1);
-    const nums2 = extractNumbers(str2);
-    if (nums1.length !== nums2.length || nums1.length === 0) return false;
-    return nums1.every((num, index) => num === nums2[index]);
-  }
+    // Helper numerical extraction functions
+    function extractNumbers(str) {
+      if (!str) return [];
+      const numberRegex = /\d+(?:\.\d+)?/g;
+      const matches = str.match(numberRegex);
+      return matches ? matches.map(Number) : [];
+    }
 
-  // 1. Pre-process apiString cleanly
-  let string1 = apiString ? apiString.trim() : '';
+    function compareNumericRanges(str1, str2) {
+      const nums1 = extractNumbers(str1);
+      const nums2 = extractNumbers(str2);
+      if (nums1.length !== nums2.length || nums1.length === 0) return false;
+      return nums1.every((num, index) => num === nums2[index]);
+    }
 
-  // 2. Find the actual matching item from master data that aligns with apiString numbers
-  const matchedHolding = result.find(holding => compareNumericRanges(holding.label, string1));
+    // 1. Pre-process apiString cleanly
+    let string1 = apiString ? apiString.trim() : '';
 
-  if (matchedHolding) {
-    // Set the master data version of the string as our active state
-    setApproximatePrivateLandHolding(matchedHolding.value);
-    
-    // If you are using Formik, you should also update Formik's state here so it stays in sync on initial load:
-    // setFieldValue('householdOccupationAndLand.approximatePrivateLandHolding', matchedHolding.value);
-  }
+    // 2. Find the actual matching item from master data that aligns with apiString numbers
+    const matchedHolding = result.find(holding =>
+      compareNumericRanges(holding.label, string1),
+    );
 
-  // 3. Map your data structure for the RadioButton array 
-  const updatedResult = result.map(checkbox => ({
-    ...checkbox,
-    // If your RadioButton component uses a boolean flag to highlight selection, 
-    // change 'checked' below to whatever your component expects (e.g. selected: ...)
-    checked: matchedHolding ? checkbox.id === matchedHolding.id : false, 
-  }));
+    if (matchedHolding) {
+      // Set the master data version of the string as our active state
+      setApproximatePrivateLandHolding(matchedHolding.value);
 
-  setPrivateLandData(updatedResult);
-};
+      // If you are using Formik, you should also update Formik's state here so it stays in sync on initial load:
+      // setFieldValue('householdOccupationAndLand.approximatePrivateLandHolding', matchedHolding.value);
+    }
+
+    // 3. Map your data structure for the RadioButton array
+    const updatedResult = result.map(checkbox => ({
+      ...checkbox,
+      // If your RadioButton component uses a boolean flag to highlight selection,
+      // change 'checked' below to whatever your component expects (e.g. selected: ...)
+      checked: matchedHolding ? checkbox.id === matchedHolding.id : false,
+    }));
+
+    setPrivateLandData(updatedResult);
+  };
 
   const waterSourceData = [
     {label: t('Well'), value: t('Well')},
@@ -463,7 +468,7 @@ const FamilyFormSurveyEdit = props => {
   // ]);
   const [checkboxes3, setCheckboxes3] = useState([]);
   const [livestockData, setLivestockData] = useState([]);
-  const loadLiveStockData = async (apiString) => {
+  const loadLiveStockData = async apiString => {
     let token = loginData?.token;
     const currentLanguage = i18n.language;
     //  const language = await getLanguage();
@@ -489,7 +494,7 @@ const FamilyFormSurveyEdit = props => {
 
     // Alert.alert('Success', 'Occupation data fetched successfully!'+JSON.stringify(result));
     setLivestockData(result);
-      const activeLabels = apiString
+    const activeLabels = apiString
       ? apiString.split(',').map(label => label.trim())
       : [];
     //  Alert.alert("activeLabels",JSON.stringify(activeLabels));
@@ -514,7 +519,7 @@ const FamilyFormSurveyEdit = props => {
 
   var mySubscriber = function (msg, data) {
     let familyMemberData = data?.item.householdFamilyMember;
-      // Alert.alert(msg, JSON.stringify(data?.item.householdOccupationAndLand.approximatePrivateLandHolding));
+    // Alert.alert(msg, JSON.stringify(data?.item.householdOccupationAndLand.approximatePrivateLandHolding));
     const schemes = data?.item?.householdEntitlement?.kishanSchemeCoverage;
     const livestock =
       data?.item?.householdOccupationAndLand?.involvedInLivestockActivity;
@@ -540,10 +545,13 @@ const FamilyFormSurveyEdit = props => {
     setSourcesOfIrrigation(labelsArray3);
     setLocalIfscCode(data?.item?.householdBasicProfile?.ifsCcodeOrBranch);
     setEditData(data);
-    
-    const apiSchemesData= data?.item?.householdEntitlement?.kishanSchemeCoverage;
-    const apiStockData= data?.item?.householdOccupationAndLand?.involvedInLivestockActivity;
-    const apiPrivateLandData= data?.item?.householdOccupationAndLand?.approximatePrivateLandHolding;
+
+    const apiSchemesData =
+      data?.item?.householdEntitlement?.kishanSchemeCoverage;
+    const apiStockData =
+      data?.item?.householdOccupationAndLand?.involvedInLivestockActivity;
+    const apiPrivateLandData =
+      data?.item?.householdOccupationAndLand?.approximatePrivateLandHolding;
     if (data && formikRef.current) {
       formikRef.current.resetForm({
         values: {
@@ -755,7 +763,7 @@ const FamilyFormSurveyEdit = props => {
   //   // Add more options as needed
   // ]);
   const [schemeData, setSchemeData] = useState([]);
-  const loadSchemesData = async (apiSchemesData) => {
+  const loadSchemesData = async apiSchemesData => {
     let token = loginData?.token;
     const currentLanguage = i18n.language;
     //  const language = await getLanguage();
@@ -765,7 +773,7 @@ const FamilyFormSurveyEdit = props => {
       api.master.getKishanScheme,
       token,
     );
-   
+
     const result = schemes.map(scheme => {
       return {
         id: scheme.id,
@@ -780,7 +788,7 @@ const FamilyFormSurveyEdit = props => {
     let finalResult = result.filter(scheme => scheme.id !== 3);
 
     setSchemeData(finalResult);
-     const activeLabels = apiSchemesData
+    const activeLabels = apiSchemesData
       ? apiSchemesData.split(',').map(label => label.trim())
       : [];
     //  Alert.alert("activeLabels",JSON.stringify(activeLabels));
@@ -1032,11 +1040,9 @@ const FamilyFormSurveyEdit = props => {
     logout: t('Survey_Title_33'),
   };
   const onoknutton = () => {
-   
-     navigation.navigate('HomeScsreenTabAll', {
-            screen: RouteName.HOME_TAB,
-          });
-       
+    navigation.navigate('HomeScsreenTabAll', {
+      screen: RouteName.HOME_TAB,
+    });
   };
   const Onpressfunction = e => {
     navigation.toggleDrawer();
@@ -1078,6 +1084,10 @@ const FamilyFormSurveyEdit = props => {
       );
       return;
     }
+
+    // 3. Construct your final object
+    
+    console.log('values $$', JSON.stringify(values));
 
     const response = await api.user.saveEditedHouseHold(
       values,
@@ -1177,42 +1187,49 @@ const FamilyFormSurveyEdit = props => {
       // }
     }, 3000);
   };
-  const getBankIfscCodeByBankName = async (bankName, setFieldValue,setFieldTouched) => {
-      let token = loginData?.token;
-      const res = await api.user.getBankIfscCodeByBankName(bankName, token);
-  
-      const result = res?.map(m => {
-        return {
-          label: m.ifsCode,
-          value: m.ifsCode,
-          ifscCode: m.ifsCode,
-        };
-      });
-      setIfscCodeList(result);
-      // Alert.alert("IFSC Codes",JSON.stringify(result));
-  
-      // 1. Get the fresh value right now
-  const freshIfscCode = result[0]?.ifscCode || null;
-  
-  // 2. Update your local React state
-  setIfscCode(freshIfscCode);
-  
-  // 3. Update Formik using the fresh value directly
-  setFieldValue('householdBasicProfile.ifscCodeOrBranch', freshIfscCode);
-  
-  // 4. Check the FRESH value instead of the stale state variable
-  if (freshIfscCode !== null && freshIfscCode !== undefined && freshIfscCode !== '') { 
-    // Passing true, true forces Formik to mark it touched and re-validate immediately
-    setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
-  }
-  
-      // setIfscCode(result[0]?.ifscCode || null);
-      // setFieldValue('householdBasicProfile.ifscCodeOrBranch', ifscCode);
-      // if(ifscCode!=null && ifscCode!=undefined){ 
-      //   setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
-      // }
-     
-    };
+  const getBankIfscCodeByBankName = async (
+    bankName,
+    setFieldValue,
+    setFieldTouched,
+  ) => {
+    let token = loginData?.token;
+    const res = await api.user.getBankIfscCodeByBankName(bankName, token);
+
+    const result = res?.map(m => {
+      return {
+        label: m.ifsCode,
+        value: m.ifsCode,
+        ifscCode: m.ifsCode,
+      };
+    });
+    setIfscCodeList(result);
+    // Alert.alert("IFSC Codes",JSON.stringify(result));
+
+    // 1. Get the fresh value right now
+    const freshIfscCode = result[0]?.ifscCode || null;
+
+    // 2. Update your local React state
+    setIfscCode(freshIfscCode);
+
+    // 3. Update Formik using the fresh value directly
+    setFieldValue('householdBasicProfile.ifscCodeOrBranch', freshIfscCode);
+
+    // 4. Check the FRESH value instead of the stale state variable
+    if (
+      freshIfscCode !== null &&
+      freshIfscCode !== undefined &&
+      freshIfscCode !== ''
+    ) {
+      // Passing true, true forces Formik to mark it touched and re-validate immediately
+      setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
+    }
+
+    // setIfscCode(result[0]?.ifscCode || null);
+    // setFieldValue('householdBasicProfile.ifscCodeOrBranch', ifscCode);
+    // if(ifscCode!=null && ifscCode!=undefined){
+    //   setFieldTouched('householdBasicProfile.ifscCodeOrBranch', true, true);
+    // }
+  };
 
   const handleAddFamilyMember = () => {
     // Alert.alert('headName',JSON.stringify(headName));
@@ -1288,10 +1305,21 @@ const FamilyFormSurveyEdit = props => {
               ),
             };
           });
+          // 1. Destructure the old key out, gathering the remaining fields into 'restProfile'
+          const {headOfTheHouseholdGender, ...restProfile} =
+            values.householdBasicProfile || {};
+
+          // 2. Create the updated profile object cleanly
+          const updatedProfile = {
+            ...restProfile,
+            HeadOfTheHouseholdGender: headOfTheHouseholdGender,
+          };
 
           const finalValues = {
             ...values,
             householdFamilyMember: finalFamilyMembers,
+            householdBasicProfile: updatedProfile,
+            HouseholdBasicProfile: updatedProfile,
           };
 
           const formData = new FormData();
@@ -1652,6 +1680,10 @@ const FamilyFormSurveyEdit = props => {
                             'householdBasicProfile.headOfTheHouseholdGender',
                             text,
                           );
+                          setFieldValue(
+                            'HouseholdBasicProfile.HeadOfTheHouseholdGender',
+                            text,
+                          );
                           setHeadOfTheHouseholdGender(text);
                         }}
                         value={
@@ -1720,7 +1752,11 @@ const FamilyFormSurveyEdit = props => {
                           t('Select Bank Name')
                         }
                         onChange={obj => {
-                          getBankIfscCodeByBankName(obj.label, setFieldValue,setFieldTouched);
+                          getBankIfscCodeByBankName(
+                            obj.label,
+                            setFieldValue,
+                            setFieldTouched,
+                          );
 
                           //  setIfscCode(result[0]?.ifscCode || null);
 
@@ -2045,7 +2081,10 @@ const FamilyFormSurveyEdit = props => {
                           //   text,
                           // );
                         }}
-                        value={familyMemberCount?.toString()||values?.householdBasicProfile?.totalFamilyMembers}
+                        value={
+                          familyMemberCount?.toString() ||
+                          values?.householdBasicProfile?.totalFamilyMembers
+                        }
                         // value={familyMemberCount?.toString()}
                         inputType="numeric"
                         maxLength={3}
@@ -2065,9 +2104,11 @@ const FamilyFormSurveyEdit = props => {
                       )}
                       <Spacing space={SH(10)} />
 
-                      {familyMemberCount > 0 && (<Text style={{fontWeight: 'bold'}}>
-                        {t('House hold Members')}:
-                      </Text> )}
+                      {familyMemberCount > 0 && (
+                        <Text style={{fontWeight: 'bold'}}>
+                          {t('House hold Members')}:
+                        </Text>
+                      )}
                       {familyMembers?.map((m, i) => (
                         <Text key={i}>
                           {i + 1}. {m.name} | Age: {m.age} | Gender: {m.gender}
@@ -2865,7 +2906,7 @@ const FamilyFormSurveyEdit = props => {
                             'householdOccupationAndLand.approximatePrivateLandHolding',
                             text,
                           );
-                           setApproximatePrivateLandHolding(text);
+                          setApproximatePrivateLandHolding(text);
                         }}
                         // value={
                         //   editData != undefined
@@ -2874,7 +2915,6 @@ const FamilyFormSurveyEdit = props => {
                         //     : approximatePrivateLandHolding
                         // }
                         value={approximatePrivateLandHolding}
-                      
                         type={1}
                       />
                       <Text style={{color: 'red'}}>
@@ -3003,28 +3043,28 @@ const FamilyFormSurveyEdit = props => {
                         placeholder={t('Enter value (0-4 only)')}
                         value={values?.householdMigrationStatus?.minorChildrenAccompaniedMigration.toString()}
                         keyboardType="number-pad"
-                         onChangeText={text => {
-                        // 1. Remove anything that isn't a digit between 0 and 4
-                        const digitsOnly = text.replace(/[^0-4]/g, '');
+                        onChangeText={text => {
+                          // 1. Remove anything that isn't a digit between 0 and 4
+                          const digitsOnly = text.replace(/[^0-4]/g, '');
 
-                        // 2. Take only the first digit (max length 1)
-                        const singleDigit = digitsOnly.slice(0, 1);
+                          // 2. Take only the first digit (max length 1)
+                          const singleDigit = digitsOnly.slice(0, 1);
 
-                        // 3. Handle empty input (if user clears the field, keep it empty or null)
-                        if (singleDigit === '') {
+                          // 3. Handle empty input (if user clears the field, keep it empty or null)
+                          if (singleDigit === '') {
+                            setFieldValue(
+                              'householdMigrationStatus.minorChildrenAccompaniedMigration',
+                              '', // or null, depending on your validation schema
+                            );
+                            return;
+                          }
+
+                          // 4. Otherwise, safely convert the valid 0-4 digit to a Number
                           setFieldValue(
                             'householdMigrationStatus.minorChildrenAccompaniedMigration',
-                            '', // or null, depending on your validation schema
+                            Number(singleDigit),
                           );
-                          return;
-                        }
-
-                        // 4. Otherwise, safely convert the valid 0-4 digit to a Number
-                        setFieldValue(
-                          'householdMigrationStatus.minorChildrenAccompaniedMigration',
-                          Number(singleDigit),
-                        );
-                      }}
+                        }}
                         inputType="numeric"
                         maxLength={1}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
@@ -3118,7 +3158,6 @@ const FamilyFormSurveyEdit = props => {
                         </Text>
                         <View style={{flexDirection: 'column'}}>
                           <View style={AnalyaticsStyles.PaddingHori}>
-                           
                             <View style={Style.FlexEditView}>
                               <TouchableOpacity
                                 onPress={() =>

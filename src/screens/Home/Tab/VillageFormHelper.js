@@ -53,7 +53,7 @@ export const VillageFormInitialValues = (props,loginData) => ({
 //  MeetingPhotoPath:null,
  geoLocation:null,
  enumeratorName:loginData?.username+'('+loginData?.roleName+')',
- surveyDate:"2025-12-10T15:30:00",
+ surveyDate:new Date().toISOString(),
  TotalPopulation:0,
  TotalPersonsInMigration:0
 });

@@ -71,7 +71,7 @@ const VillageFormSurveyEdit = props => {
     about: '',
   };
   const isFocused = useIsFocused();
-   const [villageDataSelect, setVillageDataSelect] = useState([]);
+  const [villageDataSelect, setVillageDataSelect] = useState([]);
   const {loginData} = useSelector(state => state.DataReducer) || {};
   useEffect(() => {
     let token;
@@ -107,9 +107,9 @@ const VillageFormSurveyEdit = props => {
   }, []);
 
   const myVillageData = (msg, data) => {
-     loadVillageMembersCount(data);
+    loadVillageMembersCount(data);
   };
-   const loadVillageMembersCount = data => {
+  const loadVillageMembersCount = data => {
     if (data) {
       setVillageDataSelect(data);
     }
@@ -667,7 +667,56 @@ const VillageFormSurveyEdit = props => {
     }
     const finalvalues = {
       ...values,
+      surveyDate: moment(new Date(), 'YYYY-MM-DDTHH:mm:ss Z')
+        .local()
+        .format('YYYY-MM-DD'),
       id: uniqueId,
+      SurveyProcess: "FGD",
+      survey:{},
+      Id: uniqueId,
+      AllHouseholdsWithToilets: values.allHouseholdsWithToilets,
+      AnganwadiCentre: values.anganwadiCentre,
+      BankingPostOfficeNearby: values.bankingPostOfficeNearby,
+      Block: values.block,
+      CommonShedForWSHG: values.commonShedForWSHG,
+      CommunityCentreAvailable: values.communityCentreAvailable,
+      CommunityTanks: values.communityTanks,
+      DigitalConnectivity: values.digitalConnectivity,
+      District: values.district,
+      DrinkingWaterSource: values.drinkingWaterSource,
+      EnumeratorName: values.enumeratorName,
+      FemalePopulation: values.femalePopulation,
+      FunctionalCheckDams: values.functionalCheckDams,
+      FunctionalLiftIrrigation: values.functionalLiftIrrigation,
+      GpConnectedToPWDOrHighway: values.gpConnectedToPWDOrHighway,
+      GramPanchayat: values.gramPanchayat,
+      IdentityRole: values.identityRole,
+      IsElectrified: values.isElectrified,
+      LengthAllWeatherRoadToGP: values.lengthAllWeatherRoadToGP,
+      LengthAllWeatherRoadToHighway: values.lengthAllWeatherRoadToHighway,
+      MalePopulation: values.malePopulation,
+      MenInMigration: values.menInMigration,
+      MinorChildrenInMigration: values.minorChildrenInMigration,
+      PdsAvailable: values.pdsAvailable,
+      PlaygroundAvailable: values.playgroundAvailable,
+      PrimarySchoolAvailable: values.primarySchoolAvailable,
+      RespondentMobile: values.respondentMobile,
+      RespondentName: values.respondentName,
+      RevenueVillage: values.revenueVillage,
+      SecondarySchoolWithin3km: values.secondarySchoolWithin3km,
+      StreetLightingAvailable: values.streetLightingAvailable,
+      StreetLightingType: values.streetLightingType,
+      SubHealthCentre: values.subHealthCentre,
+      TotalHouseholds: values.totalHouseholds,
+      TotalPersonsInMigration: values.TotalPersonsInMigration,
+      TotalPopulation: values.TotalPopulation,
+      VillageConnectedToGP: values.villageConnectedToGP,
+      WaterFromIrrigationProject: values.waterFromIrrigationProject,
+      WomenInMigration: values.womenInMigration,
+      SurveyDate: moment(new Date(), 'YYYY-MM-DDTHH:mm:ss Z')
+        .local()
+        .format('YYYY-MM-DD'),
+
     };
 
     console.log('finalvalues $$', JSON.stringify(finalvalues));
@@ -681,15 +730,17 @@ const VillageFormSurveyEdit = props => {
     // return
     if (response != null && response != undefined) {
       if (response.status == 415) {
+        setLoading(false);
         setAlertVisible(true);
         setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
       }
-      if (response.status === 200) {
+      if (response.status === 200||response.status === "Success") {
         setLoading(false);
         setAlertVisible(true);
-        setAlertMessage(t('Survey_Submit_Successfully_village'));
+        setAlertMessage(response.message);
       }
     } else {
+      setLoading(false);
       setAlertVisible(true);
       setAlertMessage(t('Something_Went_Wrong_Please_Try_Again_Later'));
     }
@@ -1174,10 +1225,16 @@ const VillageFormSurveyEdit = props => {
                             minValue={100}
                             maxValue={4000}
                             step={100}
-                            initialValue={Number(values?.lengthAllWeatherRoadToHighway)||100}
-                            onValueChange={(val) => {
-                              console.log('Selected:', val)
-                              setFieldValue('lengthAllWeatherRoadToHighway', val);
+                            initialValue={
+                              Number(values?.lengthAllWeatherRoadToHighway) ||
+                              100
+                            }
+                            onValueChange={val => {
+                              console.log('Selected:', val);
+                              setFieldValue(
+                                'lengthAllWeatherRoadToHighway',
+                                val,
+                              );
                             }}
                           />
                         </SafeAreaView>
