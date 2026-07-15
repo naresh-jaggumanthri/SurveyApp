@@ -707,8 +707,15 @@ const FamilyFormSurveyTab = props => {
     setCheckboxes2(updatedCheckboxes);
   };
   const handleCheckboxChange3 = index => {
-    const updatedCheckboxes = [...checkboxes3];
-    updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+    // const updatedCheckboxes = [...checkboxes3];
+    // updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+
+      const updatedCheckboxes = checkboxes3.map(checkbox => {
+    if (checkbox.label === index) {
+      return { ...checkbox, checked: !checkbox.checked };
+    }
+    return checkbox;
+  });
 
     let result = updatedCheckboxes
       .filter(checkbox => checkbox.checked)
@@ -729,8 +736,15 @@ const FamilyFormSurveyTab = props => {
     setCheckboxes4(updatedCheckboxes);
   };
   const handleCheckboxChange5 = index => {
-    const updatedCheckboxes = [...checkboxes5];
-    updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+    // const updatedCheckboxes = [...checkboxes5];
+    // updatedCheckboxes[index].checked = !updatedCheckboxes[index].checked;
+
+    const updatedCheckboxes = checkboxes5.map(checkbox => {
+    if (checkbox.label === index) {
+      return { ...checkbox, checked: !checkbox.checked };
+    }
+    return checkbox;
+  });
 
     let result = updatedCheckboxes
       .filter(checkbox => checkbox.checked)
@@ -766,17 +780,38 @@ const FamilyFormSurveyTab = props => {
     ));
   };
   const renderCheckboxes3 = () => {
-    return checkboxes3.map((checkbox, index) => (
+      // 1. Check if at least one checkbox is currently checked
+      console.log("checkboxes3",JSON.stringify(checkboxes3));
+    const isNoneChecked = checkboxes3.some(item => item.label === 'None' && item.checked);
+  const isPmOrCmChecked = checkboxes3.some(item => (item.label === 'Poultry' || item.label === 'Goatery'||item.label === 'Dairy' || item.label === 'Others') && item.checked);
+  // const isAnyChecked = checkboxes5.some(checkbox => checkbox.checked);
+   return checkboxes3.map((checkbox) => {
+    // 2. Determine if THIS specific checkbox should be disabled
+    let isDisabled = false;
+
+    if (checkbox.label === 'None') {
+      // 'None' is disabled if the user has already picked PM or CM
+      isDisabled = isPmOrCmChecked;
+    } else if (checkbox.label === 'Poultry' || checkbox.label === 'Goatery'||checkbox.label === 'Dairy' || checkbox.label === 'Others') {
+      // 'PM' and 'CM' are disabled if the user has already picked 'None'
+      isDisabled = isNoneChecked;
+    }
+
+    return (
       <CheckBox
-        key={index}
+        key={checkbox.label}
         title={checkbox.label}
         iconType="material-community"
         checkedIcon="checkbox-marked"
         uncheckedIcon="checkbox-blank-outline"
         checked={checkbox.checked}
-        onPress={() => handleCheckboxChange3(index)}
+        onPress={() => handleCheckboxChange3(checkbox.label)}
+        disabled={isDisabled} // Apply the custom disable logic
+        // disabledStyle={{ opacity: 0.5 }}
+        // disabledTitleStyle={{ color: '#a1a1a1' }}
       />
-    ));
+    );
+  });
   };
   const renderCheckboxes4 = () => {
     return checkboxes4.map((checkbox, index) => (
@@ -792,17 +827,38 @@ const FamilyFormSurveyTab = props => {
     ));
   };
   const renderCheckboxes5 = () => {
-    return checkboxes5.map((checkbox, index) => (
+    // 1. Check if at least one checkbox is currently checked
+    //  Alert.alert("checkboxes5",JSON.stringify(checkboxes5));
+    const isNoneChecked = checkboxes5.some(item => item.label === 'None' && item.checked);
+  const isPmOrCmChecked = checkboxes5.some(item => (item.label === 'PM Kishan' || item.label === 'CM Kishan') && item.checked);
+  // const isAnyChecked = checkboxes5.some(checkbox => checkbox.checked);
+   return checkboxes5.map((checkbox) => {
+    // 2. Determine if THIS specific checkbox should be disabled
+    let isDisabled = false;
+
+    if (checkbox.label === 'None') {
+      // 'None' is disabled if the user has already picked PM or CM
+      isDisabled = isPmOrCmChecked;
+    } else if (checkbox.label === 'PM Kishan' || checkbox.label === 'CM Kishan') {
+      // 'PM' and 'CM' are disabled if the user has already picked 'None'
+      isDisabled = isNoneChecked;
+    }
+
+    return (
       <CheckBox
-        key={index}
+        key={checkbox.label}
         title={checkbox.label}
         iconType="material-community"
         checkedIcon="checkbox-marked"
         uncheckedIcon="checkbox-blank-outline"
         checked={checkbox.checked}
-        onPress={() => handleCheckboxChange5(index)}
+        onPress={() => handleCheckboxChange5(checkbox.label)}
+        disabled={isDisabled} // Apply the custom disable logic
+        // disabledStyle={{ opacity: 0.5 }}
+        // disabledTitleStyle={{ color: '#a1a1a1' }}
       />
-    ));
+    );
+  });
   };
   const [checked, setChecked] = React.useState(true);
   const toggleCheckbox = () => setChecked(!checked);
@@ -2196,10 +2252,10 @@ const FamilyFormSurveyTab = props => {
                     <Spacing space={SH(5)} />
                     {values.householdEntitlement?.hasMGNREGSJobCard && (
                       <Input
-                        title={t(
+                        title={'24 . ' +t(
                           'Mention the Full Job card No (after Revenue Village code)',
                         )}
-                        placeholder={t(
+                        placeholder={'24 . ' +t(
                           'Mention the Full Job card No (after Revenue Village code)',
                         )}
                         onChangeText={text => {

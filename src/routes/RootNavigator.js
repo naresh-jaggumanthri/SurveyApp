@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Colors, Fonts, SF } from '../utils';
 
 const Stack = createNativeStackNavigator();
@@ -25,6 +25,9 @@ import VillageFormList from '../screens/Home/Tab/VillageFormList';
 import { Style } from '../styles';
 import HeaderLeftMenuIcon from '../components/commonComponents/HeaderLeftMenuIcon';
 import ColorPicker from '../components/commonComponents/ColorPicker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { login_data_action } from '../redux/action/DataAction';
+import { Alert } from 'react-native';
 
 
 const RootNavigator = props => {
@@ -50,21 +53,45 @@ const RootNavigator = props => {
       setColorValue(MyThemeNew)
     }
   }, [colorrdata, Colors])
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const session = await AsyncStorage.getItem('user_session');
+        if (session !== null) {
+          const parsedSession = JSON.parse(session);
+          // Restore the data back into your Redux store
+          dispatch(login_data_action(parsedSession));
+          setIsLoggedIn(true);
+        }
+      } catch (error) {
+        console.log("Error reading session", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  // if (isLoading) {
+  //   return <Loader visible={true} />; // or a splash screen
+  // }
 
   return (
     <NavigationContainer theme={colorValue}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* <Stack.Screen name={RouteName.SPLSH} component={SplashScreen} /> */}
-        <Stack.Screen name={RouteName.LOGIN_SCREEN} component={LoginScreen} />
-        <Stack.Screen name={RouteName.REGISTER_SCREEN} component={RegisterScreen} />
+     <Stack.Navigator key={isLoggedIn ? "user-app" : "guest-app"} screenOptions={{ headerShown: false }}>
+        {isLoggedIn ? (
+           <>
         <Stack.Screen name={RouteName.HOME_SCREEN} component={SideNavigator} />
-        <Stack.Screen name={RouteName.REGIATRAION_SUCCESSFULL} component={RegistrationSuccessful} />
+         <Stack.Screen name={RouteName.REGIATRAION_SUCCESSFULL} component={RegistrationSuccessful} />
         <Stack.Screen name={RouteName.OTP_VERYFY_SCREEN} component={OtpVeryfiveScreen} />
         <Stack.Screen name={RouteName.SWIPER_SCREEN} component={Swiperscreen} />
         <Stack.Screen name={RouteName.SELECT_LANGUAGE} component={TranslationScreen} />
         <Stack.Screen name={RouteName.FORGOT_PASSWORD} component={ForgotPassword} />
-
-         <Stack.Screen
+           <Stack.Screen
       name={RouteName.FAMILY_SURVEY_EDIT_TAB}
       component={FamilyFormSurveyEdit}
       />
@@ -72,6 +99,36 @@ const RootNavigator = props => {
       name={RouteName.VILLAGE_SURVEY_EDIT_TAB}
       component={VillageFormSurveyEdit}
       />
+       <Stack.Screen name={RouteName.LOGIN_SCREEN} component={LoginScreen} />
+       </>
+      ) : ( 
+        <>
+         <Stack.Screen name={RouteName.LOGIN_SCREEN} component={LoginScreen} />
+        <Stack.Screen name={RouteName.REGISTER_SCREEN} component={RegisterScreen} />
+        <Stack.Screen name={RouteName.HOME_SCREEN} component={SideNavigator} />
+        <Stack.Screen name={RouteName.REGIATRAION_SUCCESSFULL} component={RegistrationSuccessful} />
+        <Stack.Screen name={RouteName.OTP_VERYFY_SCREEN} component={OtpVeryfiveScreen} />
+        <Stack.Screen name={RouteName.SWIPER_SCREEN} component={Swiperscreen} />
+        <Stack.Screen name={RouteName.SELECT_LANGUAGE} component={TranslationScreen} />
+        <Stack.Screen name={RouteName.FORGOT_PASSWORD} component={ForgotPassword} />
+           <Stack.Screen
+      name={RouteName.FAMILY_SURVEY_EDIT_TAB}
+      component={FamilyFormSurveyEdit}
+      />
+       <Stack.Screen
+      name={RouteName.VILLAGE_SURVEY_EDIT_TAB}
+      component={VillageFormSurveyEdit}
+      />
+      </>
+
+       
+      )}
+       
+       </Stack.Navigator>
+        {/* <Stack.Screen name={RouteName.SPLSH} component={SplashScreen} /> */}
+       
+
+      
           {/* <Stack.Screen name={RouteName.FAMILY_LIST_TAB} component={FamilyFormList} />
           <Stack.Screen name={RouteName.VILLAGE_LIST_TAB} component={VillageFormList} /> */}
         {/* <Stack.Screen
@@ -165,7 +222,7 @@ const RootNavigator = props => {
         }}
       /> */}
 
-      </Stack.Navigator>
+    
      
     </NavigationContainer>
   );

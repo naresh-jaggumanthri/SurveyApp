@@ -797,6 +797,7 @@ const VillageFormSurveyTab = props => {
           handleBlur,
           handleSubmit,
           setFieldValue,
+          setFieldTouched,
           values,
           errors,
           touched,
@@ -910,8 +911,13 @@ const VillageFormSurveyTab = props => {
 
                             await getVillageMembersCount(params);
                           }
-                          villageData.map(item => {
+                          villageData?.map(item => {
                             // Alert.alert('Village Members Count', JSON.stringify(item));
+
+                            setFieldTouched('totalHouseholds', true, true);
+                            setFieldTouched('malePopulation', true, true);
+                            setFieldTouched('TotalPopulation', true, true);
+                            setFieldTouched('femalePopulation', true, true);
                             setFieldValue('totalHouseholds', item?.total);
                             setFieldValue('malePopulation', item?.male);
                             setFieldValue('femalePopulation', item?.female);
@@ -939,7 +945,7 @@ const VillageFormSurveyTab = props => {
                           const number = Number(filtered);
 
                           // Block 0 and values > 1500
-                          if (number > 1500) return;
+                          if (number > 10) return;
 
                           // Allow empty (while typing)
                           if (filtered === '') {
@@ -953,7 +959,7 @@ const VillageFormSurveyTab = props => {
                         value={String(values?.totalHouseholds ?? '')}
                         inputType={'numeric'}
                         keyboardType={'number-pad'}
-                        maxLength={4}
+                        maxLength={2}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
@@ -1158,9 +1164,12 @@ const VillageFormSurveyTab = props => {
                             maxValue={4000}
                             step={100}
                             initialValue={100}
-                            onValueChange={(val) => {
-                              console.log('Selected:', val)
-                              setFieldValue('lengthAllWeatherRoadToHighway', val);
+                            onValueChange={val => {
+                              console.log('Selected:', val);
+                              setFieldValue(
+                                'lengthAllWeatherRoadToHighway',
+                                val,
+                              );
                             }}
                           />
                         </SafeAreaView>
@@ -1478,17 +1487,31 @@ const VillageFormSurveyTab = props => {
                           'No. of community tanks available in the village?',
                         )}
                         onChangeText={text => {
+                          // 1. Remove non-numeric characters
                           let filtered = text.replace(/[^0-9]/g, '');
 
+                          // 2. Handle empty input
                           if (filtered === '') {
                             setFieldValue('communityTanks', '');
                             return;
                           }
+
                           const number = Number(filtered);
-                          if (number > 30) return;
-                          setFieldValue('communityTanks', number);
+
+                          // 3. If the new number exceeds 30, force-set the state
+                          // to the PREVIOUS valid value to reject the new keystroke
+                          if (number > 30) {
+                            setFieldValue(
+                              'communityTanks',
+                              values?.communityTanks || '',
+                            );
+                            return;
+                          }
+
+                          // 4. Update state with the valid filtered string
+                          setFieldValue('communityTanks', filtered);
                         }}
-                        value={values?.communityTanks}
+                        value={values?.communityTanks?.toString() || ''} // Ensure it's a string for the input
                         inputType={'numeric'}
                         maxLength={2}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}

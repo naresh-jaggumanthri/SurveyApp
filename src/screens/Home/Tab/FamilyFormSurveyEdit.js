@@ -84,11 +84,39 @@ const FamilyFormSurveyEdit = props => {
   const threeRef = useRef();
   const fourRef = useRef();
   const fiveRef = useRef();
-
-  useLayoutEffect(() => {
-    var token = PubSub.subscribe('HouseItem', mySubscriber);
-    formikRef.current.resetForm({values: undefined});
-  }, []);
+   const {houseData} = useSelector(state => state.DataReducer) || {};
+ const isFocused = useIsFocused();
+   useEffect(() => {
+      let token;
+  
+      try {
+        // Alert.alert("villageData",JSON.stringify(villageData));
+        // 1. Clear the Formik form immediately if focused
+        if (isFocused && formikRef.current) {
+          formikRef.current.resetForm({values: undefined});
+        }
+  
+        // 2. Defer subscription to the next tick so Formik reset finishes first
+        const timer = setTimeout(() => {
+          //token = PubSub.subscribe('VillageItem', mySubscriber);
+          mySubscriber('HouseItem', houseData);
+        }, 0);
+  
+        // CLEANUP
+        return () => {
+          clearTimeout(timer);
+          if (token) {
+            PubSub.unsubscribe(token);
+          }
+        };
+      } catch (error) {
+        console.error('Error in subscription', error.message);
+      }
+    }, [isFocused, mySubscriber]);
+  // useLayoutEffect(() => {
+  //   var token = PubSub.subscribe('HouseItem', mySubscriber);
+  //   formikRef.current.resetForm({values: undefined});
+  // }, []);
 
   //  const {editData}=null;
   const [alertVisible, setAlertVisible] = useState(false);
@@ -173,7 +201,7 @@ const FamilyFormSurveyEdit = props => {
   const [selectedSchemes, setSelectedSchemes] = useState(null);
   const [involvedWaterSource, setInvolvedWaterSource] = useState(null);
   const [localIfscCode, setLocalIfscCode] = useState(null);
-  const isFocused = useIsFocused();
+  // const isFocused = useIsFocused();
   const [nameError, setNameError] = useState('');
   const {familyData} = useSelector(state => state.DataReducer) || {};
 
@@ -2375,10 +2403,10 @@ const FamilyFormSurveyEdit = props => {
                       <Spacing space={SH(5)} />
                       {values.householdEntitlement?.hasMGNREGSJobCard && (
                         <Input
-                          title={t(
+                          title={'24. '+t(
                             'Mention the Full Job card No (after Revenue Village code)',
                           )}
-                          placeholder={t(
+                          placeholder={'24. '+t(
                             'Mention the Full Job card No (after Revenue Village code)',
                           )}
                           onChangeText={text => {

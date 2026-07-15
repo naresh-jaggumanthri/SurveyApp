@@ -5,7 +5,7 @@ import { SF, SH, SW, Fonts, Colors } from '../../utils';
 import { CheckBox } from 'react-native-elements';
 
 function CheckBoxset(props) {
-    const { checked, onPress, title, iconType, checkedIcon, uncheckedIcon, checkedColor, uncheckedColor } = props;
+    const { checked, onPress, title, iconType, checkedIcon, uncheckedIcon, checkedColor, uncheckedColor,disabled} = props;
     const styles = useMemo(
         () =>
             StyleSheet.create({
@@ -41,6 +41,7 @@ function CheckBoxset(props) {
                 uncheckedColor={uncheckedColor}
                 textStyle={styles.labelStyle}
                 containerStyle={styles.containerStyle}
+                disabled={disabled}
             />
         </View>
     );

@@ -1,23 +1,56 @@
 import React, { useState } from "react";
-import { Text, View, TouchableOpacity, ScrollView } from "react-native";
+import { Text, View, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { Sidemenu } from '../../styles';
 import { RouteName } from '../../routes';
 import { ConfirmationAlert, VectorIcon } from '../../components';
 import { Colors, SF } from '../../utils';
 import { useTranslation } from "react-i18next";
  import Config from "react-native-config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch } from "react-redux";
+import { logout_data_action } from "../../redux/action/DataAction";
 
 const CustomSidebarMenu = (props) => {
   const { t } = useTranslation();
   const { navigation } = props;
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-
+ const dispatch = useDispatch();
   var alertdata = {
     'logout': t("Are_You_Sure_logout"),
   }
+
+  const deleteSession=async()=>{
+   
+    
+    
+ try {
+      // 1. Wipe out the persistent local storage session
+      await AsyncStorage.removeItem('user_session'); 
+      
+      
+      // If using redux-persist instead of manual AsyncStorage, you can use:
+      // await AsyncStorage.clear();
+
+      // 2. Wipe out the Redux store
+      dispatch(logout_data_action(null));
+        
+       navigation.navigate(RouteName.LOGIN_SCREEN);
+      
+      // NOTE: Because you set up the conditional NavigationContainer properly, 
+      // the app will AUTOMATICALLY redirect to the Login screen now! 
+      // No need to call navigation.navigate('LOGIN_SCREEN').
+      
+      
+    } catch (error) {
+      console.error("Error logging out: ", error);
+    }
+  }
   const onoknutton = () => {
-    navigation.navigate(RouteName.LOGIN_SCREEN);
+   
+    // Alert.alert("pressed");
+   deleteSession();
+   
   }
   const Onpressfunction = (e) => {
     navigation.toggleDrawer();

@@ -868,6 +868,7 @@ const VillageFormSurveyEdit = props => {
           handleBlur,
           handleSubmit,
           setFieldValue,
+          setFieldTouched,
           values,
           errors,
           touched,
@@ -978,8 +979,12 @@ const VillageFormSurveyEdit = props => {
 
                             await getVillageMembersCount(params);
                           }
-                          villageDataSelect.map(item => {
+                          villageDataSelect?.map(item => {
                             // Alert.alert('Village Members Count', JSON.stringify(item));
+                           setFieldTouched('totalHouseholds', true, true);
+                            setFieldTouched('malePopulation', true, true);
+                            setFieldTouched('TotalPopulation', true, true);
+                            setFieldTouched('femalePopulation', true, true);
                             setFieldValue('totalHouseholds', item?.total);
                             setFieldValue('malePopulation', item?.male);
                             setFieldValue('femalePopulation', item?.female);
@@ -1007,7 +1012,7 @@ const VillageFormSurveyEdit = props => {
                           const number = Number(filtered);
 
                           // Block 0 and values > 1500
-                          if (number > 1500) return;
+                          if (number > 10) return;
 
                           // Allow empty (while typing)
                           if (filtered === '') {
@@ -1021,7 +1026,7 @@ const VillageFormSurveyEdit = props => {
                         value={String(values?.totalHouseholds ?? '')}
                         inputType={'numeric'}
                         keyboardType={'number-pad'}
-                        maxLength={4}
+                        maxLength={2}
                         titleStyle={AnalyaticsStyles.PleaseEnterDate}
                       />
                       <Text style={{color: 'red'}}>
@@ -1543,30 +1548,41 @@ const VillageFormSurveyEdit = props => {
                         {errors?.playgroundAvailable}
                       </Text>
                       <Spacing space={SH(15)} />
-                      <Input
-                        title={
-                          '26. ' +
-                          t('No. of community tanks available in the village?')
-                        }
-                        placeholder={t(
-                          'No. of community tanks available in the village?',
-                        )}
-                        onChangeText={text => {
-                          let filtered = text.replace(/[^0-9]/g, '');
+                     <Input
+  title={
+    '26. ' +
+    t('No. of community tanks available in the village?')
+  }
+  placeholder={t(
+    'No. of community tanks available in the village?',
+  )}
+  onChangeText={text => {
+    // 1. Remove non-numeric characters
+    let filtered = text.replace(/[^0-9]/g, '');
 
-                          if (filtered === '') {
-                            setFieldValue('communityTanks', '');
-                            return;
-                          }
-                          const number = Number(filtered);
-                          if (number > 30) return;
-                          setFieldValue('communityTanks', number);
-                        }}
-                        value={String(values?.communityTanks ?? '')}
-                        inputType={'numeric'}
-                        maxLength={2}
-                        titleStyle={AnalyaticsStyles.PleaseEnterDate}
-                      />
+    // 2. Handle empty input
+    if (filtered === '') {
+      setFieldValue('communityTanks', '');
+      return;
+    }
+
+    const number = Number(filtered);
+
+    // 3. If the new number exceeds 30, force-set the state 
+    // to the PREVIOUS valid value to reject the new keystroke
+    if (number > 30) {
+      setFieldValue('communityTanks', values?.communityTanks || '');
+      return;
+    }
+
+    // 4. Update state with the valid filtered string
+    setFieldValue('communityTanks', filtered);
+  }}
+  value={values?.communityTanks?.toString() || ''} // Ensure it's a string for the input
+  inputType={'numeric'}
+  maxLength={2}
+  titleStyle={AnalyaticsStyles.PleaseEnterDate}
+/>
                       <Text style={{color: 'red'}}>
                         {errors?.communityTanks}
                       </Text>

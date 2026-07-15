@@ -34,6 +34,7 @@ import DataReducer from '../../../redux/reducers/DataReducer';
 import {login_data_action} from '../../../redux/action/DataAction';
 import {useDispatch} from 'react-redux';
 import Loader from '../../../components/commonComponents/Loader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = props => {
   const {Colors} = useTheme();
@@ -54,7 +55,7 @@ const LoginScreen = props => {
   const OnRegisterPress = () => {
     navigation.navigate(RouteName.REGISTER_SCREEN);
   };
-  
+
   const onLoginPress = async values => {
     setLoading(true);
     const res = await api.user.signIn(
@@ -66,7 +67,7 @@ const LoginScreen = props => {
       },
       undefined,
     );
-  
+
     // Alert.alert('Login Response', JSON.stringify(res), [{text: 'OK'}]);
     // return;
     if (res?.status == 'CODE_ERROR') {
@@ -100,29 +101,35 @@ const LoginScreen = props => {
           audience: userData?.aud,
           expiryDate: userData?.exp,
         };
-        
-    
-      let finalValues = {
-        username: user.fullname,
-        roleId:user.role,
-        roleName:user.role == 1 ? "Mobile User" : user.role == 2 ? "Approver" : "Admin",
-        emailId:user.email,
-        naem:user.name,
-        password: values.password,
-        token: res.token,
-        state: res.state,
-        district: res.district,
-        block: res.block,
-        gp: res.gp,
-        village: res.village
-      };
-      dispatch(login_data_action(finalValues));
-      // navigation.navigate(RouteName.OTP_VERYFY_SCREEN)
-      await getVillageMembersCount(finalValues);
-      navigation.navigate(RouteName.HOME_SCREEN);
-      return;
-        } catch (e) {}
-    }else {
+
+        let finalValues = {
+          username: user.fullname,
+          roleId: user.role,
+          roleName:
+            user.role == 1
+              ? 'Mobile User'
+              : user.role == 2
+              ? 'Approver'
+              : 'Admin',
+          emailId: user.email,
+          naem: user.name,
+          password: values.password,
+          token: res.token,
+          state: res.state,
+          district: res.district,
+          block: res.block,
+          gp: res.gp,
+          village: res.village,
+        };
+        dispatch(login_data_action(finalValues));
+        // navigation.navigate(RouteName.OTP_VERYFY_SCREEN)
+        await getVillageMembersCount(finalValues);
+        // --- ADD THIS LINE TO SAVE SESSION ---
+        await AsyncStorage.setItem('user_session', JSON.stringify(finalValues));
+        navigation.navigate(RouteName.HOME_SCREEN);
+        return;
+      } catch (e) {}
+    } else {
       setLoading(false);
       AppOkAlert('Login Failed,Invalid credentials', () => {}, 'OK', APP_NAME);
       return;
@@ -166,7 +173,7 @@ const LoginScreen = props => {
                     placeholder={t('Mobile_Number')}
                     onChangeText={value => {
                       // Removes all spaces from the input string
-                    const cleanValue = value.replace(/\s/g, '');
+                      const cleanValue = value.replace(/\s/g, '');
                       setName(cleanValue);
                       setFieldValue('username', cleanValue);
                     }}
@@ -185,12 +192,11 @@ const LoginScreen = props => {
                   placeholder={t('Password_Text')}
                   value={password}
                   onPress={() => {
-                   
                     onChangeText('TextInputPassword');
                   }}
                   maxLength={7}
                   onChangeText={value => {
-                     const cleanValue = value.replace(/\s/g, '');
+                    const cleanValue = value.replace(/\s/g, '');
                     setPassword(cleanValue);
                     setFieldValue('password', cleanValue);
                   }}

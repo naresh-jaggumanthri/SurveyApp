@@ -1,5 +1,6 @@
 export const DATA_DETAILES_TYPE = "DATA_DETAILES_TYPE";
 export const LOGIN_DATA_TYPE = "LOGIN_DATA_TYPE";
+export const LOGOUT_DATA_TYPE = "LOGOUT_DATA_TYPE";
 export const FAMILY_DATA="FAMILY_DATA";
 export const HOUSE_DATA="HOUSE_DATA";
 export const VILLAGE_DATA="VILLAGE_DATA";

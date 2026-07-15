@@ -18,7 +18,7 @@ import { AppDataSource } from '../../../database/database';
 import { HouseholdSurvey } from '../../../database/entities/HouseholdSurvey';
 import Loader from '../../../components/commonComponents/Loader';
 import { v4 as uuidv4 } from 'uuid';
-import { save_family_data } from '../../../redux/action/DataAction';
+import { save_family_data, save_house_data } from '../../../redux/action/DataAction';
 import { useDispatch } from 'react-redux';
 import UserProfileCard from '../../../components/commonComponents/UserProfileCard';
 import SyncModal from '../../../components/commonComponents/SyncModal';
@@ -408,9 +408,9 @@ await onSavePress(formData);
                   index={index}
                   type={1}
                   onPress={() =>{
-                  
-                      dispatch(save_family_data(item));
-                    PubSub.publish('HouseItem',item) 
+                  dispatch(save_family_data(item));
+                      dispatch(save_house_data(item));
+                    // PubSub.publish('HouseItem',item) 
                     navigation.navigate(RouteName.FAMILY_SURVEY_EDIT_TAB);
  
                 //       navigation.navigate(RouteName.FAMILY_SURVEY_TAB,{
