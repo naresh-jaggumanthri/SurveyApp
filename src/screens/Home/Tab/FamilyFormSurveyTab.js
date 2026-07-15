@@ -1747,7 +1747,7 @@ const FamilyFormSurveyTab = props => {
                       }}
                       value={values?.householdBasicProfile?.bankAccountNumber}
                       inputType="numeric"
-                      maxLength={12}
+                      maxLength={15}
                       titleStyle={AnalyaticsStyles.PleaseEnterDate}
                     />
                     <Text style={{color: 'red'}}>
