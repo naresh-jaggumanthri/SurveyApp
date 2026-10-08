@@ -12,7 +12,9 @@ import DeviceHelper from "../utils/DeviceHelper";
 //import { fetch } from "react-native-ssl-pinning";
 
 // export const API_BASE_URL = Config.API_URL;
-export const API_BASE_URL = "https://demo2.itmaniacs.co.in";
+// export const API_BASE_URL = "https://demo2.itmaniacs.co.in";
+// export const API_BASE_URL = "https://117.252.29.178";
+export const API_BASE_URL = "https://stg-dalkhai.odisha.gov.in";
 // export const TENANT_ID = Config.TENANT_ID ? Config.TENANT_ID : undefined;
 // Define a list of domains or URLs for which SSL pinning should be disabled
 //const domainsToDisableSSLFor = ['japitdev.dhanushinfotech.com', 'japitqa.dhanushinfotech.com'];
@@ -343,19 +345,19 @@ export default class ApiClient {
 
     // const apiKey = await getApiKey();
     //const apiKey=undefined;
-    let headers = {
-      Accept: "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*", "e_platform": "mobile",
-      //   sslPinning: {
-      //     certs: ["mycert","mycert2"]
-      // }
-      //Accept: 'application/json',
-      'content-type': isFormData ? 'multipart/form-data' : 'application/json',
-      //added by naresh
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': 0,
-      'Authorization': token ? `Bearer ${token}` : undefined,
-    };
+    // let headers = {
+    //   Accept: "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*", "e_platform": "mobile",
+    //   //   sslPinning: {
+    //   //     certs: ["mycert","mycert2"]
+    //   // }
+    //   //Accept: 'application/json',
+    //   'content-type': isFormData ? 'multipart/form-data' : 'application/json',
+    //   //added by naresh
+    //   'Cache-Control': 'no-cache, no-store, must-revalidate',
+    //   'Pragma': 'no-cache',
+    //   'Expires': 0,
+    //   'Authorization': token ? `Bearer ${token}` : undefined,
+    // };
     // if (token!=undefined && token!=null) {
     //   headers = {
     //     ...headers,
@@ -364,6 +366,27 @@ export default class ApiClient {
 
     //   };
     // }
+
+    // 1. Build base headers
+const headers = {
+  'Accept': 'application/json',
+  'e_platform': 'mobile',
+  'Cache-Control': 'no-cache, no-store, must-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0',
+};
+
+// 2. Conditionally handle Content-Type (Omit for FormData so HTTP client auto-sets boundary)
+if (!isFormData) {
+  headers['Content-Type'] = 'application/json; charset=utf-8';
+}else{
+   headers['Content-Type'] = 'multipart/form-data';
+}
+
+// 3. Safely attach Bearer token only if it exists
+if (token) {
+  headers['Authorization'] = `Bearer ${token}`;
+}
     let init = {
       method,
       headers: headers,

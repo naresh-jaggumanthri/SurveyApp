@@ -8,3 +8,19 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+# RootBeer rule: keep native methods and JNI calls
+-keep class com.scottyab.rootbeer.RootBeer {
+    public *;
+}
+-keep class com.scottyab.rootbeer.util.QLog {
+    public *;
+}
+
+# Keep your custom Java Native Module classes from being stripped/renamed
+-keep class com.surveyapp.RootDetectionModule { *; }
+-keep class com.surveyapp.RootDetectionPackage { *; }
+
+# Keep React Native bridge classes
+-keepclassmembers class * extends com.facebook.react.bridge.ReactContextBaseJavaModule {
+    @com.facebook.react.bridge.ReactMethod <methods>;
+}

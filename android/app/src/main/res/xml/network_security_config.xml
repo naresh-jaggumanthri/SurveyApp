@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">stg-dalkhai.odisha.gov.in</domain>
+<!--        <pin-set expiration="2057-01-01">-->
+<!--            &lt;!&ndash; SHA-256 hash of your server's Subject Public Key Info (SPKI) &ndash;&gt;-->
+<!--            <pin digest="SHA-256">cUPcRiuTXR4xv6GPGFB2901DZb1XM52d628A1p033E0=</pin>-->
+<!--            &lt;!&ndash; Backup Pin for Certificate Renewal &ndash;&gt;-->
+<!--            <pin digest="SHA-256">M82N3B4V5C6X7Z1A2S3D4F5G6H7J8K9L0P=</pin>-->
+<!--        </pin-set>-->
+    </domain-config>
+</network-security-config>

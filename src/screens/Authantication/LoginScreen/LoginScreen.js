@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {
   Button,
@@ -35,6 +36,7 @@ import {login_data_action} from '../../../redux/action/DataAction';
 import {useDispatch} from 'react-redux';
 import Loader from '../../../components/commonComponents/Loader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useLoginLockout from './useLoginLockout';
 
 const LoginScreen = props => {
   const {Colors} = useTheme();
@@ -55,8 +57,11 @@ const LoginScreen = props => {
   const OnRegisterPress = () => {
     navigation.navigate(RouteName.REGISTER_SCREEN);
   };
-
+ const [error, setError] = useState('');
+ const { isLocked, remainingSeconds, attemptsLeft, registerFailure, lockFor, reset } = useLoginLockout();
   const onLoginPress = async values => {
+     if (isLocked || loading) return;
+    setError('');
     setLoading(true);
     const res = await api.user.signIn(
       null,
@@ -70,13 +75,24 @@ const LoginScreen = props => {
 
     // Alert.alert('Login Response', JSON.stringify(res), [{text: 'OK'}]);
     // return;
+    if (res?.status === 429) {
+        const retryAfter = parseInt(res.headers.get('Retry-After') || '900', 10);
+        lockFor(retryAfter * 1000);
+        setError('Too many attempts. Please try again later.');
+      } else if (res?.status === 401) {
+        registerFailure();
+        setError('Invalid credentials.');
+      } 
     if (res?.status == 'CODE_ERROR') {
+      registerFailure();
+        setError('Invalid credentials.');
       setLoading(false);
       AppOkAlert('Login Failed', () => {}, 'OK', APP_NAME);
       return;
     }
     if (res?.status == 'OK') {
       try {
+        reset();
         setLoading(false);
         const token = res?.token;
         await saveMasters(token);
@@ -136,6 +152,10 @@ const LoginScreen = props => {
     }
     setLoading(false);
   };
+
+  const mm = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
+  const ss = String(remainingSeconds % 60).padStart(2, '0');
+
 
   return (
     <View style={Style.CentrViewMin}>
@@ -206,6 +226,16 @@ const LoginScreen = props => {
 
                 <Spacing space={SH(29)} />
                 <View style={Logins.LoginButton}>
+                  {!!error && <Text style={{ color: 'red' }}>{error}</Text>}
+      {isLocked ? (
+        <Text>Account temporarily locked. Try again in {mm}:{ss}</Text>
+      ) : (
+        attemptsLeft < 3 && attemptsLeft > 0 && <Text>{attemptsLeft} attempts remaining</Text>
+      )}
+
+      {loading ? (
+        <ActivityIndicator />
+      ) : (
                   <Button
                     title={t('Login_Text')}
                     onPress={
@@ -216,7 +246,7 @@ const LoginScreen = props => {
 
                       // navigation.navigate(RouteName.OTP_VERYFY_SCREEN)
                     }
-                  />
+                  />)}
                   <Loader visible={loading} />
                 </View>
               </>
