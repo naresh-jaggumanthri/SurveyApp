@@ -26,6 +26,7 @@ import { Style } from '../styles';
 import HeaderLeftMenuIcon from '../components/commonComponents/HeaderLeftMenuIcon';
 import ColorPicker from '../components/commonComponents/ColorPicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import EncryptedStorage from 'react-native-encrypted-storage';
 import { login_data_action } from '../redux/action/DataAction';
 import { Alert } from 'react-native';
 
@@ -59,7 +60,7 @@ const RootNavigator = props => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const session = await AsyncStorage.getItem('user_session');
+        const session = await EncryptedStorage.getItem('user_session');
         if (session !== null) {
           const parsedSession = JSON.parse(session);
           // Restore the data back into your Redux store

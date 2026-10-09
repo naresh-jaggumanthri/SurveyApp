@@ -37,6 +37,7 @@ import {useDispatch} from 'react-redux';
 import Loader from '../../../components/commonComponents/Loader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useLoginLockout from './useLoginLockout';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 const LoginScreen = props => {
   const {Colors} = useTheme();
@@ -141,7 +142,8 @@ const LoginScreen = props => {
         // navigation.navigate(RouteName.OTP_VERYFY_SCREEN)
         await getVillageMembersCount(finalValues);
         // --- ADD THIS LINE TO SAVE SESSION ---
-        await AsyncStorage.setItem('user_session', JSON.stringify(finalValues));
+        // await AsyncStorage.setItem('user_session', JSON.stringify(finalValues));
+        await EncryptedStorage.setItem('user_session', JSON.stringify(finalValues));
         navigation.navigate(RouteName.HOME_SCREEN);
         return;
       } catch (e) {}

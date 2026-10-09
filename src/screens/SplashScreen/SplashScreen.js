@@ -9,6 +9,7 @@ import { RouteName } from '../../routes';
 import { Lottie } from '../../components';
 import { Colors } from '../../utils';
 import { useSelector } from "react-redux";
+import EncryptedStorage from 'react-native-encrypted-storage';
 import api from '../../api';
 
 const SplashScreen = ({ navigation }) => {
@@ -18,7 +19,7 @@ const SplashScreen = ({ navigation }) => {
     useEffect(() => {
        
         setTimeout(() => {
-            AsyncStorage.getItem('user_id').then((value) =>
+            EncryptedStorage.getItem('user_session').then((value) =>
                 // navigation.navigate(RouteName.SWIPER_SCREEN)
                 navigation.navigate(RouteName.LOGIN_SCREEN)
             );

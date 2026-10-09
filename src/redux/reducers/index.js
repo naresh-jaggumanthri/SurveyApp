@@ -3,16 +3,17 @@ import commonReducer from './commomReducer';
 import DataReducer from './DataReducer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { persistStore, persistReducer } from 'redux-persist';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 const persistConfig = {
   key: 'root',
-  storage: AsyncStorage,
+  storage: EncryptedStorage,
   whitelist: ['colorrdata'],
 };
 
 const persistConfigdata = {
   key: 'root',
-  storage: AsyncStorage,
+  storage: EncryptedStorage,
   whitelist: ['detailsStore','villageData','houseData'],
 };
 

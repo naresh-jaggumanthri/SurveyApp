@@ -7,6 +7,7 @@ import { Colors, SF } from '../../utils';
 import { useTranslation } from "react-i18next";
  import Config from "react-native-config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import EncryptedStorage from 'react-native-encrypted-storage';
 import { useDispatch } from "react-redux";
 import { logout_data_action } from "../../redux/action/DataAction";
 
@@ -26,7 +27,8 @@ const CustomSidebarMenu = (props) => {
     
  try {
       // 1. Wipe out the persistent local storage session
-      await AsyncStorage.removeItem('user_session'); 
+      // await AsyncStorage.removeItem('user_session');
+      await EncryptedStorage.removeItem('user_session'); 
       
       
       // If using redux-persist instead of manual AsyncStorage, you can use:

@@ -3,7 +3,7 @@ import * as Keychain from 'react-native-keychain';
 
 const SERVICE = 'login_lockout';
 const MAX_ATTEMPTS = 5;
-const LOCK_MS = 15 * 60 * 1000;
+const LOCK_MS = 30 * 60 * 1000;
 
 export default function useLoginLockout() {
   const [attempts, setAttempts] = useState(0);
