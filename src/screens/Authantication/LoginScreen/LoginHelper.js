@@ -20,7 +20,7 @@ export const LoginValidationSchema = (username, password) => {
       .required('Name is Required'),
     password: Yup.string()
       .min(6, 'Too Short!')
-      .max(7, 'Too Long!')
+      .max(14, 'Too Long!')
       .required('Password is Required'),
   });
 };

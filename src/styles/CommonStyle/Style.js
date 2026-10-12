@@ -127,7 +127,7 @@ export default StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     paddingVertical: SH(20),
-    width: '95%',
+    width:'95%',
   },
   setbgcolorgrsay: {
     backgroundColor: Colors.gray_text_color,

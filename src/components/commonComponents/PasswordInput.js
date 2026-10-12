@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import propTypes from 'prop-types';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { SF, SH, SW, Fonts, Colors } from '../../utils';
@@ -25,12 +25,14 @@ function PasswordInput({
     () =>
       StyleSheet.create({
         container: {
-          width: '100%', position: 'relative',
-          top: SH(-10), ...containerStyle, marginBottom: SH(0),
+          width: '100%',
+          position: 'relative',
+          top: SH(-10),
+          ...containerStyle,
+          marginBottom: SH(0),
         },
         inputContainerStyle: {
           borderBottomWidth: SH(0),
-
           width: "100%",
           ...inputContainerStyle
         },
@@ -47,7 +49,7 @@ function PasswordInput({
           borderRadius: 300,
           borderWidth: SH(0.5),
           borderColor: Colors.theme_background,
-          backgroundColor:'#f1f5ff',
+          backgroundColor: '#f1f5ff',
           ...inputStyle,
         },
         labelStyle: {
@@ -68,7 +70,7 @@ function PasswordInput({
         errorStyle: {
           color: Colors.red,
           fontFamily: Fonts.Poppins_Regular,
-          height: errorMessage == "" && SH(0),
+          height: errorMessage === "" ? SH(0) : undefined,
           margin: 0,
         },
         IconPostionAboluteTwo: {
@@ -79,15 +81,30 @@ function PasswordInput({
           alignItems: 'center'
         },
       }),
-    [title, titleStyle, inputStyle, Colors],
+    [title, titleStyle, inputStyle, containerStyle, inputContainerStyle, errorMessage]
   );
+
+  // Safe handler to prevent passing raw press events or calling undefined props
+  const handleTogglePress = (e) => {
+    if (e && typeof e.persist === 'function') {
+      e.persist();
+    }
+    if (typeof onPress === 'function') {
+      onPress();
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Input
         name="password"
-        maxLength={7}
+        maxLength={14}
         rightIcon={
-          <TouchableOpacity style={styles.IconPostionAboluteTwo} onPress={() => onPress()}>
+          <TouchableOpacity 
+            style={styles.IconPostionAboluteTwo} 
+            onPress={handleTogglePress}
+            activeOpacity={0.7}
+          >
             <VectorIcon
               name={name}
               size={SF(25)}
@@ -99,10 +116,6 @@ function PasswordInput({
         label={label}
         value={value}
         placeholder={placeholder}
-        errorProps={{}}
-        labelProps={{}}
-        leftIconContainerStyle={{}}
-        rightIconContainerStyle={{}}
         autoCorrect={false}
         errorStyle={styles.errorStyle}
         inputStyle={styles.input_style}
@@ -112,7 +125,11 @@ function PasswordInput({
         textContentType="newPassword"
         secureTextEntry={secureTextEntry}
         enablesReturnKeyAutomatically
-        onChangeText={(text) => onChangeText(text)}
+        onChangeText={(text) => {
+          if (typeof onChangeText === 'function') {
+            onChangeText(text ?? '');
+          }
+        }}
       />
     </View>
   );
@@ -123,7 +140,10 @@ PasswordInput.defaultProps = {
   placeholder: '',
   titleStyle: {},
   inputStyle: {},
+  containerStyle: {},
+  inputContainerStyle: {},
   onChangeText: () => { },
+  onPress: () => { },
   onFocus: () => { },
   onBlur: () => { },
   value: '',
@@ -140,7 +160,10 @@ PasswordInput.propTypes = {
   placeholder: propTypes.string,
   titleStyle: propTypes.shape({}),
   inputStyle: propTypes.shape({}),
+  containerStyle: propTypes.shape({}),
+  inputContainerStyle: propTypes.shape({}),
   onChangeText: propTypes.func,
+  onPress: propTypes.func,
   value: propTypes.string,
   textprops: propTypes.object,
   inputprops: propTypes.object,
@@ -148,6 +171,9 @@ PasswordInput.propTypes = {
   onBlur: propTypes.func,
   inputType: propTypes.any,
   onEndEditing: propTypes.func,
+  secureTextEntry: propTypes.bool,
+  name: propTypes.string,
+  errorMessage: propTypes.string,
 };
 
 export default PasswordInput;
